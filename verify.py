@@ -16,12 +16,13 @@ import os
 import random
 import re
 import sys
-import urllib.request
+from datetime import date, timedelta
 from pathlib import Path
+from statistics import median
 
 import build
-import collect
 import reits_api
+from dart import previous_year
 from textutil import PRIVATE_LABEL, mask_person, phone_files
 
 DATA = Path(__file__).parent / "data"
@@ -215,7 +216,6 @@ def main() -> int:
         v = fin[str(r["reit_id"])]
         check(str(b1.get("totAssets")) == str(v["assets"]) and str(b1.get("cmpnyDebt")) == str(v["debt"]),
               f"{r['name']} | 저장 자산 {v['assets']:,}원, 부채 {v['debt']:,}원 = 상세 화면 재조회")
-    from datetime import date, timedelta
     d1 = date.fromisoformat(snap["date"])
     d0 = d1 - timedelta(days=14)
     live_d = ask("/reits/pblntf/cmpny/searchPblntfCmpny", {
@@ -227,7 +227,92 @@ def main() -> int:
         check(0 <= int(live_d["total"]) - stored <= 15,
               f"최근 14일 수시공시 원문 {int(live_d['total'])}건, 저장 {stored}건")
 
-    print("[6] 개인정보")
+    print("[6] DART 차입과 배당")
+    dart_path = DATA / "dart.json"
+    dart_data = build.optional_data("dart.json")
+    try:
+        finance_page = (build.SITE / "finance.html").read_text(encoding="utf-8")
+        finance_payload, _ = json.JSONDecoder().raw_decode(finance_page.split("const D = ", 1)[1])
+        maturity = {r["code"]: r for r in finance_payload["maturity"]}
+        market = {r["code"]: r for r in page_data["rows"]}
+    except (OSError, IndexError, ValueError, KeyError, UnboundLocalError):
+        maturity, market = {}, {}
+    check(set(maturity) == set(market) == {r["code"] for r in listed}, "DART 표와 상장 종목 목록 일치")
+    expected_yields = []
+    price_window_start = (d1 - timedelta(days=372)).isoformat()
+
+    def matches(x, y):
+        return x == y or (x is not None and y is not None and abs(x-y) < 1e-9)
+
+    for stock in listed:
+        code, name = stock["code"], stock["name"]
+        record = dart_data.get(code, {})
+        share = rate = coverage = interest_source = None
+        for key in ("current", "previous"):
+            if not record:
+                break
+            s = record[key]
+            accounts = [a for a in s["accounts"] if a.get("included", True)]
+            amounts = [sum(a["amount"] or 0 for a in accounts if a["current"] == cur) for cur in (True, False)]
+            check(amounts == [s["short"], s["long"]] and sum(amounts) == s["total"] <= s["liabilities"]
+                  and 0 <= amounts[0] <= s["current_liabilities"] and 0 <= amounts[1] <= s["noncurrent_liabilities"],
+                  f"{name} {'당기' if key == 'current' else '전기'} 차입 계정 합계와 부채 한도")
+            if key == "current" and s["total"]:
+                share = s["short"] / s["total"] * 100
+            paid = s.get("interest_accounts", [])
+            interest = sum(abs(a["amount"]) for a in paid) if paid else s["cost"]
+            source = "이자 지급액" if paid else s["cost_name"]
+            check(interest == s.get("interest", s["cost"]) and source == s.get("interest_source", s["cost_name"]),
+                  f"{name} {'당기' if key == 'current' else '전기'} 이자 지급 계정 합계와 적용 근거")
+            if key == "current":
+                average = (s["total"] + record["previous"]["total"]) / 2
+                if s["days"] and average and interest is not None:
+                    rate = interest / average * 365 / s["days"] * 100
+                if s["total"] and interest and s["op"] is not None:
+                    coverage = s["op"] / interest
+                interest_source = source
+        maturity_row = maturity.get(code, {})
+        market_row = market.get(code, {})
+        history = sorted((day, close) for day, close in prices.get(code, {}).items()
+                         if close and day >= price_window_start)
+        price = history[-1][1] if history else stock.get("price")
+        price_break = next((day for (_, prior), (day, close) in reversed(list(zip(history, history[1:])))
+                            if abs(close / prior - 1) > 0.31), None)
+        yield_reason = None
+        annual_dps = None
+        if record.get("dividend_end"):
+            end = date.fromisoformat(record["dividend_end"])
+            cutoff = previous_year(end)
+            periods = [x for x in record["dividends"] if str(cutoff) < x["end"] <= str(end)]
+            if (any(x["end"] == str(end) for x in periods) and all(x["dps"] is not None and x["days"] for x in periods)
+                    and sum(x["days"] for x in periods) == (end - cutoff).days):
+                annual_dps = sum(x["dps"] for x in periods)
+            check(annual_dps == record.get("trailing_dps"), f"{name} 최근 12개월 배당 기간과 합계")
+            if price_break and str(cutoff) < price_break <= str(end):
+                yield_reason = "기준가 변경"
+        expected = None
+        if not yield_reason and annual_dps is not None and price and price > 0:
+            expected = annual_dps / price * 100
+            expected_yields.append(expected)
+        check(matches(share, maturity_row.get("share")) and matches(rate, maturity_row.get("rate"))
+              and matches(coverage, maturity_row.get("coverage")) and interest_source == maturity_row.get("interest_source"),
+              f"{name} 화면 만기 비중, 추정 금리와 근거, 영업이익 ÷ 이자")
+        check(price == market_row.get("price") and price_break == market_row.get("price_break")
+              and yield_reason == market_row.get("market_yield_reason")
+              and matches(expected, market_row.get("market_yield")), f"{name} 화면 시가배당률과 기준가 변경")
+    yield_summary = page_data.get("summary", {}) if codes is not None else {}
+    expected_median = round(median(expected_yields), 2) if expected_yields else None
+    check(yield_summary.get("yield_n") == len(expected_yields) and matches(yield_summary.get("yield_median"), expected_median),
+          "시가배당률 값이 있는 종목 수와 중앙값 재계산")
+    raw = dart_path.read_bytes() if dart_path.exists() else b""
+    check(not re.search(rb"[0-9a-fA-F]{40}", raw), "DART 자료 40자리 인증정보 문자열 점검")
+    secret = os.environ.get("DART_API_KEY")
+    if secret:
+        needle = secret.encode()
+        check(needle not in raw and all(needle not in p.read_bytes() for p in build.SITE.rglob("*") if p.is_file()),
+              "DART 자료와 배포 파일 전체 인증키 점검")
+
+    print("[7] 개인정보")
     leaks = phone_files(DATA.rglob("*.json")) + phone_files(build.SITE.glob("*.html"))
     check(not leaks, "저장 파일과 화면 전화번호 점검" + " ".join(str(p) for p in leaks))
     check(all(not v.get("text") for v in dis.values() if "주주" in v["matter"]), "주주 공시 본문 없음")
@@ -235,7 +320,9 @@ def main() -> int:
     cases += [(name, name) for name in ("㈜에스원", "주식회사 케이탑", "롯데쇼핑", "(주)한빛", "한솔 유한회사")]
     for name, expected in cases:
         check(mask_person(name) == expected, f"최대주주 가상 입력 {name}")
-    allowed = set(collect.FILING_KEEP.values())
+    # 수집기를 불러오지 않고 저장을 허용한 항목을 점검한다.
+    allowed = {"id", "reit_id", "date", "req_type", "name", "applicant", "status",
+               "project_name", "biz_type", "founding_capital", "public_duty"}
     flog = json.loads((DATA / "filings_log.json").read_text(encoding="utf-8"))
     extra_keys = {"first_seen", "last_seen", "status_history", "gone_on", "result_kind", "result_date"}
     check(all(set(f) <= allowed for f in snap["filings"]) and all(set(v) <= allowed | extra_keys for v in flog.values()),

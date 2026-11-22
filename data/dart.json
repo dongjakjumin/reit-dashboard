@@ -1,0 +1,2654 @@
+{
+  "395400": {
+    "current": {
+      "short": 1364248103044,
+      "long": 1738834065609,
+      "total": 3103082168653,
+      "liabilities": 3380432130620,
+      "current_liabilities": 1421747538671,
+      "noncurrent_liabilities": 1958684591949,
+      "accounts": [
+        {
+          "name": "유동성전환사채",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "유동성사채",
+          "amount": 694543290768,
+          "current": true
+        },
+        {
+          "name": "유동성장기부채",
+          "amount": 669704812276,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 289308892375,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 1449525173234,
+          "current": false
+        }
+      ],
+      "cost": 34063994042,
+      "cost_name": "금융비용",
+      "interest": 29565653400,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 29565653400
+        }
+      ],
+      "op": 71746316047,
+      "revenue": 80177490049,
+      "end": "2026-06-30",
+      "start": "2026-04-01",
+      "days": 91
+    },
+    "previous": {
+      "short": 1243689893284,
+      "long": 1860164927683,
+      "total": 3103854820967,
+      "liabilities": 3382988684641,
+      "current_liabilities": 1318000437012,
+      "noncurrent_liabilities": 2064988247629,
+      "accounts": [
+        {
+          "name": "유동성전환사채",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "유동성사채",
+          "amount": 574613443933,
+          "current": true
+        },
+        {
+          "name": "유동성장기부채",
+          "amount": 669076449351,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 408926844085,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 1451238083598,
+          "current": false
+        }
+      ],
+      "cost": 33926344403,
+      "cost_name": "금융비용",
+      "interest": 29305403930,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 29305403930
+        }
+      ],
+      "op": 53853739755,
+      "revenue": 63369239197,
+      "end": "2026-03-31",
+      "start": "2026-01-01",
+      "days": 90
+    },
+    "basis": "CFS",
+    "rcept_no": "20260908000397",
+    "dividends": [
+      {
+        "end": "2025-03-31",
+        "days": null,
+        "dps": 70,
+        "report": "20251210000536"
+      },
+      {
+        "end": "2025-06-30",
+        "days": 91,
+        "dps": 66,
+        "report": "20260311004347"
+      },
+      {
+        "end": "2025-09-30",
+        "days": 92,
+        "dps": 66,
+        "report": "20260610000569"
+      },
+      {
+        "end": "2025-12-31",
+        "days": 92,
+        "dps": 66,
+        "report": "20260908000397"
+      },
+      {
+        "end": "2026-03-31",
+        "days": 90,
+        "dps": 68,
+        "report": "20260908000397"
+      },
+      {
+        "end": "2026-06-30",
+        "days": 91,
+        "dps": 68,
+        "report": "20260908000397"
+      }
+    ],
+    "dividend_end": "2026-06-30",
+    "trailing_dps": 268,
+    "notes": [],
+    "name": "SK리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01535150"
+  },
+  "330590": {
+    "current": {
+      "short": 955564487465,
+      "long": 618702470098,
+      "total": 1574266957563,
+      "liabilities": 1744099876786,
+      "current_liabilities": 982741431440,
+      "noncurrent_liabilities": 761358445346,
+      "accounts": [
+        {
+          "name": "차입금및사채",
+          "amount": 955564487465,
+          "current": true
+        },
+        {
+          "name": "차입금및사채",
+          "amount": 618702470098,
+          "current": false
+        }
+      ],
+      "cost": 32410960723,
+      "cost_name": "금융비용",
+      "interest": 26725917930,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsFinancingActivities",
+          "amount": 26725917930
+        }
+      ],
+      "op": 55652468317,
+      "revenue": 82109520073,
+      "end": "2026-06-30",
+      "start": "2026-01-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 603273619875,
+      "long": 703746157814,
+      "total": 1307019777689,
+      "liabilities": 1454908461475,
+      "current_liabilities": 621336979126,
+      "noncurrent_liabilities": 833571482349,
+      "accounts": [
+        {
+          "name": "차입금및사채",
+          "amount": 603273619875,
+          "current": true
+        },
+        {
+          "name": "차입금및사채",
+          "amount": 703746157814,
+          "current": false
+        }
+      ],
+      "cost": 27353183265,
+      "cost_name": "금융비용",
+      "interest": 23210896972,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsFinancingActivities",
+          "amount": 23210896972
+        }
+      ],
+      "op": 46254900872,
+      "revenue": 70879702538,
+      "end": "2025-12-31",
+      "start": "2025-07-01",
+      "days": 184
+    },
+    "basis": "OFS",
+    "rcept_no": "20260921000222",
+    "dividends": [
+      {
+        "end": "2025-06-30",
+        "days": null,
+        "dps": 117,
+        "report": "20260921000222"
+      },
+      {
+        "end": "2025-12-31",
+        "days": 184,
+        "dps": 123,
+        "report": "20260921000222"
+      },
+      {
+        "end": "2026-06-30",
+        "days": 181,
+        "dps": 139,
+        "report": "20260921000222"
+      }
+    ],
+    "dividend_end": "2026-06-30",
+    "trailing_dps": 262,
+    "notes": [],
+    "name": "롯데리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01363818"
+  },
+  "451800": {
+    "current": {
+      "short": 40000000000,
+      "long": 763419778907,
+      "total": 803419778907,
+      "liabilities": 858860686436,
+      "current_liabilities": 81437132444,
+      "noncurrent_liabilities": 777423553992,
+      "accounts": [
+        {
+          "name": "유동성사채",
+          "amount": 40000000000,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 109301461606,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 654118317301,
+          "current": false
+        }
+      ],
+      "cost": 16910230763,
+      "cost_name": "금융비용",
+      "interest": 14890812915,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 14890812915
+        }
+      ],
+      "op": 34265021058,
+      "revenue": 54252839460,
+      "end": "2026-04-30",
+      "start": "2025-11-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 39958042086,
+      "long": 762287001673,
+      "total": 802245043759,
+      "liabilities": 859399474936,
+      "current_liabilities": 83006652378,
+      "noncurrent_liabilities": 776392822558,
+      "accounts": [
+        {
+          "name": "유동성사채",
+          "amount": 39958042086,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 109150662382,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 653136339291,
+          "current": false
+        }
+      ],
+      "cost": 18456377605,
+      "cost_name": "금융비용",
+      "interest": 17109538485,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 17109538485
+        }
+      ],
+      "op": 30013936514,
+      "revenue": 52416442074,
+      "end": "2025-10-31",
+      "start": "2025-05-01",
+      "days": 184
+    },
+    "basis": "OFS",
+    "rcept_no": "20260713000432",
+    "dividends": [
+      {
+        "end": "2025-04-30",
+        "days": null,
+        "dps": 135,
+        "report": "20260713000432"
+      },
+      {
+        "end": "2025-10-31",
+        "days": 184,
+        "dps": 135,
+        "report": "20260713000432"
+      },
+      {
+        "end": "2026-04-30",
+        "days": 181,
+        "dps": 135,
+        "report": "20260713000432"
+      }
+    ],
+    "dividend_end": "2026-04-30",
+    "trailing_dps": 270,
+    "notes": [],
+    "name": "한화리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01669226"
+  },
+  "365550": {
+    "current": {
+      "short": 611558368945,
+      "long": 939319382193,
+      "total": 1550877751138,
+      "liabilities": 1623523252911,
+      "current_liabilities": 640001544702,
+      "noncurrent_liabilities": 983521708209,
+      "accounts": [
+        {
+          "name": "유동성장기차입금",
+          "amount": 561558368945,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 50000000000,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 939319382193,
+          "current": false
+        }
+      ],
+      "cost": 35379806159,
+      "cost_name": "금융비용",
+      "interest": 37248334333,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 37248334333
+        }
+      ],
+      "op": 34147048183,
+      "revenue": 65606300402,
+      "end": "2026-05-31",
+      "start": "2025-12-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 156770141523,
+      "long": 1430191286763,
+      "total": 1586961428286,
+      "liabilities": 1670571944339,
+      "current_liabilities": 186471185667,
+      "noncurrent_liabilities": 1484100758672,
+      "accounts": [
+        {
+          "name": "유동성장기차입금",
+          "amount": 130270741871,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 26499399652,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 1430191286763,
+          "current": false
+        }
+      ],
+      "cost": 27995840506,
+      "cost_name": "금융비용",
+      "interest": 26166933580,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 26166933580
+        }
+      ],
+      "op": 25859163408,
+      "revenue": 59557601618,
+      "end": "2025-11-30",
+      "start": "2025-06-01",
+      "days": 183
+    },
+    "basis": "CFS",
+    "rcept_no": "20260814004149",
+    "dividends": [
+      {
+        "end": "2025-05-31",
+        "days": null,
+        "dps": 137,
+        "report": "20260814004149"
+      },
+      {
+        "end": "2025-11-30",
+        "days": 183,
+        "dps": 139,
+        "report": "20260814004149"
+      },
+      {
+        "end": "2026-05-31",
+        "days": 182,
+        "dps": 139,
+        "report": "20260814004149"
+      }
+    ],
+    "dividend_end": "2026-05-31",
+    "trailing_dps": 278,
+    "notes": [],
+    "name": "ESR켄달스퀘어리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01437186"
+  },
+  "293940": {
+    "current": {
+      "short": 1011240666849,
+      "long": 1220388834990,
+      "total": 2231629501839,
+      "liabilities": 2330100250878,
+      "current_liabilities": 1052515075969,
+      "noncurrent_liabilities": 1277585174909,
+      "accounts": [
+        {
+          "name": "유동성사채",
+          "amount": 98000000000,
+          "current": true
+        },
+        {
+          "name": "단기차입금(사채 제외)",
+          "amount": 72000000000,
+          "current": true
+        },
+        {
+          "name": "유동성 장기차입금(사채 제외)",
+          "amount": 841240666849,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 1220388834990,
+          "current": false
+        }
+      ],
+      "cost": 44145910833,
+      "cost_name": "금융비용",
+      "interest": 41591141508,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 41591141508
+        }
+      ],
+      "op": 56873581245,
+      "revenue": 85330922743,
+      "end": "2026-03-31",
+      "start": "2025-10-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 1088412686107,
+      "long": 1142157989321,
+      "total": 2230570675428,
+      "liabilities": 2330978618338,
+      "current_liabilities": 1126079172591,
+      "noncurrent_liabilities": 1204899445747,
+      "accounts": [
+        {
+          "name": "유동성사채",
+          "amount": 98000000000,
+          "current": true
+        },
+        {
+          "name": "단기차입금(사채 제외)",
+          "amount": 72000000000,
+          "current": true
+        },
+        {
+          "name": "유동성 장기차입금(사채 제외)",
+          "amount": 918412686107,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 1142157989321,
+          "current": false
+        }
+      ],
+      "cost": 41300691972,
+      "cost_name": "금융비용",
+      "interest": 38138098868,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 38138098868
+        }
+      ],
+      "op": 51085925770,
+      "revenue": 82852115221,
+      "end": "2025-09-30",
+      "start": "2025-04-01",
+      "days": 183
+    },
+    "basis": "CFS",
+    "rcept_no": "20260528000669",
+    "dividends": [
+      {
+        "end": "2025-03-31",
+        "days": null,
+        "dps": 173,
+        "report": "20260528000669"
+      },
+      {
+        "end": "2025-09-30",
+        "days": 183,
+        "dps": 179,
+        "report": "20260528000669"
+      },
+      {
+        "end": "2026-03-31",
+        "days": 182,
+        "dps": 182,
+        "report": "20260528000669"
+      }
+    ],
+    "dividend_end": "2026-03-31",
+    "trailing_dps": 361,
+    "notes": [],
+    "name": "신한알파리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01276594"
+  },
+  "448730": {
+    "current": {
+      "short": 429858958552,
+      "long": 199467094010,
+      "total": 629326052562,
+      "liabilities": 670516806303,
+      "current_liabilities": 438118800742,
+      "noncurrent_liabilities": 232398005561,
+      "accounts": [
+        {
+          "name": "유동성장기차입금",
+          "amount": 429858958552,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 199467094010,
+          "current": false
+        }
+      ],
+      "cost": 7020718624,
+      "cost_name": "금융비용",
+      "interest": 6296997259,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 6296997259
+        }
+      ],
+      "op": 9895224089,
+      "revenue": 15129362534,
+      "end": "2026-07-31",
+      "start": "2026-05-01",
+      "days": 92
+    },
+    "previous": {
+      "short": 429625498696,
+      "long": 199370796642,
+      "total": 628996295338,
+      "liabilities": 669740350605,
+      "current_liabilities": 441172255104,
+      "noncurrent_liabilities": 228568095501,
+      "accounts": [
+        {
+          "name": "유동성장기차입금",
+          "amount": 429625498696,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 199370796642,
+          "current": false
+        }
+      ],
+      "cost": 5782115078,
+      "cost_name": "금융비용",
+      "interest": 5226144656,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 5226144656
+        }
+      ],
+      "op": 8931771712,
+      "revenue": 13389131745,
+      "end": "2026-04-30",
+      "start": "2026-02-01",
+      "days": 89
+    },
+    "basis": "OFS",
+    "rcept_no": "20261007000407",
+    "dividends": [
+      {
+        "end": "2025-01-31",
+        "days": null,
+        "dps": 73,
+        "report": "20251002000153"
+      },
+      {
+        "end": "2025-04-30",
+        "days": 89,
+        "dps": 69,
+        "report": "20260108000065"
+      },
+      {
+        "end": "2025-07-31",
+        "days": 92,
+        "dps": 69,
+        "report": "20260409001553"
+      },
+      {
+        "end": "2025-10-31",
+        "days": 92,
+        "dps": 69,
+        "report": "20260716000794"
+      },
+      {
+        "end": "2026-01-31",
+        "days": 92,
+        "dps": 69,
+        "report": "20261007000407"
+      },
+      {
+        "end": "2026-04-30",
+        "days": 89,
+        "dps": 69,
+        "report": "20261007000407"
+      },
+      {
+        "end": "2026-07-31",
+        "days": 92,
+        "dps": 69,
+        "report": "20261007000407"
+      }
+    ],
+    "dividend_end": "2026-07-31",
+    "trailing_dps": 276,
+    "notes": [],
+    "name": "삼성FN리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01688896"
+  },
+  "357120": {
+    "current": {
+      "short": 173072488822,
+      "long": 1005711577380,
+      "total": 1178784066202,
+      "liabilities": 1308499738087,
+      "current_liabilities": 198928866149,
+      "noncurrent_liabilities": 1109570871938,
+      "accounts": [
+        {
+          "name": "단기사채",
+          "amount": 134968339141,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 21030000000,
+          "current": true
+        },
+        {
+          "name": "유동성전환사채",
+          "amount": 5074149681,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 12000000000,
+          "current": true
+        },
+        {
+          "name": "전환사채",
+          "amount": 16742904333,
+          "current": false
+        },
+        {
+          "name": "사채",
+          "amount": 4975341474,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 983993331573,
+          "current": false
+        }
+      ],
+      "cost": 19083867616,
+      "cost_name": "이자비용",
+      "interest": 15725305088,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 15725305088
+        }
+      ],
+      "op": 26740063668,
+      "revenue": 38099240867,
+      "end": "2026-05-31",
+      "start": "2025-12-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 43861898924,
+      "long": 668089666422,
+      "total": 711951565346,
+      "liabilities": 807665888748,
+      "current_liabilities": 58347528127,
+      "noncurrent_liabilities": 749318360621,
+      "accounts": [
+        {
+          "name": "단기사채",
+          "amount": 19962337463,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 868680000,
+          "current": true
+        },
+        {
+          "name": "유동성전환사채",
+          "amount": 11030881461,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 12000000000,
+          "current": true
+        },
+        {
+          "name": "전환사채",
+          "amount": 0,
+          "current": false
+        },
+        {
+          "name": "사채",
+          "amount": 0,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 668089666422,
+          "current": false
+        }
+      ],
+      "cost": 17648340254,
+      "cost_name": "이자비용",
+      "interest": 11540661673,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 11540661673
+        }
+      ],
+      "op": 24157963679,
+      "revenue": 38554129732,
+      "end": "2025-11-30",
+      "start": "2025-06-01",
+      "days": 183
+    },
+    "basis": "CFS",
+    "rcept_no": "20260814004147",
+    "dividends": [
+      {
+        "end": "2025-05-31",
+        "days": null,
+        "dps": 163,
+        "report": "20260814004147"
+      },
+      {
+        "end": "2025-11-30",
+        "days": 183,
+        "dps": 164,
+        "report": "20260814004147"
+      },
+      {
+        "end": "2026-05-31",
+        "days": 182,
+        "dps": 163,
+        "report": "20260814004147"
+      }
+    ],
+    "dividend_end": "2026-05-31",
+    "trailing_dps": 327,
+    "notes": [],
+    "name": "코람코라이프인프라리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01430475"
+  },
+  "348950": {
+    "current": {
+      "short": 464849013530,
+      "long": 950637143791,
+      "total": 1415486157321,
+      "liabilities": 1701332851504,
+      "current_liabilities": 556286131309,
+      "noncurrent_liabilities": 1145046720195,
+      "accounts": [
+        {
+          "name": "단기 사채",
+          "amount": 3000000000,
+          "current": true
+        },
+        {
+          "name": "단기 차입금",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "유동성사채",
+          "amount": 336000000000,
+          "current": true
+        },
+        {
+          "name": "전자단기사채",
+          "amount": 40000000000,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 85849013530,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 0,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 950637143791,
+          "current": false
+        }
+      ],
+      "cost": 45886805313,
+      "cost_name": "금융비용",
+      "interest": 28562269872,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 28562269872
+        }
+      ],
+      "op": 69786868062,
+      "revenue": 87526227960,
+      "end": "2026-06-30",
+      "start": "2026-01-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 242739882687,
+      "long": 1130389712739,
+      "total": 1373129595426,
+      "liabilities": 1561897449949,
+      "current_liabilities": 382093598255,
+      "noncurrent_liabilities": 1179803851694,
+      "accounts": [
+        {
+          "name": "단기 사채",
+          "amount": 5000000000,
+          "current": true
+        },
+        {
+          "name": "단기 차입금",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "유동성사채",
+          "amount": 139739882687,
+          "current": true
+        },
+        {
+          "name": "전자단기사채",
+          "amount": 98000000000,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "사채",
+          "amount": 179075816500,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 951313896239,
+          "current": false
+        }
+      ],
+      "cost": 38674697134,
+      "cost_name": "금융비용",
+      "interest": 34110697667,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 34110697667
+        }
+      ],
+      "op": 54542329728,
+      "revenue": 72166270260,
+      "end": "2025-12-31",
+      "start": "2025-07-01",
+      "days": 184
+    },
+    "basis": "CFS",
+    "rcept_no": "20260930000867",
+    "dividends": [
+      {
+        "end": "2025-06-30",
+        "days": null,
+        "dps": 115,
+        "report": "20260930000867"
+      },
+      {
+        "end": "2025-12-31",
+        "days": 184,
+        "dps": 115,
+        "report": "20260930000867"
+      },
+      {
+        "end": "2026-06-30",
+        "days": 181,
+        "dps": null,
+        "report": "20260930000867"
+      }
+    ],
+    "dividend_end": "2026-06-30",
+    "trailing_dps": null,
+    "notes": [],
+    "name": "제이알글로벌리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01415892"
+  },
+  "0030R0": {
+    "current": {
+      "short": 404305116919,
+      "long": 0,
+      "total": 404305116919,
+      "liabilities": 431263672915,
+      "current_liabilities": 408684051459,
+      "noncurrent_liabilities": 22579621456,
+      "accounts": [
+        {
+          "name": "유동성 장기차입금",
+          "amount": 404305116919,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 4794136833,
+      "cost_name": "금융원가",
+      "interest": 3577728746,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 3577728746
+        }
+      ],
+      "op": 6659755146,
+      "revenue": 8826268780,
+      "end": "2026-08-31",
+      "start": "2026-06-01",
+      "days": 92
+    },
+    "previous": {
+      "short": 403303937818,
+      "long": 0,
+      "total": 403303937818,
+      "liabilities": 430148952452,
+      "current_liabilities": 407547005437,
+      "noncurrent_liabilities": 22601947015,
+      "accounts": [
+        {
+          "name": "유동성 장기차입금",
+          "amount": 403303937818,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 4780505811,
+      "cost_name": "금융원가",
+      "interest": 3546065772,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 3546065772
+        }
+      ],
+      "op": 6651738367,
+      "revenue": 8368056710,
+      "end": "2026-05-31",
+      "start": "2026-03-01",
+      "days": 92
+    },
+    "basis": "CFS",
+    "rcept_no": "20261110000451",
+    "dividends": [
+      {
+        "end": "2025-05-31",
+        "days": null,
+        "dps": 98,
+        "report": "20260204000369"
+      },
+      {
+        "end": "2025-08-31",
+        "days": 92,
+        "dps": 73,
+        "report": "20260507000565"
+      },
+      {
+        "end": "2025-11-30",
+        "days": 91,
+        "dps": 73,
+        "report": "20260805000514"
+      },
+      {
+        "end": "2026-02-28",
+        "days": 90,
+        "dps": 73,
+        "report": "20261110000451"
+      },
+      {
+        "end": "2026-05-31",
+        "days": 92,
+        "dps": 73,
+        "report": "20261110000451"
+      },
+      {
+        "end": "2026-08-31",
+        "days": 92,
+        "dps": 73,
+        "report": "20261110000451"
+      }
+    ],
+    "dividend_end": "2026-08-31",
+    "trailing_dps": 292,
+    "notes": [],
+    "name": "대신밸류리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01885222"
+  },
+  "404990": {
+    "current": {
+      "short": 421356238407,
+      "long": 201464699453,
+      "total": 622820937860,
+      "liabilities": 701805045179,
+      "current_liabilities": 462301858184,
+      "noncurrent_liabilities": 239503186995,
+      "accounts": [
+        {
+          "name": "유동성전환사채",
+          "amount": 35674700941,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 385681537466,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 201464699453,
+          "current": false
+        }
+      ],
+      "cost": 15804747468,
+      "cost_name": "금융원가",
+      "interest": 14235748722,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 14235748722
+        }
+      ],
+      "op": 42946303272,
+      "revenue": 57199784666,
+      "end": "2026-06-30",
+      "start": "2026-01-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 466649791280,
+      "long": 192914388518,
+      "total": 659564179798,
+      "liabilities": 737585615698,
+      "current_liabilities": 506046046352,
+      "noncurrent_liabilities": 231539569346,
+      "accounts": [
+        {
+          "name": "유동성전환사채",
+          "amount": 43848274280,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 422801517000,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 192914388518,
+          "current": false
+        }
+      ],
+      "cost": 18203362221,
+      "cost_name": "금융원가",
+      "interest": 14785365469,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 14785365469
+        }
+      ],
+      "op": 23736239003,
+      "revenue": 32077312593,
+      "end": "2025-12-31",
+      "start": "2025-07-01",
+      "days": 184
+    },
+    "basis": "CFS",
+    "rcept_no": "20260831001328",
+    "dividends": [
+      {
+        "end": "2025-06-30",
+        "days": null,
+        "dps": 130,
+        "report": "20260831001328"
+      },
+      {
+        "end": "2025-12-31",
+        "days": 184,
+        "dps": 133,
+        "report": "20260831001328"
+      },
+      {
+        "end": "2026-06-30",
+        "days": 181,
+        "dps": 135,
+        "report": "20260831001328"
+      }
+    ],
+    "dividend_end": "2026-06-30",
+    "trailing_dps": 268,
+    "notes": [],
+    "name": "신한서부티엔디리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01436558"
+  },
+  "334890": {
+    "current": {
+      "short": 196107726030,
+      "long": 0,
+      "total": 196107726030,
+      "liabilities": 201256227217,
+      "current_liabilities": 200127294217,
+      "noncurrent_liabilities": 1128933000,
+      "accounts": [
+        {
+          "name": "차입금 및 사채",
+          "amount": 196107726030,
+          "current": true
+        }
+      ],
+      "cost": 3522064294,
+      "cost_name": "금융비용",
+      "interest": 1523436711,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 1523436711
+        }
+      ],
+      "op": 10772011844,
+      "revenue": 16533823694,
+      "end": "2026-08-31",
+      "start": "2026-03-01",
+      "days": 184
+    },
+    "previous": {
+      "short": 128635890412,
+      "long": 0,
+      "total": 128635890412,
+      "liabilities": 133669136705,
+      "current_liabilities": 132540203705,
+      "noncurrent_liabilities": 1128933000,
+      "accounts": [
+        {
+          "name": "차입금 및 사채",
+          "amount": 128635890412,
+          "current": true
+        }
+      ],
+      "cost": 3289810485,
+      "cost_name": "금융비용",
+      "interest": 1853455067,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 1853455067
+        }
+      ],
+      "op": 14572809821,
+      "revenue": 21187971544,
+      "end": "2026-02-28",
+      "start": "2025-09-01",
+      "days": 181
+    },
+    "basis": "CFS",
+    "rcept_no": "20261119000420",
+    "dividends": [
+      {
+        "end": "2025-02-28",
+        "days": null,
+        "dps": 173,
+        "report": "20260521000682"
+      },
+      {
+        "end": "2025-08-31",
+        "days": 184,
+        "dps": 172,
+        "report": "20261119000420"
+      },
+      {
+        "end": "2026-02-28",
+        "days": 181,
+        "dps": 160,
+        "report": "20261119000420"
+      },
+      {
+        "end": "2026-08-31",
+        "days": 184,
+        "dps": 161,
+        "report": "20261119000420"
+      }
+    ],
+    "dividend_end": "2026-08-31",
+    "trailing_dps": 321,
+    "notes": [],
+    "name": "이지스밸류플러스리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01394377"
+  },
+  "088260": {
+    "current": {
+      "short": 428270917469,
+      "long": 0,
+      "total": 428270917469,
+      "liabilities": 455432314923,
+      "current_liabilities": 434617032119,
+      "noncurrent_liabilities": 20815282804,
+      "accounts": [
+        {
+          "name": "유동성사채",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 428270917469,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 11684729408,
+      "cost_name": "금융비용",
+      "interest": 10319112313,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 10319112313
+        }
+      ],
+      "op": 18322016439,
+      "revenue": 23340504029,
+      "end": "2026-06-30",
+      "start": "2026-01-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 0,
+      "long": 427264408251,
+      "total": 427264408251,
+      "liabilities": 454613615035,
+      "current_liabilities": 6424581663,
+      "noncurrent_liabilities": 448189033372,
+      "accounts": [
+        {
+          "name": "유동성사채",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 427264408251,
+          "current": false
+        }
+      ],
+      "cost": 11338597562,
+      "cost_name": "금융비용",
+      "interest": 10114032861,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 10114032861
+        }
+      ],
+      "op": 18180884436,
+      "revenue": 23218505054,
+      "end": "2025-12-31",
+      "start": "2025-07-01",
+      "days": 184
+    },
+    "basis": "CFS",
+    "rcept_no": "20260908000319",
+    "dividends": [
+      {
+        "end": "2025-06-30",
+        "days": null,
+        "dps": 173,
+        "report": "20260908000319"
+      },
+      {
+        "end": "2025-12-31",
+        "days": 184,
+        "dps": 176,
+        "report": "20260908000319"
+      },
+      {
+        "end": "2026-06-30",
+        "days": 181,
+        "dps": 173,
+        "report": "20260908000319"
+      }
+    ],
+    "dividend_end": "2026-06-30",
+    "trailing_dps": 349,
+    "notes": [
+      "2025-06-30 배당 20260608000343 174 → 20260908000319 173원"
+    ],
+    "name": "이리츠코크렙",
+    "fetched": "2026-11-22",
+    "corp_code": "00544452"
+  },
+  "432320": {
+    "current": {
+      "short": 574529130187,
+      "long": 164412188950,
+      "total": 738941319137,
+      "liabilities": 794483236257,
+      "current_liabilities": 607564928389,
+      "noncurrent_liabilities": 186918307868,
+      "accounts": [
+        {
+          "name": "유동성 장기차입금",
+          "amount": 534581275659,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 39947854528,
+          "current": true
+        },
+        {
+          "name": "단기사채",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "비유동 사채의 비유동성 부분",
+          "amount": 64920727612,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 99491461338,
+          "current": false
+        }
+      ],
+      "cost": 50260105472,
+      "cost_name": "금융원가",
+      "interest": 11932775057,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 11932775057
+        }
+      ],
+      "op": -6902793851,
+      "revenue": 35595970178,
+      "end": "2026-07-31",
+      "start": "2026-02-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 662263119143,
+      "long": 144339484928,
+      "total": 806602604071,
+      "liabilities": 889680862791,
+      "current_liabilities": 713486084597,
+      "noncurrent_liabilities": 176194778194,
+      "accounts": [
+        {
+          "name": "유동성 장기차입금",
+          "amount": 547825986005,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 84722079475,
+          "current": true
+        },
+        {
+          "name": "단기사채",
+          "amount": 29715053663,
+          "current": true
+        },
+        {
+          "name": "비유동 사채의 비유동성 부분",
+          "amount": 64915758517,
+          "current": false
+        },
+        {
+          "name": "장기차입금",
+          "amount": 79423726411,
+          "current": false
+        }
+      ],
+      "cost": 14206044006,
+      "cost_name": "금융원가",
+      "interest": 10584849850,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 10584849850
+        }
+      ],
+      "op": -879802489,
+      "revenue": 32357935534,
+      "end": "2026-01-31",
+      "start": "2025-08-01",
+      "days": 184
+    },
+    "basis": "CFS",
+    "rcept_no": "20261022000450",
+    "dividends": [
+      {
+        "end": "2025-01-31",
+        "days": null,
+        "dps": 180,
+        "report": "20260512000411"
+      },
+      {
+        "end": "2025-07-31",
+        "days": 181,
+        "dps": 170,
+        "report": "20261022000450"
+      },
+      {
+        "end": "2026-01-31",
+        "days": 184,
+        "dps": 170,
+        "report": "20261022000450"
+      },
+      {
+        "end": "2026-07-31",
+        "days": 181,
+        "dps": 90,
+        "report": "20261022000450"
+      }
+    ],
+    "dividend_end": "2026-07-31",
+    "trailing_dps": 260,
+    "notes": [],
+    "name": "KB스타리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01622720"
+  },
+  "377190": {
+    "current": {
+      "short": 318763391470,
+      "long": 354150639560,
+      "total": 672914031030,
+      "liabilities": 703005610101,
+      "current_liabilities": 325951758253,
+      "noncurrent_liabilities": 377053851848,
+      "accounts": [
+        {
+          "name": "유동성장기차입금",
+          "amount": 219538361333,
+          "current": true
+        },
+        {
+          "name": "유동 차입금(사채 포함)",
+          "amount": 99225030137,
+          "current": true
+        },
+        {
+          "name": "비유동차입금(사채 포함)의 비유동성 부분",
+          "amount": 354150639560,
+          "current": false
+        }
+      ],
+      "cost": 15212277577,
+      "cost_name": "금융원가",
+      "interest": 12883409535,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 12883409535
+        }
+      ],
+      "op": 19821380822,
+      "revenue": 29764634888,
+      "end": "2026-03-31",
+      "start": "2025-10-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 201161289227,
+      "long": 449914023712,
+      "total": 651075312939,
+      "liabilities": 679202284475,
+      "current_liabilities": 209826459221,
+      "noncurrent_liabilities": 469375825254,
+      "accounts": [
+        {
+          "name": "유동성장기차입금",
+          "amount": 123174392574,
+          "current": true
+        },
+        {
+          "name": "유동 차입금(사채 포함)",
+          "amount": 77986896653,
+          "current": true
+        },
+        {
+          "name": "비유동차입금(사채 포함)의 비유동성 부분",
+          "amount": 449914023712,
+          "current": false
+        }
+      ],
+      "cost": 14511138076,
+      "cost_name": "금융원가",
+      "interest": 13388053556,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 13388053556
+        }
+      ],
+      "op": 15013132094,
+      "revenue": 26345572257,
+      "end": "2025-09-30",
+      "start": "2025-04-01",
+      "days": 183
+    },
+    "basis": "CFS",
+    "rcept_no": "20260602000529",
+    "dividends": [
+      {
+        "end": "2025-03-31",
+        "days": null,
+        "dps": 126,
+        "report": "20260602000529"
+      },
+      {
+        "end": "2025-09-30",
+        "days": 183,
+        "dps": 120,
+        "report": "20260602000529"
+      },
+      {
+        "end": "2026-03-31",
+        "days": 182,
+        "dps": 120,
+        "report": "20260602000529"
+      }
+    ],
+    "dividend_end": "2026-03-31",
+    "trailing_dps": 240,
+    "notes": [],
+    "name": "디앤디플랫폼리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01475609"
+  },
+  "400760": {
+    "current": {
+      "short": 392919834994,
+      "long": 286400668706,
+      "total": 679320503700,
+      "liabilities": 728494821310,
+      "current_liabilities": 404802393976,
+      "noncurrent_liabilities": 323692427334,
+      "accounts": [
+        {
+          "name": "전환사채",
+          "amount": 2064300000,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 331106195671,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 59749339323,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 286400668706,
+          "current": false
+        }
+      ],
+      "cost": 17143527360,
+      "cost_name": "금융비용",
+      "interest": 14295865796,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 14295865796
+        }
+      ],
+      "op": 14975995269,
+      "revenue": 26641640054,
+      "end": "2026-06-30",
+      "start": "2026-01-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 149051423385,
+      "long": 532400796985,
+      "total": 681452220370,
+      "liabilities": 726925087031,
+      "current_liabilities": 158716743026,
+      "noncurrent_liabilities": 568208344005,
+      "accounts": [
+        {
+          "name": "전환사채",
+          "amount": 5160750000,
+          "current": true
+        },
+        {
+          "name": "유동성장기차입금",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "단기차입금",
+          "amount": 143890673385,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 532400796985,
+          "current": false
+        }
+      ],
+      "cost": 17719856819,
+      "cost_name": "금융비용",
+      "interest": 14874890240,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 14874890240
+        }
+      ],
+      "op": 18768745817,
+      "revenue": 27889483783,
+      "end": "2025-12-31",
+      "start": "2025-07-01",
+      "days": 184
+    },
+    "basis": "CFS",
+    "rcept_no": "20260911000433",
+    "dividends": [
+      {
+        "end": "2025-06-30",
+        "days": null,
+        "dps": 170,
+        "report": "20260911000433"
+      },
+      {
+        "end": "2025-12-31",
+        "days": 184,
+        "dps": 150,
+        "report": "20260911000433"
+      },
+      {
+        "end": "2026-06-30",
+        "days": 181,
+        "dps": 150,
+        "report": "20260911000433"
+      }
+    ],
+    "dividend_end": "2026-06-30",
+    "trailing_dps": 300,
+    "notes": [],
+    "name": "NH올원리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01480780"
+  },
+  "350520": {
+    "current": {
+      "short": 49809485413,
+      "long": 89636328087,
+      "total": 139445813500,
+      "liabilities": 140237108415,
+      "current_liabilities": 50600780328,
+      "noncurrent_liabilities": 89636328087,
+      "accounts": [
+        {
+          "name": "유동 차입금 및 사채",
+          "amount": 49809485413,
+          "current": true
+        },
+        {
+          "name": "비유동 차입금 및 사채",
+          "amount": 89636328087,
+          "current": false
+        }
+      ],
+      "cost": 3062380622,
+      "cost_name": "금융비용",
+      "interest": 2421414379,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 2421414379
+        }
+      ],
+      "op": 22523390467,
+      "revenue": 23594361108,
+      "end": "2026-06-30",
+      "start": "2026-01-01",
+      "days": 181
+    },
+    "previous": {
+      "short": 96582404818,
+      "long": 0,
+      "total": 96582404818,
+      "liabilities": 96781243325,
+      "current_liabilities": 96781243325,
+      "noncurrent_liabilities": 0,
+      "accounts": [
+        {
+          "name": "유동 차입금 및 사채",
+          "amount": 96582404818,
+          "current": true
+        },
+        {
+          "name": "비유동 차입금 및 사채",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 2475067038,
+      "cost_name": "금융비용",
+      "interest": 1744749993,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 1744749993
+        }
+      ],
+      "op": 14317961314,
+      "revenue": 16512932058,
+      "end": "2025-12-31",
+      "start": "2025-07-01",
+      "days": 184
+    },
+    "basis": "CFS",
+    "rcept_no": "20260911000326",
+    "dividends": [
+      {
+        "end": "2025-06-30",
+        "days": null,
+        "dps": 150,
+        "report": "20260911000326"
+      },
+      {
+        "end": "2025-12-31",
+        "days": 184,
+        "dps": 150,
+        "report": "20260911000326"
+      },
+      {
+        "end": "2026-06-30",
+        "days": 181,
+        "dps": 150,
+        "report": "20260911000326"
+      }
+    ],
+    "dividend_end": "2026-06-30",
+    "trailing_dps": 300,
+    "notes": [],
+    "name": "이지스레지던스리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01436628"
+  },
+  "417310": {
+    "current": {
+      "short": 0,
+      "long": 0,
+      "total": 0,
+      "liabilities": 306172448,
+      "current_liabilities": 306172448,
+      "noncurrent_liabilities": 0,
+      "accounts": [
+        {
+          "name": "장기차입금",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 4014458117,
+      "cost_name": "금융비용",
+      "interest": 979199998,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 979199998
+        }
+      ],
+      "op": 269836903585,
+      "revenue": 310330870584,
+      "end": "2026-08-31",
+      "start": "2026-06-01",
+      "days": 92
+    },
+    "previous": {
+      "short": 0,
+      "long": 290343253931,
+      "total": 290343253931,
+      "liabilities": 314780929103,
+      "current_liabilities": 9176692833,
+      "noncurrent_liabilities": 305604236270,
+      "accounts": [
+        {
+          "name": "장기차입금",
+          "amount": 290343253931,
+          "current": false
+        }
+      ],
+      "cost": 2949062665,
+      "cost_name": "금융비용",
+      "interest": 2563199998,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자의 지급",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 2563199998
+        }
+      ],
+      "op": 6653160190,
+      "revenue": 9039521603,
+      "end": "2026-05-31",
+      "start": "2026-03-01",
+      "days": 92
+    },
+    "basis": "OFS",
+    "rcept_no": "20261029000393",
+    "dividends": [
+      {
+        "end": "2025-02-28",
+        "days": null,
+        "dps": 94,
+        "report": "20251112000248"
+      },
+      {
+        "end": "2025-05-31",
+        "days": 92,
+        "dps": 94,
+        "report": "20260213001506"
+      },
+      {
+        "end": "2025-08-31",
+        "days": 92,
+        "dps": 72,
+        "report": "20260521000683"
+      },
+      {
+        "end": "2025-11-30",
+        "days": 91,
+        "dps": 94,
+        "report": "20260813000607"
+      },
+      {
+        "end": "2026-02-28",
+        "days": 90,
+        "dps": 96,
+        "report": "20261029000393"
+      },
+      {
+        "end": "2026-05-31",
+        "days": 92,
+        "dps": 114,
+        "report": "20261029000393"
+      },
+      {
+        "end": "2026-08-31",
+        "days": 92,
+        "dps": 8974,
+        "report": "20261029000393"
+      }
+    ],
+    "dividend_end": "2026-08-31",
+    "trailing_dps": 9278,
+    "notes": [],
+    "name": "코람코더원리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01180118"
+  },
+  "338100": {
+    "current": {
+      "short": 0,
+      "long": 0,
+      "total": 0,
+      "liabilities": 3113186658,
+      "current_liabilities": 3113186658,
+      "noncurrent_liabilities": 0,
+      "accounts": [],
+      "cost": null,
+      "cost_name": null,
+      "interest": null,
+      "interest_source": null,
+      "interest_accounts": [],
+      "op": 10225020650,
+      "revenue": 13396826025,
+      "end": "2026-05-31",
+      "start": "2025-12-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 0,
+      "long": 0,
+      "total": 0,
+      "liabilities": 295861218,
+      "current_liabilities": 295861218,
+      "noncurrent_liabilities": 0,
+      "accounts": [],
+      "cost": null,
+      "cost_name": null,
+      "interest": null,
+      "interest_source": null,
+      "interest_accounts": [],
+      "op": -200510886,
+      "revenue": 3979315609,
+      "end": "2025-11-30",
+      "start": "2025-06-01",
+      "days": 183
+    },
+    "basis": "OFS",
+    "rcept_no": "20260812000759",
+    "dividends": [
+      {
+        "end": "2025-05-31",
+        "days": null,
+        "dps": 126,
+        "report": "20260812000759"
+      },
+      {
+        "end": "2025-11-30",
+        "days": 183,
+        "dps": 625,
+        "report": "20260812000759"
+      },
+      {
+        "end": "2026-05-31",
+        "days": 182,
+        "dps": 837,
+        "report": "20260812000759"
+      }
+    ],
+    "dividend_end": "2026-05-31",
+    "trailing_dps": 1462,
+    "notes": [
+      "20250813001421 보통주 표시가 없어 숫자가 있는 유일한 주당 현금배당금 줄을 보통주로 처리",
+      "20260211001059 보통주 표시가 없어 숫자가 있는 유일한 주당 현금배당금 줄을 보통주로 처리",
+      "20260812000759 보통주 표시가 없어 숫자가 있는 유일한 주당 현금배당금 줄을 보통주로 처리"
+    ],
+    "name": "NH프라임리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01391033"
+  },
+  "145270": {
+    "current": {
+      "short": 58663000000,
+      "long": 23600000000,
+      "total": 82263000000,
+      "liabilities": 109581000167,
+      "current_liabilities": 61158779487,
+      "noncurrent_liabilities": 48422220680,
+      "accounts": [
+        {
+          "name": "비유동차입금(사채 포함)의 유동성 대체 부분",
+          "amount": null,
+          "current": true
+        },
+        {
+          "name": "유동 차입금(사채 포함)",
+          "amount": 58663000000,
+          "current": true
+        },
+        {
+          "name": "비유동차입금(사채 포함)의 비유동성 부분",
+          "amount": 23600000000,
+          "current": false
+        }
+      ],
+      "cost": 4044924039,
+      "cost_name": "금융원가",
+      "interest": 2831600284,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 2831600284
+        }
+      ],
+      "op": 10622570321,
+      "revenue": 15083145031,
+      "end": "2025-12-31",
+      "start": null,
+      "days": null
+    },
+    "previous": {
+      "short": 77200000000,
+      "long": 0,
+      "total": 77200000000,
+      "liabilities": 101535014697,
+      "current_liabilities": 81468213181,
+      "noncurrent_liabilities": 20066801516,
+      "accounts": [
+        {
+          "name": "비유동차입금(사채 포함)의 유동성 대체 부분",
+          "amount": 22000000000,
+          "current": true
+        },
+        {
+          "name": "유동 차입금(사채 포함)",
+          "amount": 55200000000,
+          "current": true
+        },
+        {
+          "name": "비유동차입금(사채 포함)의 비유동성 부분",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 4069513505,
+      "cost_name": "금융원가",
+      "interest": 3289299205,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 3289299205
+        }
+      ],
+      "op": 7917272243,
+      "revenue": 12087791146,
+      "end": null,
+      "start": null,
+      "days": null
+    },
+    "basis": "CFS",
+    "rcept_no": "20260312001183",
+    "dividends": [
+      {
+        "end": "2025-12-31",
+        "days": null,
+        "dps": 50,
+        "report": "20260312001183"
+      }
+    ],
+    "dividend_end": "2025-12-31",
+    "trailing_dps": null,
+    "notes": [],
+    "name": "케이탑리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "00861076"
+  },
+  "357250": {
+    "current": {
+      "short": 0,
+      "long": 153825996609,
+      "total": 153825996609,
+      "liabilities": 204975291370,
+      "current_liabilities": 2839911906,
+      "noncurrent_liabilities": 202135379464,
+      "accounts": [
+        {
+          "name": "장기차입금",
+          "amount": 153825996609,
+          "current": false
+        }
+      ],
+      "cost": 4025969213,
+      "cost_name": "금융원가",
+      "interest": 3394742457,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 3394742457
+        }
+      ],
+      "op": 4788035396,
+      "revenue": 6929894065,
+      "end": "2026-05-31",
+      "start": "2025-12-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 0,
+      "long": 153780734797,
+      "total": 153780734797,
+      "liabilities": 204904536197,
+      "current_liabilities": 2790121474,
+      "noncurrent_liabilities": 202114414723,
+      "accounts": [
+        {
+          "name": "장기차입금",
+          "amount": 153780734797,
+          "current": false
+        }
+      ],
+      "cost": 3886208674,
+      "cost_name": "금융원가",
+      "interest": 3443824641,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 3443824641
+        }
+      ],
+      "op": 4089015610,
+      "revenue": 6921621130,
+      "end": "2025-11-30",
+      "start": "2025-06-01",
+      "days": 183
+    },
+    "basis": "OFS",
+    "rcept_no": "20260819000222",
+    "dividends": [
+      {
+        "end": "2025-05-31",
+        "days": null,
+        "dps": 137,
+        "report": "20260819000222"
+      },
+      {
+        "end": "2025-11-30",
+        "days": 183,
+        "dps": 112,
+        "report": "20260819000222"
+      },
+      {
+        "end": "2026-05-31",
+        "days": 182,
+        "dps": 120,
+        "report": "20260819000222"
+      }
+    ],
+    "dividend_end": "2026-05-31",
+    "trailing_dps": 232,
+    "notes": [
+      "20250820000145 보통주 표시가 없어 숫자가 있는 유일한 주당 현금배당금 줄을 보통주로 처리",
+      "20260213000342 보통주 표시가 없어 숫자가 있는 유일한 주당 현금배당금 줄을 보통주로 처리",
+      "20260819000222 보통주 표시가 없어 숫자가 있는 유일한 주당 현금배당금 줄을 보통주로 처리"
+    ],
+    "name": "미래에셋맵스리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01437292"
+  },
+  "481850": {
+    "current": {
+      "short": 18231020000,
+      "long": 0,
+      "total": 18231020000,
+      "liabilities": 20562986109,
+      "current_liabilities": 20562986109,
+      "noncurrent_liabilities": 0,
+      "accounts": [
+        {
+          "name": "장기 차입금(사채 포함)의 유동성 대체 부분",
+          "amount": 18231020000,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 3118903756,
+      "cost_name": "금융비용",
+      "interest": 357372441,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 357372441
+        }
+      ],
+      "op": 2287753521,
+      "revenue": 2573137811,
+      "end": "2026-08-31",
+      "start": "2026-03-01",
+      "days": 184
+    },
+    "previous": {
+      "short": 0,
+      "long": 13786020000,
+      "total": 13786020000,
+      "liabilities": 18509089095,
+      "current_liabilities": 4723069095,
+      "noncurrent_liabilities": 13786020000,
+      "accounts": [
+        {
+          "name": "장기 차입금(사채 포함)의 유동성 대체 부분",
+          "amount": 0,
+          "current": true
+        },
+        {
+          "name": "장기차입금",
+          "amount": 13786020000,
+          "current": false
+        }
+      ],
+      "cost": 4476864238,
+      "cost_name": "금융비용",
+      "interest": 236810504,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 236810504
+        }
+      ],
+      "op": 1437203692,
+      "revenue": 2254978556,
+      "end": "2026-02-28",
+      "start": "2025-09-01",
+      "days": 181
+    },
+    "basis": "CFS",
+    "rcept_no": "20261118000327",
+    "dividends": [
+      {
+        "end": "2025-02-28",
+        "days": null,
+        "dps": 127,
+        "report": "20260513000783"
+      },
+      {
+        "end": "2025-08-31",
+        "days": 184,
+        "dps": 127,
+        "report": "20261118000327"
+      },
+      {
+        "end": "2026-02-28",
+        "days": 181,
+        "dps": 130,
+        "report": "20261118000327"
+      },
+      {
+        "end": "2026-08-31",
+        "days": 184,
+        "dps": 34,
+        "report": "20261118000327"
+      }
+    ],
+    "dividend_end": "2026-08-31",
+    "trailing_dps": 164,
+    "notes": [],
+    "name": "신한글로벌액티브리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01714997"
+  },
+  "396690": {
+    "current": {
+      "short": 212351974894,
+      "long": 0,
+      "total": 212351974894,
+      "liabilities": 239110464867,
+      "current_liabilities": 237493031306,
+      "noncurrent_liabilities": 1617433561,
+      "accounts": [
+        {
+          "name": "유동성 기타 차입금(사채 제외)",
+          "amount": 212351974894,
+          "current": true
+        },
+        {
+          "name": "장기차입금(사채 포함), 총액",
+          "amount": 0,
+          "current": false
+        }
+      ],
+      "cost": 4161299883,
+      "cost_name": "금융원가",
+      "interest": 2507157546,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 2507157546
+        }
+      ],
+      "op": 1693806545,
+      "revenue": 11842441279,
+      "end": "2026-03-31",
+      "start": "2025-10-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 117151273420,
+      "long": 79504740000,
+      "total": 196656013420,
+      "liabilities": 216684270626,
+      "current_liabilities": 125387144098,
+      "noncurrent_liabilities": 91297126528,
+      "accounts": [
+        {
+          "name": "유동성 기타 차입금(사채 제외)",
+          "amount": 117151273420,
+          "current": true
+        },
+        {
+          "name": "장기차입금(사채 포함), 총액",
+          "amount": 79504740000,
+          "current": false
+        }
+      ],
+      "cost": 3623860099,
+      "cost_name": "금융원가",
+      "interest": 2348469573,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 2348469573
+        }
+      ],
+      "op": -2512882750,
+      "revenue": 12192220640,
+      "end": "2025-09-30",
+      "start": "2025-04-01",
+      "days": 183
+    },
+    "basis": "CFS",
+    "rcept_no": "20260616000171",
+    "dividends": [
+      {
+        "end": "2025-03-31",
+        "days": null,
+        "dps": 142,
+        "report": "20260616000171"
+      },
+      {
+        "end": "2025-09-30",
+        "days": 183,
+        "dps": 135,
+        "report": "20260616000171"
+      },
+      {
+        "end": "2026-03-31",
+        "days": 182,
+        "dps": 130,
+        "report": "20260616000171"
+      }
+    ],
+    "dividend_end": "2026-03-31",
+    "trailing_dps": 265,
+    "notes": [],
+    "name": "미래에셋글로벌리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01576102"
+  },
+  "357430": {
+    "current": {
+      "short": 4500000000,
+      "long": 40391854425,
+      "total": 44891854425,
+      "liabilities": 56024318397,
+      "current_liabilities": 6103424457,
+      "noncurrent_liabilities": 49920893940,
+      "accounts": [
+        {
+          "name": "유동 차입금(사채 포함)",
+          "amount": 4500000000,
+          "current": true
+        },
+        {
+          "name": "장기차입금(사채 포함), 총액",
+          "amount": 40391854425,
+          "current": false
+        }
+      ],
+      "cost": 2281091117,
+      "cost_name": "금융비용",
+      "interest": 215364121,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 215364121
+        }
+      ],
+      "op": -2507550481,
+      "revenue": 3522928893,
+      "end": "2026-03-31",
+      "start": "2025-10-01",
+      "days": 182
+    },
+    "previous": {
+      "short": 4500000000,
+      "long": 40158690000,
+      "total": 44658690000,
+      "liabilities": 53430361897,
+      "current_liabilities": 5959349624,
+      "noncurrent_liabilities": 47471012273,
+      "accounts": [
+        {
+          "name": "유동 차입금(사채 포함)",
+          "amount": 4500000000,
+          "current": true
+        },
+        {
+          "name": "장기차입금(사채 포함), 총액",
+          "amount": 40158690000,
+          "current": false
+        }
+      ],
+      "cost": 2473928164,
+      "cost_name": "금융비용",
+      "interest": 2682846006,
+      "interest_source": "이자 지급액",
+      "interest_accounts": [
+        {
+          "name": "이자지급(영업)",
+          "account_id": "ifrs-full_InterestPaidClassifiedAsOperatingActivities",
+          "amount": 2682846006
+        }
+      ],
+      "op": 2763887761,
+      "revenue": 4128904816,
+      "end": "2025-09-30",
+      "start": "2025-04-01",
+      "days": 183
+    },
+    "basis": "CFS",
+    "rcept_no": "20260618000369",
+    "dividends": [
+      {
+        "end": "2025-03-31",
+        "days": null,
+        "dps": 61,
+        "report": "20260618000369"
+      },
+      {
+        "end": "2025-09-30",
+        "days": 183,
+        "dps": 96,
+        "report": "20260618000369"
+      },
+      {
+        "end": "2026-03-31",
+        "days": 182,
+        "dps": 46,
+        "report": "20260618000369"
+      }
+    ],
+    "dividend_end": "2026-03-31",
+    "trailing_dps": 142,
+    "notes": [],
+    "name": "마스턴프리미어리츠",
+    "fetched": "2026-11-22",
+    "corp_code": "01442966"
+  }
+}

@@ -313,7 +313,8 @@ def main():
     _save(SNAP / f"{snap['date']}.json", snap)
     _save(DATA / "latest.json", snap)
     update_logs(snap)
-    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures)):
+    from dart import update as update_dart
+    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures), ("DART", update_dart)):
         try:
             update(snap)
         except Exception as exc:

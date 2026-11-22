@@ -13,6 +13,7 @@ from collections import Counter, defaultdict
 from datetime import date, timedelta
 from pathlib import Path
 
+from dart import previous_year
 from textutil import CHANGE_REQUEST, filing_result, mask_person
 
 ROOT = Path(__file__).parent
@@ -312,12 +313,38 @@ def fiscal_days(series, end):
 
 def optional_data(name):
     path = DATA / name
-    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    content = path.read_text(encoding="utf-8") if path.exists() else ""
+    return json.loads(content) if content.strip() else {}
+
+
+def maturity_rows(stocks):
+    source = optional_data("dart.json")
+    rows = []
+    for stock in stocks:
+        row = {"code": stock["code"], "name": stock["name"]}
+        rows.append(row)
+        record = source.get(stock["code"])
+        if not record:
+            continue
+        s = record["current"]
+        total, short = s["total"], s["short"]
+        average = (record["previous"]["total"] + total) / 2
+        days, op = s["days"], s["op"]
+        interest = s.get("interest", s["cost"])
+        annual = 365 / days if days else None
+        row.update(basis="연결" if record["basis"] == "CFS" else "별도", end=s["end"],
+                   total=total / 1e8, short=short / 1e8, share=100 * short / total if total else None,
+                   rate=100 * interest * annual / average if annual and average and interest is not None else None,
+                   interest_source=s.get("interest_source", s["cost_name"]),
+                   coverage=op / interest if total and interest and op is not None else None, extra=short * 0.01 / 1e8,
+                   impact=short / (op * annual) if op and op > 0 and annual else None)
+    return rows
 
 
 def build_listed_data() -> dict:
     """상장리츠 비교판 자료. P/NAV, P/FFO, 수익률, 지수는 여기서 계산한다."""
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
+    dart = optional_data("dart.json")
     prices = optional_data("prices.json")
     fin = optional_data("financials.json")
     rows = []
@@ -348,6 +375,12 @@ def build_listed_data() -> dict:
                 return None  # 기준가가 바뀐 날을 사이에 둔 구간은 비교하지 않음
             return round((last / hist[prev[-1]] - 1) * 100, 1)
 
+        dividends = dart.get(r["code"], {})
+        dps = dividends.get("trailing_dps")
+        dividend_end = safe_date(dividends.get("dividend_end"))
+        price_break = breaks[-1] if breaks else None
+        yield_blocked = bool(price_break and dividend_end
+                             and previous_year(d(dividend_end)).isoformat() < price_break <= dividend_end)
         mktcap = r["mktcap_eok"] or 0
         nav_eok = round(r["nav_mil"] / 100) if r.get("nav_mil") else None
         ffo_eok = round(r["ffo_mil"] / 100, 1) if r.get("ffo_mil") is not None else None
@@ -361,6 +394,8 @@ def build_listed_data() -> dict:
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "has_finance": _has_finance(fin.get(str(r.get("reit_id")))),
             "homepage": safe_url(r.get("homepage")), "listed_date": safe_date(r.get("listed_date")),
+            "market_yield": dps / last * 100 if not yield_blocked and dps is not None and last and last > 0 else None,
+            "market_yield_reason": "기준가 변경" if yield_blocked else None,
             "price": last, "mktcap_eok": mktcap,
             "chg_pct": round((last / hist[dates[-2]] - 1) * 100, 2) if len(dates) >= 2 and last_d not in breaks else None,
             "price_date": last_d,
@@ -370,7 +405,7 @@ def build_listed_data() -> dict:
             "pnav": round(mktcap / nav_eok, 2) if nav_eok and nav_eok > 0 and mktcap else None,
             "pffo": round(mktcap / (ffo_eok * ppy), 1) if ffo_eok and ffo_eok > 0 and ppy and mktcap else None,
             "wale_years": r.get("wale_years") or None,
-            "price_break": breaks[-1] if breaks else None, "halted": halted,
+            "price_break": price_break, "halted": halted,
             "fiscal_end": safe_date(r.get("fiscal_end")), "fiscal_period": r.get("fiscal_period"),
             "spark": [hist[x] for x in dates[::5]] + ([last] if dates and (len(dates) - 1) % 5 else []),
         })
@@ -390,6 +425,7 @@ def build_listed_data() -> dict:
                        "mktcap_eok": sum(r["mktcap_eok"] for r in rows if r["sector"] == s)} for s in sec_names),
                      key=lambda x: -x["mktcap_eok"])
     pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]
+    yields = [r["market_yield"] for r in rows if r["market_yield"] is not None]
     dvds = [r["annual_dvd_pct"] for r in rows if r["annual_dvd_pct"]]
     r1y = [r["ret_1y"] for r in rows if r["ret_1y"] is not None]
     cfg_path = ROOT / "config.json"
@@ -403,6 +439,7 @@ def build_listed_data() -> dict:
             "up_1y": sum(1 for v in r1y if v > 0), "down_1y": sum(1 for v in r1y if v < 0),
             "pnav_median": _median(pnavs, 2), "pnav_n": len(pnavs),
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
+            "yield_median": _median(yields, 2), "yield_n": len(yields),
             "dvd_median": _median(dvds, 2), "dvd_n": len(dvds),
         },
         "index": {"dates": common, "values": idx, "excluded": sorted(skip.values())},
@@ -539,6 +576,7 @@ def build_finance_data() -> dict:
         },
         "rows": rows, "groups": [{"name": g, "n": counts[g]} for g in GROUP_ORDER if counts[g]],
         "disclosures": items,
+        "maturity": maturity_rows(snap["listed"]),
         "timelines": timelines,
         "dis_start": min((day for x in dis.values() if (day := safe_date(x.get("date")))), default=None),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),

@@ -30,6 +30,8 @@ jobs:
           python-version: "3.12"
       - name: Collect
         if: ${{ !inputs.deploy_only }}
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: python collect.py
       - name: Commit data
         if: ${{ !inputs.deploy_only }}
@@ -55,6 +57,7 @@ jobs:
         run: python build.py
       - name: Verify
         env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
           VERIFY_OFFLINE: ${{ inputs.deploy_only && '1' || '' }}
         run: python verify.py
       - uses: actions/upload-pages-artifact@v3
