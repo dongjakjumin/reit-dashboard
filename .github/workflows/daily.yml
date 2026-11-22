@@ -1,4 +1,4 @@
-# Draft: not run yet. Collects once per weekday (10:00 KST), rebuilds the page, and publishes it to GitHub Pages.
+# Collects once per weekday (10:00 KST), rebuilds the page, and publishes it to GitHub Pages.
 name: daily
 on:
   schedule:
