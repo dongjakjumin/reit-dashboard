@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>프로젝트리츠 사업성 계산기</title>
+<meta name="description" content="임대형 개발사업을 프로젝트리츠로 할 때의 총사업비, 조달 구조, 준공 후 매각과 운영 후 매각의 수익률, 규제 점검 항목을 가정값으로 계산합니다.">
+<style>
+/*__CSS__*/
+.calc{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start}
+.calc>*{min-width:0}
+@media (max-width:900px){.calc{grid-template-columns:minmax(0,1fr)}}
+.inputs{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:900px){.inputs{position:static;max-height:none}}
+fieldset{border:0;padding:0;margin:0 0 14px}
+legend{font-size:13px;font-weight:700;padding:0;margin-bottom:6px}
+.f{display:grid;grid-template-columns:1fr 92px 34px;gap:6px;align-items:center;margin:4px 0;font-size:13px}
+.f label{color:var(--ink2)}
+.f input{font:inherit;font-size:13px;text-align:right;color:var(--ink);background:var(--page);border:1px solid var(--border);border-radius:6px;padding:4px 6px;width:100%;font-variant-numeric:tabular-nums}
+.f input.bad{border-color:#d03b3b}
+.f .u{color:var(--muted);font-size:12px}
+.f .h{grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:-2px}
+.stack{display:flex;height:16px;border-radius:3px;overflow:hidden;gap:2px;margin:6px 0 4px}
+.stack i{display:block;height:100%}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-size:13px;margin:0}
+.kv dt{color:var(--ink2)} .kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+table.cmp td:first-child,table.cmp th:first-child{color:var(--ink2);font-weight:400;white-space:nowrap}
+table.sens td{text-align:center;font-variant-numeric:tabular-nums}
+table.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:700}
+.st{display:inline-block;font-size:12px;padding:0 7px;border-radius:999px;border:1px solid var(--border);white-space:nowrap}
+.st.ok{border-color:var(--s3)} .st.warn{border-color:var(--s4)} .st.no{border-color:#d03b3b;font-weight:700}
+.err{color:#d03b3b;font-size:13px;margin:0 0 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!--__NAV__-->
+
+<header>
+  <h1>프로젝트리츠 사업성 계산기</h1>
+  <p>임대형 건물을 개발해 프로젝트리츠로 보유하는 경우를 가정값으로 계산합니다. 총사업비와 조달 구조를 구하고, 임대가 안정된 시점에 매각하는 방안(A안)과 담보대출로 바꿔 운영한 뒤 매각하는 방안(B안)의 수익률을 비교합니다. 계산은 이 화면 안에서만 하고 입력값을 어디로도 보내지 않습니다.</p>
+  <div class="stamp">기본값은 실제 사업장이 아닌 가상의 오피스 개발 예시입니다. 간이 계산이므로 실제 검토에는 쓸 수 없습니다.</div>
+</header>
+
+<section>
+<div class="calc">
+  <form class="card inputs" id="form" autocomplete="off" onsubmit="return false">
+    <p class="err" id="err" hidden></p>
+    <div id="fields"></div>
+    <div class="row" style="margin:6px 0 0">
+      <button class="btn" type="button" id="reset">기본값으로</button>
+      <button class="btn" type="button" id="share">가정 주소 복사</button>
+    </div>
+  </form>
+
+  <div>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card" style="margin-top:12px">
+      <strong style="font-size:14px">총사업비와 조달</strong>
+      <div class="stack" id="cost-bar"></div><div class="legend" id="cost-legend"></div>
+      <div class="stack" id="fund-bar"></div><div class="legend" id="fund-legend"></div>
+      <p class="note" id="cost-note"></p>
+    </div>
+
+    <h2 style="margin-top:28px">두 가지 회수 방안</h2>
+    <p class="sub">A안은 임대가 안정된 시점에 매각합니다. B안은 같은 시점에 담보대출로 바꿔 개발 차입을 갚고, 정한 기간만큼 임대로 운영한 뒤 매각합니다.</p>
+    <div class="tw"><table class="cmp" id="cmp"></table></div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">B안 자기자본 현금흐름</strong><span class="sp"></span><div class="legend" style="margin:0"><span><i class="dot" style="background:var(--s1)"></i>받는 돈</span><span><i class="dot" style="background:var(--s0)"></i>넣는 돈</span></div></div>
+      <div class="chart" id="cf-chart"></div>
+    </div>
+    <div class="tw" style="margin-top:12px"><table id="years"></table></div>
+
+    <h2 style="margin-top:28px">가정이 나빠지면</h2>
+    <p class="sub" id="down-sub"></p>
+    <div class="tw"><table class="cmp" id="down"></table></div>
+
+    <h2 style="margin-top:28px">민감도</h2>
+    <p class="sub">Cap Rate와 임대료가 바뀔 때의 자기자본 IRR입니다. 굵은 테두리가 현재 가정입니다.</p>
+    <div class="row"><div class="seg" id="sens-seg" role="group" aria-label="방안"><button data-v="b" aria-pressed="true">B안</button><button data-v="a" aria-pressed="false">A안</button></div></div>
+    <div class="tw"><table class="sens" id="sens"></table></div>
+
+    <h2 style="margin-top:28px">프로젝트리츠 점검표와 일정</h2>
+    <p class="sub">입력한 가정을 프로젝트리츠 규제의 주요 숫자와 맞춰 본 것입니다. 부동산투자회사법과 시행령을 2026년 11월에 정리한 내용이며, 실제 적용 전에는 법령 원문과 국토교통부 지침을 확인해야 합니다.</p>
+    <div class="tw"><table id="reg"></table></div>
+    <div class="tw" style="margin-top:12px"><table id="timeline"></table></div>
+    <div class="row" style="margin-top:12px"><span class="sp"></span><button class="btn" id="csv">월별 현금흐름 엑셀(CSV) 내려받기</button></div>
+  </div>
+</div>
+</section>
+
+<section aria-labelledby="h-read">
+  <h2 id="h-read">계산 방법과 한계</h2>
+  <div class="card read">
+    <ul style="margin:0;padding-left:18px">
+      <li><b>사업비 집행</b>: 토지비와 취득 부대비용은 첫 달에, 기타 사업비는 준공까지 매달 같은 금액으로, 공사비는 공사기간에 매달 같은 금액으로 나간다고 가정합니다.</li>
+      <li><b>개발 단계 조달</b>: 자기자본을 먼저 쓰고 나머지를 차입합니다. 이자는 차입 원금에 더하고, 준공까지의 이자를 금융비로 총사업비에 넣습니다. 대출 수수료는 금리에 포함된 것으로 봅니다.</li>
+      <li><b>임대 안정화</b>: 준공 뒤 입주율이 매달 같은 폭으로 올라 안정화 기간 끝에 목표 입주율에 이릅니다. 이 기간의 이자와 리츠 운영비용이 임대 순수익보다 많으면 차입이 늘어납니다.</li>
+      <li><b>가치와 매각가</b>: 다음 12개월의 순영업수익(NOI)을 Cap Rate로 나눕니다. A안과 B안의 매각, 담보대출 한도 산정에 같은 Cap Rate를 씁니다.</li>
+      <li><b>B안 담보대출</b>: 안정화 시점 가치에 LTV를 곱한 금액을 빌리고, 이자만 내다가 매각할 때 한꺼번에 갚습니다. DSCR은 NOI ÷ 연 이자입니다.</li>
+      <li><b>IRR과 회수 배수</b>: 자기자본을 넣고 받는 월별 현금흐름으로 구한 내부수익률(연율)과, 받은 돈 합계 ÷ 넣은 돈 합계입니다.</li>
+      <li><b>넣지 않은 것</b>: 법인세와 배당 소득공제, 부가가치세, 분양 수입, 보증금, 대출 중도상환과 분할상환, 물가에 따른 공사비 증액, 주주별 우선순위 배분은 계산하지 않습니다.</li>
+      <li><b>검산</b>: 계산 엔진은 손으로 답을 아는 경우와, 같은 규칙을 파이썬으로 따로 구현한 결과에 무작위 가정 200가지를 대조해 확인합니다. 확인한 것은 계산의 일치이고, 가정이 맞는지는 별개입니다.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>이 화면은 개인이 만든 간이 계산 도구입니다. 기본값은 가상의 예시이고 특정 사업장이나 회사의 자료가 아닙니다. 계산 결과는 투자 권유나 의사결정의 근거로 쓸 수 없으며, 이를 이용해 생긴 결과에 대해 작성자는 책임지지 않습니다.</p>
+  <p id="by"></p>
+</footer>
+</div>
+<div id="tip" role="status"></div>
+
+<script>
+/*__ENGINE__*/
+</script>
+<script>
+const D = /*__DATA__*/null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n0 = v => Math.round(v).toLocaleString('ko-KR');
+const eok = v => { const neg = v < 0; v = Math.round(Math.abs(v)); let s; if (v >= 10000) { const j = Math.floor(v / 10000), r = v % 10000; s = j + '조' + (r ? ' ' + r.toLocaleString('ko-KR') + '억' : ''); } else s = v.toLocaleString('ko-KR') + '억'; return (neg ? '−' : '') + s; };
+const pct = (v, d = 1) => v == null ? '계산 불가' : (v * 100).toFixed(d) + '%';
+const mult = v => v == null ? '–' : v.toFixed(2) + '배';
+$('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' (' + D.contact + ')' : ''}` : '';
+
+const FIELDS = [
+  ['사업 규모와 비용', [
+    ['land', '토지비', '억원', 10, 0, 1e6],
+    ['acq_pct', '취득 부대비용', '%', 0.1, 0, 20, '토지비 대비. 취득세와 수수료 등'],
+    ['gfa_py', '연면적', '평', 100, 1, 1e7],
+    ['cost_per_py', '평당 공사비', '만원', 10, 0, 1e5],
+    ['soft_pct', '기타 사업비', '%', 1, 0, 100, '공사비 대비. 설계, 감리, 인허가, 예비비 등'],
+  ]],
+  ['일정', [
+    ['start', '사업 시작', '', 0, 0, 0],
+    ['pre_m', '착공 전 기간', '개월', 1, 0, 120],
+    ['con_m', '공사기간', '개월', 1, 1, 120],
+    ['lease_m', '임대 안정화', '개월', 1, 0, 60, '준공부터 목표 입주율까지'],
+    ['hold_y', '운영 보유 기간', '년', 1, 1, 30, 'B안에서 안정화 뒤 운영하는 기간'],
+  ]],
+  ['개발 단계 조달', [
+    ['equity_pct', '자기자본 비율', '%', 1, 1, 100, '총사업비 대비'],
+    ['dev_rate', '개발 차입 금리', '%', 0.1, 0, 30, '연, 수수료 포함'],
+  ]],
+  ['임대', [
+    ['rent', '월 임대료', '만원', 0.5, 0, 1000, '연면적 평당, 관리비 포함 실질 임대료'],
+    ['vacancy', '공실률', '%', 1, 0, 99],
+    ['opex', '운영비용률', '%', 1, 0, 99, '임대수익 대비'],
+    ['growth', '임대료 상승률', '%', 0.5, -10, 20, '연'],
+    ['reit_cost', '리츠 운영비용', '%', 0.05, 0, 5, '연, 총사업비 대비. 자산관리, 사무수탁 보수 등'],
+  ]],
+  ['운영 단계 대출과 매각', [
+    ['perm_ltv', '담보대출 LTV', '%', 1, 0, 90, '안정화 시점 가치 대비'],
+    ['perm_rate', '담보대출 금리', '%', 0.1, 0, 30, '연'],
+    ['exit_cap', 'Cap Rate', '%', 0.1, 0.5, 30],
+    ['sale_cost', '매각비용', '%', 0.1, 0, 20, '매각가 대비'],
+  ]],
+];
+const KEYS = FIELDS.flatMap(g => g[1].map(f => f[0])).filter(k => k !== 'start');
+const now = new Date(), thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+$('#fields').innerHTML = FIELDS.map(([title, fs]) => `<fieldset><legend>${title}</legend>` + fs.map(([k, lab, unit, step, min, max, hint]) =>
+  k === 'start' ? `<div class="f"><label for="i-start">${lab}</label><input id="i-start" type="month" style="grid-column:2/4;text-align:left"></div>`
+  : `<div class="f"><label for="i-${k}">${lab}</label><input id="i-${k}" type="number" inputmode="decimal" step="${step}" min="${min}" max="${max}"><span class="u">${unit}</span>${hint ? `<span class="h">${hint}</span>` : ''}</div>`).join('') + '</fieldset>').join('');
+
+function loadState(){
+  const q = new URLSearchParams(location.search), p = Object.assign({}, D.base);
+  for (const k of KEYS) if (q.has(k) && q.get(k) !== '' && isFinite(+q.get(k))) p[k] = +q.get(k);
+  const s = q.get('start'); return {p, start: /^\d{4}-\d{2}$/.test(s || '') ? s : thisMonth};
+}
+function setInputs(p, start){ for (const k of KEYS) $('#i-' + k).value = p[k]; $('#i-start').value = start; }
+function readInputs(){
+  const p = {}, bad = [];
+  for (const [, fs] of FIELDS) for (const [k, lab, , , min, max] of fs) {
+    if (k === 'start') continue;
+    const el = $('#i-' + k), v = el.value === '' ? NaN : +el.value, ok = isFinite(v) && v >= min && v <= max;
+    el.classList.toggle('bad', !ok); if (!ok) bad.push(`${lab}: ${min}에서 ${max} 사이 숫자`); p[k] = v;
+  }
+  for (const k of ['pre_m', 'con_m', 'lease_m', 'hold_y']) if (isFinite(p[k]) && p[k] !== Math.round(p[k])) { bad.push('기간은 정수로 넣어야 합니다'); $('#i-' + k).classList.add('bad'); }
+  const start = /^\d{4}-\d{2}$/.test($('#i-start').value) ? $('#i-start').value : thisMonth;
+  return {p, start, bad};
+}
+const ym = (start, m) => { const y0 = +start.slice(0, 4), m0 = +start.slice(5, 7) - 1 + (m - 1); return (y0 + Math.floor(m0 / 12)) + '.' + String(m0 % 12 + 1).padStart(2, '0'); };
+const downside = p => Object.assign({}, p, { rent: p.rent * (1 + D.downside.rent_pct / 100), cost_per_py: p.cost_per_py * (1 + D.downside.cost_pct / 100),
+  dev_rate: p.dev_rate + D.downside.dev_rate_pp, perm_rate: p.perm_rate + D.downside.perm_rate_pp, exit_cap: p.exit_cap + D.downside.exit_cap_pp,
+  con_m: p.con_m + D.downside.con_m_add, lease_m: p.lease_m + D.downside.lease_m_add });
+
+const tip = $('#tip');
+function showTip(html, e){ tip.innerHTML = html; tip.style.opacity = 1; moveTip(e); }
+function moveTip(e){ const w = tip.offsetWidth, h = tip.offsetHeight; let x = e.clientX + 14, y = e.clientY + 14; if (x + w > innerWidth - 8) x = e.clientX - w - 14; if (y + h > innerHeight - 8) y = e.clientY - h - 14; tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px'; }
+function hideTip(){ tip.style.opacity = 0; }
+
+let sensMode = 'b', last = null;
+function stack(elBar, elLegend, parts){
+  const tot = parts.reduce((s, x) => s + Math.max(0, x.v), 0) || 1;
+  elBar.innerHTML = parts.filter(x => x.v > 0).map(x => `<i style="background:${x.c};flex:${x.v}" title="${esc(x.n)} ${eok(x.v)}원"></i>`).join('');
+  elLegend.innerHTML = parts.map(x => `<span><i class="dot" style="background:${x.c}"></i>${esc(x.n)} <b style="color:var(--ink);font-weight:600">${eok(x.v)}</b> (${(x.v / tot * 100).toFixed(0)}%)</span>`).join('');
+}
+function drawCf(r){
+  const el = $('#cf-chart'), items = [{n: '자기자본 투입', s: '투입', v: -r.equity}, {n: r.b.refi >= 0 ? '담보대출 전환 때 회수' : '담보대출 전환 때 추가 출자', s: '전환', v: r.b.refi}, ...r.b.years.map(x => ({n: x.y + '년차', s: x.y + '년차', v: x.cf})), {n: '매각', s: '매각', v: r.b.net}];
+  const W = Math.max(320, el.clientWidth), H = 240, mL = 46, mR = 6, mT = 18, mB = 30, iw = W - mL - mR, ih = H - mT - mB, n = items.length;
+  const hi = Math.max(0, ...items.map(x => x.v)), lo = Math.min(0, ...items.map(x => x.v)), span = (hi - lo) || 1;
+  const Y = v => mT + (hi - v) / span * ih, band = iw / n, bw = Math.max(4, Math.min(40, band * .68)), showLab = n <= 12;
+  let g = '';
+  const step = [50, 100, 200, 500, 1000, 2000, 5000, 10000].find(s => span / s <= 5) || 20000;
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) g += `<line x1="${mL}" x2="${W - mR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--${v === 0 ? 'axis' : 'grid'})" stroke-width="1"/><text x="${mL - 6}" y="${Y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
+  items.forEach((it, i) => {
+    const x = mL + band * i + (band - bw) / 2, y0 = Y(0), y1 = Y(it.v), top = Math.min(y0, y1), h = Math.max(1, Math.abs(y1 - y0)), r = Math.min(4, h, bw / 2);
+    const d = it.v >= 0 ? `M${x},${y0}V${top + r}Q${x},${top} ${x + r},${top}H${x + bw - r}Q${x + bw},${top} ${x + bw},${top + r}V${y0}Z` : `M${x},${y0}V${top + h - r}Q${x},${top + h} ${x + r},${top + h}H${x + bw - r}Q${x + bw},${top + h} ${x + bw},${top + h - r}V${y0}Z`;
+    g += `<path d="${d}" fill="var(--${it.v >= 0 ? 's1' : 's0'})"/>`;
+    if (showLab) g += `<text class="tot" x="${x + bw / 2}" y="${(it.v >= 0 ? top : y0) - 5}" text-anchor="middle">${n0(it.v)}</text>`;
+    if (showLab || i === 0 || i === n - 1 || (i - 1) % 5 === 0) g += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${esc(it.s)}</text>`;
+    g += `<rect data-i="${i}" x="${mL + band * i}" y="${mT}" width="${band}" height="${ih}" fill="transparent"/>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="B안 자기자본 현금흐름, 단위 억원">${g}</svg>`;
+  el.querySelectorAll('rect[data-i]').forEach(x => { const it = items[+x.dataset.i];
+    x.addEventListener('mouseenter', e => showTip(`<b>${esc(it.n)}</b><div class="tr"><span>${it.v >= 0 ? '받는 돈' : '넣는 돈'}</span><span>${eok(Math.abs(it.v))}원</span></div>`, e));
+    x.addEventListener('mousemove', moveTip); x.addEventListener('mouseleave', hideTip); });
+}
+function render(){
+  const {p, start, bad} = readInputs();
+  $('#err').hidden = !bad.length; $('#err').textContent = bad.length ? '입력값을 확인해 주세요. ' + bad.slice(0, 3).join(', ') : '';
+  if (bad.length) return;
+  const r = reitCalc(p), dn = reitCalc(downside(p)); last = {p, start, r};
+  const q = new URLSearchParams(); for (const k of KEYS) if (p[k] !== D.base[k]) q.set(k, p[k]); if (start !== thisMonth) q.set('start', start);
+  history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : ''));
+
+  const spread = (r.yield_on_cost - p.exit_cap / 100) * 100;
+  $('#tiles').innerHTML = [
+    {lab: '총사업비', val: eok(r.tpc), unit: '원', det: `자기자본 <b>${eok(r.equity)}원</b>, 준공 시 차입 <b>${eok(r.dev_debt)}원</b>(LTC ${pct(r.ltc, 0)})`},
+    {lab: '안정화 가치', val: eok(r.value), unit: '원', det: `NOI <b>${eok(r.noi1)}원</b>. 총사업비 대비 수익률 <b>${pct(r.yield_on_cost)}</b>, Cap Rate보다 ${spread >= 0 ? '' : '−'}${Math.abs(spread).toFixed(1)}%p ${spread >= 0 ? '높음' : '낮음'}`},
+    {lab: 'A안: 안정화 시점 매각', val: r.a.irr == null ? '–' : (r.a.irr * 100).toFixed(1), unit: r.a.irr == null ? '' : '%', det: `자기자본 IRR. 회수 배수 <b>${mult(r.a.multiple)}</b>, 누적 이익 <b>${eok(r.a.profit)}원</b>`},
+    {lab: `B안: ${p.hold_y}년 운영 뒤 매각`, val: r.b.irr == null ? '–' : (r.b.irr * 100).toFixed(1), unit: r.b.irr == null ? '' : '%', det: `자기자본 IRR. 회수 배수 <b>${mult(r.b.multiple)}</b>, 최저 DSCR <b>${r.b.dscr_min == null ? '–' : r.b.dscr_min.toFixed(2) + '배'}</b>`},
+  ].map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
+
+  stack($('#cost-bar'), $('#cost-legend'), [{n: '토지비', v: r.land, c: 'var(--s1)'}, {n: '취득 부대비용', v: r.acq, c: 'var(--s2)'}, {n: '공사비', v: r.hard, c: 'var(--s3)'}, {n: '기타 사업비', v: r.soft, c: 'var(--s4)'}, {n: '금융비', v: r.fin, c: 'var(--s5)'}]);
+  stack($('#fund-bar'), $('#fund-legend'), [{n: '자기자본', v: r.equity, c: 'var(--s1)'}, {n: '차입(준공 시 잔액)', v: r.dev_debt, c: 'var(--s2)'}]);
+  $('#cost-note').textContent = `연면적 ${n0(p.gfa_py)}평(약 ${n0(p.gfa_py * 3.3058)}㎡), 평당 총사업비 ${n0(r.tpc / p.gfa_py * 1e4)}만원. 개발이익률(안정화 가치 ÷ 총사업비 − 1)은 ${pct(r.dev_margin)}입니다. 임대 안정화 기간에 차입이 ${eok(r.debt_at_stab - r.dev_debt)}원 ${r.debt_at_stab >= r.dev_debt ? '늘어' : '줄어'} 안정화 시점 잔액은 ${eok(r.debt_at_stab)}원입니다.`;
+
+  const row = (lab, a, b) => `<tr><td>${lab}</td><td class="num">${a}</td><td class="num">${b}</td></tr>`;
+  $('#cmp').innerHTML = `<thead><tr><th></th><th class="num">A안: 안정화 시점 매각</th><th class="num">B안: ${p.hold_y}년 운영 뒤 매각</th></tr></thead><tbody>` +
+    row('매각 시점', ym(start, r.Ts), ym(start, r.Tend)) + row('매각가', eok(r.a.sale) + '원', eok(r.b.sale) + '원') +
+    row('매각 때 갚는 차입', eok(r.debt_at_stab) + '원', eok(r.b.loan) + '원') + row('매각 때 자기자본 회수', eok(r.a.net) + '원', eok(r.b.net) + '원') +
+    row('담보대출 전환 때 회수(추가 출자)', '–', eok(r.b.refi) + '원') + row('운영 기간 현금흐름 합계', '–', eok(r.b.years.reduce((s, x) => s + x.cf, 0)) + '원') +
+    row('누적 이익', eok(r.a.profit) + '원', eok(r.b.profit) + '원') + row('자기자본 IRR', pct(r.a.irr, 2), pct(r.b.irr, 2)) + row('회수 배수', mult(r.a.multiple), mult(r.b.multiple)) + '</tbody>';
+
+  drawCf(r);
+  $('#years').innerHTML = `<thead><tr><th>운영 연차</th><th class="num">NOI</th><th class="num">대출 이자</th><th class="num">리츠 운영비용</th><th class="num">자기자본 현금흐름</th><th class="num">자기자본 대비</th><th class="num">DSCR</th></tr></thead><tbody>` +
+    r.b.years.map(x => `<tr><td>${x.y}년차 (${ym(start, r.Ts + 12 * x.y)})</td><td class="num">${eok(x.noi)}</td><td class="num">${eok(x.interest)}</td><td class="num">${eok(x.reit)}</td><td class="num">${eok(x.cf)}</td><td class="num">${pct(x.yield_on_equity)}</td><td class="num">${x.dscr == null ? '–' : x.dscr.toFixed(2) + '배'}</td></tr>`).join('') + '</tbody>';
+
+  const d = D.downside;
+  $('#down-sub').textContent = `임대료 ${d.rent_pct}%, 공사비 +${d.cost_pct}%, 개발 차입 금리 +${d.dev_rate_pp}%p, 담보대출 금리 +${d.perm_rate_pp}%p, Cap Rate +${d.exit_cap_pp}%p, 공사기간 +${d.con_m_add}개월, 임대 안정화 +${d.lease_m_add}개월을 한꺼번에 적용한 경우입니다.`;
+  const drow = (lab, f) => `<tr><td>${lab}</td><td class="num">${f(r)}</td><td class="num">${f(dn)}</td></tr>`;
+  $('#down').innerHTML = `<thead><tr><th></th><th class="num">현재 가정</th><th class="num">나빠진 가정</th></tr></thead><tbody>` +
+    drow('총사업비', x => eok(x.tpc) + '원') + drow('안정화 가치', x => eok(x.value) + '원') + drow('개발이익률', x => pct(x.dev_margin)) +
+    drow('A안 자기자본 IRR', x => pct(x.a.irr, 2)) + drow('A안 누적 이익', x => eok(x.a.profit) + '원') +
+    drow('B안 자기자본 IRR', x => pct(x.b.irr, 2)) + drow('B안 최저 DSCR', x => x.b.dscr_min == null ? '–' : x.b.dscr_min.toFixed(2) + '배') +
+    drow('B안 전환 때 회수(추가 출자)', x => eok(x.b.refi) + '원') + '</tbody>';
+
+  drawSens(p);
+
+  const st = (c, t) => `<span class="st ${c}">${t}</span>`;
+  const lev = v => v == null ? st('', '해당 없음') : v <= 2 ? st('ok', '2배 이내') : v <= 10 ? st('warn', '주주총회 특별결의 필요') : st('no', '한도 초과');
+  const pubDue = r.Tc + 60, licDue = r.Tc + 18;
+  $('#reg').innerHTML = `<thead><tr><th>항목</th><th>기준</th><th>이 가정에서는</th><th>판정</th></tr></thead><tbody>` + [
+    ['설립신고 자본금', '50억원 이상', `자기자본 ${eok(r.equity)}원`, r.equity >= 50 ? st('ok', '충족') : st('no', '부족')],
+    ['개발 단계 차입', '자기자본의 2배, 주주총회 특별결의 시 10배까지', `준공 시 차입 ÷ 자기자본 ${r.debt_to_equity == null ? '–' : r.debt_to_equity.toFixed(2) + '배'}`, lev(r.debt_to_equity)],
+    ['운영 단계 차입', '같은 한도', `담보대출 ÷ 자기자본 ${r.b.loan_to_equity == null ? '–' : r.b.loan_to_equity.toFixed(2) + '배'}`, lev(r.b.loan_to_equity)],
+    ['영업인가 또는 등록', '준공 후 18개월 안(6개월 연장 가능)', `준공 ${ym(start, r.Tc)}, 기한 ${ym(start, licDue)}`, st('', '일정 확인')],
+    ['공모', '준공 후 5년 안에 주식의 30% 이상', `기한 ${ym(start, pubDue)}, B안 매각 ${ym(start, r.Tend)}`, r.Tend > pubDue ? st('warn', '보유 중 공모 기한 도래') : st('ok', '기한 전 매각')],
+    ['주식 분산', '개발 중에는 1인 50% 초과 가능, 준공 뒤에는 공모 후 1인 50% 한도', '주주 구성은 이 계산에 없음', st('', '안내')],
+    ['자산관리회사 지분', '프로젝트리츠 주식의 30% 초과 보유 불가', '주주 구성은 이 계산에 없음', st('', '안내')],
+    ['배당', '운영 단계에서는 이익배당한도의 90% 이상', '현금흐름을 전부 배당한다고 가정', st('', '안내')],
+  ].map(x => `<tr><td class="nw">${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td class="nw">${x[3]}</td></tr>`).join('') + '</tbody>';
+
+  $('#timeline').innerHTML = `<thead><tr><th>시점</th><th>일정</th><th class="num">사업 시작 후</th></tr></thead><tbody>` + [
+    [1, '사업 시작, 토지 취득'], [p.pre_m + 1, '착공'], [r.Tc, '준공'], [r.Ts, '임대 안정화, A안 매각, B안 담보대출 전환'], [licDue, '영업인가 또는 등록 기한'], [pubDue, '공모 기한'], [r.Tend, 'B안 매각'],
+  ].sort((a, b) => a[0] - b[0]).map(x => `<tr><td class="nw">${ym(start, x[0])}</td><td>${x[1]}</td><td class="num">${x[0]}개월째</td></tr>`).join('') + '</tbody>';
+}
+function drawSens(p){
+  const caps = [-0.5, -0.25, 0, 0.25, 0.5], rents = [-10, -5, 0, 5, 10];
+  const val = (dc, dr) => { const x = reitCalc(Object.assign({}, p, {exit_cap: p.exit_cap + dc, rent: p.rent * (1 + dr / 100)})); return sensMode === 'a' ? x.a.irr : x.b.irr; };
+  const grid = caps.map(dc => rents.map(dr => p.exit_cap + dc > 0 ? val(dc, dr) : null)), flat = grid.flat().filter(v => v != null);
+  const lo = Math.min(...flat), hi = Math.max(...flat);
+  $('#sens').innerHTML = `<thead><tr><th>Cap Rate ＼ 임대료</th>${rents.map(dr => `<th class="num" style="text-align:center">${dr > 0 ? '+' : ''}${dr}%<br><span style="font-weight:400">${(p.rent * (1 + dr / 100)).toFixed(1)}만원</span></th>`).join('')}</tr></thead><tbody>` +
+    caps.map((dc, i) => `<tr><td class="nw">${(p.exit_cap + dc).toFixed(2)}%</td>` + rents.map((dr, j) => { const v = grid[i][j], a = v == null || hi === lo ? 0 : 6 + (v - lo) / (hi - lo) * 34;
+      return `<td class="${dc === 0 && dr === 0 ? 'base' : ''}" style="background:color-mix(in srgb, var(--s1) ${a.toFixed(0)}%, transparent)">${v == null ? '계산 불가' : (v * 100).toFixed(1) + '%'}</td>`; }).join('') + '</tr>').join('') + '</tbody>';
+}
+
+const init = loadState(); setInputs(init.p, init.start); render();
+$('#form').addEventListener('input', render);
+$('#reset').onclick = () => { setInputs(D.base, thisMonth); render(); };
+$('#share').onclick = async () => { try { await navigator.clipboard.writeText(location.href); $('#share').textContent = '복사했습니다'; } catch (e) { prompt('아래 주소를 복사하세요', location.href); } setTimeout(() => $('#share').textContent = '가정 주소 복사', 1500); };
+$('#sens-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#sens-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); sensMode = b.dataset.v; if (last) drawSens(last.p); });
+$('#csv').onclick = () => { if (!last) return; const {r, start} = last, rows = [];
+  for (let m = 1; m <= r.Tend; m++) rows.push([m, ym(start, m), m <= r.Tc ? (r.eq_draw[m] || 0).toFixed(4) : 0, m <= r.Tc ? (r.debt_bal[m] || 0).toFixed(4) : '', m < r.cf_a.length ? (r.cf_a[m] || 0).toFixed(4) : '', (r.cf_b[m] || 0).toFixed(4)]);
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const text = '﻿' + [['개월째', '연월', '자기자본 투입(억원)', '개발 차입 잔액(억원)', 'A안 자기자본 현금흐름(억원)', 'B안 자기자본 현금흐름(억원)'], ...rows].map(x => x.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv;charset=utf-8'})); a.download = '프로젝트리츠_사업성_월별현금흐름.csv'; document.body.appendChild(a); a.click(); a.remove(); };
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (last) drawCf(last.r); }, 120); });
+</script>
+</body>
+</html>

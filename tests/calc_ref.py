@@ -1,0 +1,148 @@
+"""사업성 계산의 파이썬 참조 구현.
+
+calc_engine.js와 같은 계산 규칙을 따로 구현한 것이다. 화면이 쓰는 자바스크립트 엔진의 결과를
+이 구현의 결과와 대조해(calc_check.py) 계산 오류를 찾는다. 코드는 서로 베끼지 않고 규칙만 공유한다.
+
+규칙(금액 억원, 기간 개월)
+1. 공사비 = 연면적(평) × 평당 공사비(만원). 기타 사업비 = 공사비 × 비율. 취득 부대비용 = 토지비 × 비율.
+2. 토지비와 부대비용은 첫 달, 기타 사업비는 준공까지 매달 균등, 공사비는 공사기간에 매달 균등하게 나간다.
+3. 매달 필요한 돈(사업비 + 차입 이자)은 자기자본에서 먼저 쓰고, 다 쓰면 차입한다. 이자는 원금에 더한다.
+4. 총사업비 = 사업비 합계 + 준공까지의 이자. 자기자본 = 총사업비 × 자기자본 비율(반복 계산으로 맞춤).
+5. 임대 안정화 기간에는 입주율이 매달 같은 폭으로 오른다. (이자 + 리츠 운영비용 - 임대 순수익)만큼 차입이 변한다.
+6. 안정화 가치 = 안정화 첫해 NOI ÷ Cap Rate.
+7. A안: 안정화 시점에 매각. 회수 = 매각가 × (1 - 매각비용) - 차입 잔액.
+8. B안: 안정화 시점에 가치 × LTV만큼 담보대출을 받아 개발 차입을 갚고, 해마다 NOI - 이자 - 리츠 운영비용을 받는다.
+   보유 기간 끝에 다음 해 NOI ÷ Cap Rate로 매각하고 대출을 갚는다.
+9. IRR은 월별 자기자본 현금흐름의 월 내부수익률을 연율로 바꾼 값이다.
+10. 회수 배수 = 받은 돈 합계 ÷ 넣은 돈 합계. 같은 달에 넣고 받은 돈도 상계하지 않는다.
+"""
+from __future__ import annotations
+
+
+def month_irr(flows: dict[int, float]) -> float | None:
+    if not any(v < 0 for v in flows.values()) or not any(v > 0 for v in flows.values()):
+        return None
+
+    def f(r: float) -> float:
+        return sum(v / (1.0 + r) ** t for t, v in flows.items() if v)
+
+    a, b = -0.9, 1.0
+    fa, fb = f(a), f(b)
+    if fa * fb > 0:
+        return None
+    for _ in range(200):
+        c = (a + b) / 2.0
+        fc = f(c)
+        if fa * fc <= 0:
+            b, fb = c, fc
+        else:
+            a, fa = c, fc
+    return (a + b) / 2.0
+
+
+def yearly(r: float | None) -> float | None:
+    return None if r is None else (1.0 + r) ** 12 - 1.0
+
+
+def moic(paid_in: float, events: list[float]) -> float | None:
+    """회수 배수. 자기자본 투입액과 그 뒤의 개별 현금흐름(추가 출자는 음수)을 상계 없이 더한다."""
+    out = paid_in + sum(-v for v in events if v < 0)
+    back = sum(v for v in events if v > 0)
+    return back / out if out > 0 else None
+
+
+def develop(p: dict, equity: float) -> dict:
+    """개발 단계를 한 번 돌린다. 준공 시 차입 잔액, 이자 합계, 월별 자기자본 투입을 돌려준다."""
+    hard = p["gfa_py"] * p["cost_per_py"] / 10000.0
+    soft = hard * p["soft_pct"] / 100.0
+    extra = p["land"] * p["acq_pct"] / 100.0
+    done = p["pre_m"] + p["con_m"]
+    rate = p["dev_rate"] / 1200.0
+    loan = used = interest_sum = 0.0
+    draws = {}
+    for m in range(1, done + 1):
+        spend = soft / done
+        if m == 1:
+            spend += p["land"] + extra
+        if m > p["pre_m"]:
+            spend += hard / p["con_m"]
+        interest = loan * rate
+        interest_sum += interest
+        need = spend + interest
+        own = min(need, max(0.0, equity - used))
+        used += own
+        draws[m] = own
+        loan += need - own
+    base = p["land"] + extra + hard + soft
+    return {"loan": loan, "interest": interest_sum, "draws": draws, "total": base + interest_sum,
+            "hard": hard, "soft": soft, "extra": extra, "base": base, "done": done}
+
+
+def calc(p: dict) -> dict:
+    share = p["equity_pct"] / 100.0
+    first = develop(p, 0.0)
+    equity = first["base"] * share
+    dev = develop(p, equity)
+    for _ in range(200):
+        target = dev["total"] * share
+        close = abs(target - equity) < 1e-11
+        equity = target
+        dev = develop(p, equity)
+        if close:
+            break
+    total, done = dev["total"], dev["done"]
+    stab = done + p["lease_m"]
+
+    full_month = p["gfa_py"] * p["rent"] / 10000.0 * (1 - p["vacancy"] / 100.0) * (1 - p["opex"] / 100.0)
+    reit_month = total * p["reit_cost"] / 1200.0
+    loan = dev["loan"]
+    lease_int = lease_noi = 0.0
+    for k in range(1, p["lease_m"] + 1):
+        i = loan * p["dev_rate"] / 1200.0
+        n = full_month * k / p["lease_m"]
+        loan = loan + i + reit_month - n
+        lease_int += i
+        lease_noi += n
+
+    noi1 = full_month * 12.0
+    cap = p["exit_cap"] / 100.0
+    value = noi1 / cap
+    cost_rate = p["sale_cost"] / 100.0
+
+    flow_a = {m: -v for m, v in dev["draws"].items()}
+    net_a = value * (1 - cost_rate) - loan
+    flow_a[stab] = flow_a.get(stab, 0.0) + net_a
+
+    perm = value * p["perm_ltv"] / 100.0
+    flow_b = {m: -v for m, v in dev["draws"].items()}
+    flow_b[stab] = flow_b.get(stab, 0.0) + (perm - loan)
+    yearly_int = perm * p["perm_rate"] / 100.0
+    yearly_reit = total * p["reit_cost"] / 100.0
+    rows = []
+    for y in range(1, p["hold_y"] + 1):
+        noi = noi1 * (1 + p["growth"] / 100.0) ** (y - 1)
+        cf = noi - yearly_int - yearly_reit
+        t = stab + 12 * y
+        flow_b[t] = flow_b.get(t, 0.0) + cf
+        rows.append({"y": y, "noi": noi, "cf": cf, "dscr": noi / yearly_int if yearly_int > 0 else None})
+    end = stab + 12 * p["hold_y"]
+    sale_b = noi1 * (1 + p["growth"] / 100.0) ** p["hold_y"] / cap
+    net_b = sale_b * (1 - cost_rate) - perm
+    flow_b[end] = flow_b.get(end, 0.0) + net_b
+
+    return {
+        "acq": dev["extra"], "hard": dev["hard"], "soft": dev["soft"], "fin": dev["interest"], "tpc": total,
+        "equity": equity, "dev_debt": dev["loan"], "ltc": dev["loan"] / total if total > 0 else None,
+        "debt_to_equity": dev["loan"] / equity if equity > 0 else None,
+        "Tc": done, "Ts": stab, "Tend": end,
+        "lease_interest": lease_int, "lease_noi": lease_noi, "debt_at_stab": loan,
+        "noi1": noi1, "value": value, "yield_on_cost": noi1 / total if total > 0 else None,
+        "dev_margin": (value - total) / total if total > 0 else None,
+        "a.sale": value, "a.net": net_a, "a.irr": yearly(month_irr(flow_a)), "a.multiple": moic(equity, [net_a]),
+        "a.profit": sum(flow_a.values()),
+        "b.loan": perm, "b.refi": perm - loan, "b.loan_to_equity": perm / equity if equity > 0 else None,
+        "b.sale": sale_b, "b.net": net_b, "b.irr": yearly(month_irr(flow_b)), "b.multiple": moic(equity, [perm - loan] + [r["cf"] for r in rows] + [net_b]),
+        "b.profit": sum(flow_b.values()),
+        "b.dscr_min": min(r["dscr"] for r in rows) if rows and yearly_int > 0 else None,
+        "b.years.noi": [r["noi"] for r in rows], "b.years.cf": [r["cf"] for r in rows],
+    }

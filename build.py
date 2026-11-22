@@ -368,7 +368,7 @@ def build_finance_data() -> dict:
 
 
 PAGES = [("index", "./", "인가와 프로젝트리츠"), ("listed", "listed.html", "상장리츠"),
-         ("finance", "finance.html", "재무 구조와 공시")]
+         ("finance", "finance.html", "재무 구조와 공시"), ("calc", "calc.html", "사업성 계산기")]
 
 
 def nav_html(current: str) -> str:
@@ -377,8 +377,12 @@ def nav_html(current: str) -> str:
     return f'<nav class="top" aria-label="화면 이동">{links}\n</nav>'
 
 
-def render(template: str, out: str, data: dict | None, page: str) -> int:
+def render(template: str, out: str, data: dict | None, page: str, extra: dict[str, str] | None = None) -> int:
     tpl = (ROOT / template).read_text(encoding="utf-8")
+    for mark, text in (extra or {}).items():
+        if mark not in tpl:
+            raise RuntimeError(f"{template}에서 {mark} 자리를 찾지 못함")
+        tpl = tpl.replace(mark, text)
     css = (ROOT / "style.css").read_text(encoding="utf-8")
     for mark in ("/*__CSS__*/", "<!--__NAV__-->"):
         if mark not in tpl:
@@ -403,6 +407,14 @@ def main():
     n_listed = render("template_listed.html", "listed.html", listed, "listed")
     finance = build_finance_data()
     n_fin = render("template_finance.html", "finance.html", finance, "finance")
+    # 사업성 계산기: 수집 자료를 쓰지 않는다. 기본 가정과 계산 엔진만 넣는다.
+    defaults = json.loads((ROOT / "calc_defaults.json").read_text(encoding="utf-8"))
+    cfg_path = ROOT / "config.json"
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
+    calc = {"base": defaults["base"], "downside": defaults["downside"],
+            "author": cfg.get("author", ""), "contact": cfg.get("contact", "")}
+    engine = (ROOT / "calc_engine.js").read_text(encoding="utf-8")
+    n_calc = render("template_calc.html", "calc.html", calc, "calc", {"/*__ENGINE__*/": engine})
     s = data["summary"]
     print(f"[빌드] {data['collected_at']} | 리츠 {s['n_reits']}개, 자산총계 {s['assets_eok']/10000:.2f}조원, "
           f"자산관리회사 {s['n_amc']}곳 | 최근 12개월 {s['new12']}건(직전 {s['prev12']}건) | "
@@ -417,6 +429,7 @@ def main():
           f"최고 {fs['da_hi']['name']} {fs['da_hi']['v']}%, 최저 {fs['da_lo']['name']} {fs['da_lo']['v']}% | "
           f"최근 90일 주요 공시 {fs['dis_major']}건(위험 신호 {fs['dis_risk']}건), 정기와 일반 {fs['dis_routine']}건 | "
           f"finance.html {n_fin:,}자")
+    print(f"[빌드] 사업성 계산기 calc.html {n_calc:,}자")
 
 
 if __name__ == "__main__":
