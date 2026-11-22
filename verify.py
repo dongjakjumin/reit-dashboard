@@ -6,7 +6,7 @@
 4) 상장리츠: 건수, 합계, P/NAV 재계산, 주가 이력, 첫 화면의 NAV와 FFO 대조.
 5) 저장 파일에 전화번호 모양의 문자열이 없는지 본다.
 
-하나라도 어긋나면 종료 코드 1.
+숫자가 하나라도 어긋나면 종료 코드 1. 원문 접속이 안 돼 재조회를 못 한 항목은 건너뛴 것으로 적고 실패로 세지 않는다.
 """
 from __future__ import annotations
 
@@ -33,6 +33,18 @@ def main() -> int:
         print(("  통과  " if ok else "  실패  ") + msg)
         bad += 0 if ok else 1
 
+    skipped = 0
+
+    def ask(path: str, data: dict):
+        """원문 재조회. 접속이 안 되면 실패로 세지 않고 건너뛴 것으로 적는다(숫자가 어긋난 것과 구분)."""
+        nonlocal skipped
+        try:
+            return reits_api.post(path, data)
+        except Exception as e:
+            skipped += 1
+            print(f"  건너뜀  {path} 접속 실패: {str(e)[:90]}")
+            return None
+
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
     d = build.build_data()
     s = d["summary"]
@@ -52,10 +64,12 @@ def main() -> int:
     check(len({r["id"] for r in reits}) == len(reits), "리츠 번호 중복 없음")
 
     print("[2] 원문 건수 재조회")
-    live = reits_api.post("/reits/prmpc/searchPrmpcOper", dict(reits_api.OPER_EMPTY, pageSize=10, pageNum=1))
-    check(int(live["total"]) == len(reits), f"리츠조회 전체 {int(live['total'])}건 = 저장 {len(reits)}건")
-    live_f = reits_api.post("/reits/prmpc/searchPrmpcInvtCnfm", {"reitsNm": "", "cmpnyMberNm": "", "pageSize": 10, "pageNum": 1})
-    check(int(live_f["total"]) == len(snap["filings"]), f"접수현황 전체 {int(live_f['total'])}건 = 저장 {len(snap['filings'])}건")
+    live = ask("/reits/prmpc/searchPrmpcOper", dict(reits_api.OPER_EMPTY, pageSize=10, pageNum=1))
+    if live:
+        check(int(live["total"]) == len(reits), f"리츠조회 전체 {int(live['total'])}건 = 저장 {len(reits)}건")
+    live_f = ask("/reits/prmpc/searchPrmpcInvtCnfm", {"reitsNm": "", "cmpnyMberNm": "", "pageSize": 10, "pageNum": 1})
+    if live_f:
+        check(int(live_f["total"]) == len(snap["filings"]), f"접수현황 전체 {int(live_f['total'])}건 = 저장 {len(snap['filings'])}건")
 
     print("[3] 상세 화면 대조(자산총계가 있는 리츠 5건 + 강조 회사)")
     pool = [r for r in reits if r["assets_eok"]]
@@ -64,10 +78,8 @@ def main() -> int:
     hl = d.get("highlight_amc")
     sample += [r for r in reits if hl and hl in r["amc"]][:1]
     for r in sample:
-        try:
-            det = reits_api.post("/reits/prmpc/searchPrmpcOperTab01_01", {"reitsNo": r["id"], "no": r["id"]})
-        except Exception as e:  # 상세 조회 형식이 다르면 건너뜀
-            print(f"  건너뜀 {r['name']}: {e}")
+        det = ask("/reits/prmpc/searchPrmpcOperTab01_01", {"reitsNo": r["id"], "no": r["id"]})
+        if det is None:
             continue
         text = json.dumps(det, ensure_ascii=False)
         name_ok = r["name"] in text
@@ -84,8 +96,9 @@ def main() -> int:
     ls = ld["summary"]
     listed = snap["listed"]
     prices = json.loads((DATA / "prices.json").read_text(encoding="utf-8"))
-    live_l = reits_api.post("/invt/lsted/searchLstedReits", {"pageSize": 10, "pageNum": 1})
-    check(int(live_l["total"]) == len(listed), f"상장리츠 현황 전체 {int(live_l['total'])}건 = 저장 {len(listed)}건")
+    live_l = ask("/invt/lsted/searchLstedReits", {"pageSize": 10, "pageNum": 1})
+    if live_l:
+        check(int(live_l["total"]) == len(listed), f"상장리츠 현황 전체 {int(live_l['total'])}건 = 저장 {len(listed)}건")
     check(sum(x["mktcap_eok"] for x in ld["sectors"]) == ls["mktcap_eok"], "투자대상별 시가총액 합 = 전체 시가총액")
     check(sum(x["n"] for x in ld["sectors"]) == ls["n"], "투자대상별 종목 수 합 = 전체 종목 수")
     check(all(r["pnav"] is None or abs(r["mktcap_eok"] / r["nav_eok"] - r["pnav"]) < 0.006 for r in ld["rows"]),
@@ -93,11 +106,11 @@ def main() -> int:
     check(all(prices[str(r["code"])][max(prices[str(r["code"])])] == r["price"] for r in listed),
           "주가 이력의 마지막 종가 = 상장리츠 현황의 현재가")
     check(abs(ld["index"]["values"][0] - 100) < 0.001, "주가 지수 첫날 = 100")
-    nav_main = {str(x.get("stockNm")).strip(): x.get("navThstrm")
-                for x in reits_api.post("/main/searchMainStock", {"stockTab": "3"})}
-    ffo_main = {str(x.get("stockNm")).strip(): x.get("ffoThstrm")
-                for x in reits_api.post("/main/searchMainStock", {"stockTab": "4"})}
-    for r in random.sample(listed, 5):
+    nav_rows = ask("/main/searchMainStock", {"stockTab": "3"})
+    ffo_rows = ask("/main/searchMainStock", {"stockTab": "4"})
+    nav_main = {str(x.get("stockNm")).strip(): x.get("navThstrm") for x in (nav_rows or [])}
+    ffo_main = {str(x.get("stockNm")).strip(): x.get("ffoThstrm") for x in (ffo_rows or [])}
+    for r in (random.sample(listed, 5) if nav_rows and ffo_rows else []):
         ok = nav_main.get(r["name"]) == r["nav_mil"] and ffo_main.get(r["name"]) == r["ffo_mil"]
         check(ok, f"{r['name']} | NAV {r['nav_mil']:,}백만원, FFO {r['ffo_mil']:,}백만원 | "
                   f"첫 화면 NAV {nav_main.get(r['name'])}, FFO {ffo_main.get(r['name'])}")
@@ -109,7 +122,8 @@ def main() -> int:
     check(not re.search(r"01[016789]-?\d{3,4}-?\d{4}", blob), "저장 파일과 화면에 휴대전화 번호 모양 문자열 없음")
     check('"mberPhone"' not in blob and '"mberNm"' not in blob, "담당자 항목 이름 없음")
 
-    print("결과:", "모두 통과" if bad == 0 else f"실패 {bad}건")
+    print("결과:", ("모두 통과" if bad == 0 else f"실패 {bad}건")
+          + (f", 접속 실패로 건너뛴 재조회 {skipped}건" if skipped else ""))
     return 1 if bad else 0
 
 

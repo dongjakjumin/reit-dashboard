@@ -16,7 +16,7 @@ from pathlib import Path
 BASE = "https://reits.molit.go.kr/pub"
 ROOT_CERT = Path(__file__).parent / "certs" / "oiste_wisekey_global_root_gb.pem"
 USER_AGENT = "Mozilla/5.0 (compatible; reit-dashboard; personal research; once-daily)"
-PAUSE_SECONDS = 2.0
+PAUSE_SECONDS = 2.5
 
 _ctx = ssl.create_default_context()
 if ROOT_CERT.exists():
@@ -25,7 +25,7 @@ if ROOT_CERT.exists():
 _last_call = 0.0
 
 
-def post(path: str, data: dict, retries: int = 2) -> dict:
+def post(path: str, data: dict, retries: int = 3) -> dict:
     """조회 요청 1건. 응답의 data 부분을 돌려준다."""
     global _last_call
     body = json.dumps(
@@ -55,7 +55,7 @@ def post(path: str, data: dict, retries: int = 2) -> dict:
         except Exception as e:  # 네트워크 오류, 일시 차단 등
             _last_call = time.time()
             last_err = e
-            time.sleep(5 * (attempt + 1))
+            time.sleep((5, 15, 30, 30)[min(attempt, 3)])
     raise RuntimeError(f"{path} 조회 실패: {last_err}")
 
 
