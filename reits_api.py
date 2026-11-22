@@ -99,3 +99,18 @@ def filings_list() -> list[dict]:
 def listed_list() -> list[dict]:
     """상장리츠 현황."""
     return fetch_all("/invt/lsted/searchLstedReits", {}, page_size=100)
+
+
+def listed_metrics() -> list[dict]:
+    """상장리츠 성과지표(결산기 기준 배당률, NAV, FFO). 리츠통계 > 상장리츠현황 화면."""
+    return post("/chart/searchChart02_6", {})
+
+
+def listed_wale() -> list[dict]:
+    """상장리츠 WALE(첫 화면의 WALE 탭)."""
+    return post("/main/searchMainStock", {"stockTab": "5"})
+
+
+def price_history(code: str, date_from: str, date_to: str) -> list[dict]:
+    """종목 1개의 일별 종가. 날짜는 YYYYMMDD."""
+    return post("/main/searchStockChart", {"stockCd": code, "fromDt": date_from, "toDt": date_to})

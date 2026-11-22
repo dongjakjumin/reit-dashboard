@@ -5,6 +5,7 @@
  - data/latest.json         : 가장 최근 수집분
  - data/filings_log.json    : 접수 건별 누적 기록(처음 본 날, 마지막으로 본 날, 진행상태 변화)
  - data/reits_log.json      : 리츠별 누적 기록(처음 본 날, 마지막으로 본 날)
+ - data/prices.json         : 상장리츠 종목별 일별 종가
 을 만든다.
 
 접수현황은 현재 처리 중인 건만 보여 주므로, 날마다 쌓아 둔 기록이 있어야
@@ -37,6 +38,12 @@ FILING_KEEP = {
     "reqstTyNm": "req_type", "reitsNm": "name", "cmpnyMberNm": "applicant",
     "progrsSttusNm": "status", "bsnsNm": "project_name", "reitsBsnsTyNm": "biz_type",
     "fondCptl": "founding_capital", "pssrpDutyAt": "public_duty",
+}
+METRIC_KEEP = {
+    "estateInvtCmpnyNo": "reit_id", "trgetCodeNm": "sector", "stacntRelmDe": "fiscal_end",
+    "psacntNo": "fiscal_period", "stockDe": "fiscal_price_date", "nowPc": "fiscal_price",
+    "dvdRate": "dvd_pct", "annuDvdRate": "annual_dvd_pct",
+    "navThstrm": "nav_mil", "ffoThstrm": "ffo_mil",
 }
 LISTED_KEEP = {
     "stockCd": "code", "stockNm": "name", "cmpnyNm": "company", "lstDt": "listed_date",
@@ -77,6 +84,15 @@ def collect() -> dict:
                for r in reits_api.filings_list()]
     listed = [_pick(r, LISTED_KEEP, ("price", "prev_price", "mktcap_eok", "volume"))
               for r in reits_api.listed_list()]
+    # 성과지표와 WALE을 종목코드, 종목명으로 붙인다
+    metrics = {str(m.get("stockCd")): m for m in reits_api.listed_metrics()}
+    wale = {str(w.get("stockNm")).strip(): _num(w.get("waleThstrm")) for w in reits_api.listed_wale()}
+    for row in listed:
+        m = metrics.get(str(row["code"]))
+        extra = _pick(m, METRIC_KEEP, ("reit_id", "fiscal_price", "dvd_pct", "annual_dvd_pct",
+                                       "nav_mil", "ffo_mil")) if m else {v: None for v in METRIC_KEEP.values()}
+        row.update(extra)
+        row["wale_years"] = wale.get(row["name"])
     if len(reits) < 300:
         raise RuntimeError(f"리츠 목록이 {len(reits)}건뿐임. 수집 이상으로 보고 저장하지 않음")
     return {
@@ -147,10 +163,33 @@ def update_logs(snap: dict):
     _save(DATA / "reits_log.json", rlog, pretty=True)
 
 
+def update_prices(snap: dict):
+    """종목별 일별 종가 누적. 기록이 짧은 종목은 최근 1년치를 한 번 받아 채운다."""
+    path = DATA / "prices.json"
+    prices = _load(path, {})
+    today = datetime.strptime(snap["date"], "%Y-%m-%d")
+    d_to = today.strftime("%Y%m%d")
+    d_from = (today - timedelta(days=372)).strftime("%Y%m%d")
+    for row in snap["listed"]:
+        code = str(row["code"])
+        hist = prices.setdefault(code, {})
+        if len(hist) < 150:
+            for p in reits_api.price_history(code, d_from, d_to):
+                v = _num(p.get("nowPc"))
+                if p.get("stockDt") and v:
+                    hist[str(p["stockDt"])[:10]] = v
+        as_of = (row.get("as_of") or "")[:10]
+        if as_of and row.get("price"):
+            hist[as_of] = row["price"]
+        prices[code] = dict(sorted(hist.items()))
+    _save(path, prices)
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     snap = collect()
+    update_prices(snap)
     _save(SNAP / f"{snap['date']}.json", snap)
     _save(DATA / "latest.json", snap)
     update_logs(snap)

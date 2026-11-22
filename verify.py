@@ -3,7 +3,8 @@
 1) 저장한 자료 안에서 합계가 서로 맞는지 본다(구분별 합 = 전체 등).
 2) 리츠정보시스템에 다시 물어 전체 건수가 저장분과 같은지 본다.
 3) 리츠 몇 건을 뽑아 상세 화면(다른 조회 경로)의 값과 목록 값을 대조한다.
-4) 저장 파일에 전화번호 모양의 문자열이 없는지 본다.
+4) 상장리츠: 건수, 합계, P/NAV 재계산, 주가 이력, 첫 화면의 NAV와 FFO 대조.
+5) 저장 파일에 전화번호 모양의 문자열이 없는지 본다.
 
 하나라도 어긋나면 종료 코드 1.
 """
@@ -78,10 +79,33 @@ def main() -> int:
         ok = name_ok and (got is None or abs(got - r["assets_eok"]) <= 1)
         check(ok, f"{r['name']} | 목록 {r['assets_eok']:,}억 | 상세 {got if got is not None else '값 없음'}")
 
-    print("[4] 개인정보")
+    print("[4] 상장리츠")
+    ld = build.build_listed_data()
+    ls = ld["summary"]
+    listed = snap["listed"]
+    prices = json.loads((DATA / "prices.json").read_text(encoding="utf-8"))
+    live_l = reits_api.post("/invt/lsted/searchLstedReits", {"pageSize": 10, "pageNum": 1})
+    check(int(live_l["total"]) == len(listed), f"상장리츠 현황 전체 {int(live_l['total'])}건 = 저장 {len(listed)}건")
+    check(sum(x["mktcap_eok"] for x in ld["sectors"]) == ls["mktcap_eok"], "투자대상별 시가총액 합 = 전체 시가총액")
+    check(sum(x["n"] for x in ld["sectors"]) == ls["n"], "투자대상별 종목 수 합 = 전체 종목 수")
+    check(all(r["pnav"] is None or abs(r["mktcap_eok"] / r["nav_eok"] - r["pnav"]) < 0.006 for r in ld["rows"]),
+          "P/NAV = 시가총액 / NAV 재계산 일치")
+    check(all(prices[str(r["code"])][max(prices[str(r["code"])])] == r["price"] for r in listed),
+          "주가 이력의 마지막 종가 = 상장리츠 현황의 현재가")
+    check(abs(ld["index"]["values"][0] - 100) < 0.001, "주가 지수 첫날 = 100")
+    nav_main = {str(x.get("stockNm")).strip(): x.get("navThstrm")
+                for x in reits_api.post("/main/searchMainStock", {"stockTab": "3"})}
+    ffo_main = {str(x.get("stockNm")).strip(): x.get("ffoThstrm")
+                for x in reits_api.post("/main/searchMainStock", {"stockTab": "4"})}
+    for r in random.sample(listed, 5):
+        ok = nav_main.get(r["name"]) == r["nav_mil"] and ffo_main.get(r["name"]) == r["ffo_mil"]
+        check(ok, f"{r['name']} | NAV {r['nav_mil']:,}백만원, FFO {r['ffo_mil']:,}백만원 | "
+                  f"첫 화면 NAV {nav_main.get(r['name'])}, FFO {ffo_main.get(r['name'])}")
+
+    print("[5] 개인정보")
     blob = "".join(p.read_text(encoding="utf-8") for p in DATA.rglob("*.json"))
-    site = (Path(__file__).parent / "site" / "index.html")
-    blob += site.read_text(encoding="utf-8") if site.exists() else ""
+    for site in (Path(__file__).parent / "site").glob("*.html"):
+        blob += site.read_text(encoding="utf-8")
     check(not re.search(r"01[016789]-?\d{3,4}-?\d{4}", blob), "저장 파일과 화면에 휴대전화 번호 모양 문자열 없음")
     check('"mberPhone"' not in blob and '"mberNm"' not in blob, "담당자 항목 이름 없음")
 

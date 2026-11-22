@@ -194,21 +194,121 @@ def build_data() -> dict:
     }
 
 
+def _median(xs: list[float]) -> float:
+    xs = sorted(xs)
+    n = len(xs)
+    return xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2
+
+
+def build_listed_data() -> dict:
+    """상장리츠 비교판 자료. P/NAV, P/FFO, 수익률, 지수는 여기서 계산한다."""
+    snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
+    prices = json.loads((DATA / "prices.json").read_text(encoding="utf-8"))
+    rows = []
+    for r in snap["listed"]:
+        hist = prices.get(str(r["code"]), {})
+        dates = sorted(hist)
+        last_d = dates[-1]
+        last = hist[last_d]
+
+        # 하루 변동이 가격제한폭(30%)을 넘으면 감자, 권리락 등으로 기준가가 바뀐 날로 본다
+        breaks = [b for a, b in zip(dates, dates[1:]) if abs(hist[b] / hist[a] - 1) > 0.31]
+        flat_days = sum(1 for a, b in zip(dates, dates[1:]) if hist[a] == hist[b])
+        halted = flat_days >= 60 and not r.get("volume")
+
+        def ret(days: int):
+            target = (d(last_d) - timedelta(days=days)).isoformat()
+            prev = [x for x in dates if x <= target]
+            if not prev or any(b > prev[-1] for b in breaks):
+                return None  # 기준가가 바뀐 날을 사이에 둔 구간은 비교하지 않음
+            return round((last / hist[prev[-1]] - 1) * 100, 1)
+
+        mktcap = r["mktcap_eok"] or 0
+        nav_eok = round(r["nav_mil"] / 100) if r.get("nav_mil") else None
+        ffo_eok = round(r["ffo_mil"] / 100, 1) if r.get("ffo_mil") is not None else None
+        ppy = None  # 연간 결산 횟수: 연환산 배당률 / 배당수익률로 추정
+        if r.get("dvd_pct") and r.get("annual_dvd_pct"):
+            ppy = min(4, max(1, round(r["annual_dvd_pct"] / r["dvd_pct"])))
+        rows.append({
+            "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
+            "homepage": r.get("homepage"), "listed_date": r.get("listed_date"),
+            "price": r["price"], "mktcap_eok": mktcap,
+            "chg_pct": round((r["price"] / r["prev_price"] - 1) * 100, 2) if r.get("prev_price") else None,
+            "ret_1m": ret(30), "ret_3m": ret(91), "ret_1y": ret(365),
+            "dvd_pct": r.get("dvd_pct"), "annual_dvd_pct": r.get("annual_dvd_pct"),
+            "nav_eok": nav_eok, "ffo_eok": ffo_eok, "periods_per_year": ppy,
+            "pnav": round(mktcap / nav_eok, 2) if nav_eok and nav_eok > 0 and mktcap else None,
+            "pffo": round(mktcap / (ffo_eok * ppy), 1) if ffo_eok and ffo_eok > 0 and ppy and mktcap else None,
+            "wale_years": r.get("wale_years") or None,
+            "price_break": breaks[-1] if breaks else None, "halted": halted,
+            "fiscal_end": r.get("fiscal_end"), "fiscal_period": r.get("fiscal_period"),
+            "spark": [hist[x] for x in dates[::5]] + ([last] if (len(dates) - 1) % 5 else []),
+        })
+
+    # 단순평균 지수: 1년 구간 내내 종가가 있는 종목만, 모든 종목에 종가가 있는 날짜만, 첫날 = 100
+    codes = [str(r["code"]) for r in snap["listed"]]
+    start_day = (d(snap["date"]) - timedelta(days=366)).isoformat()
+    all_days = sorted(x for x in set().union(*[set(prices[c]) for c in codes]) if x >= start_day)
+    first_week = all_days[min(5, len(all_days) - 1)]
+    skip = {str(r["code"]): r["name"] for r in rows if r["price_break"] or r["halted"]}
+    full = [c for c in codes if c not in skip and any(x <= first_week and x >= start_day for x in prices[c])]
+    common = sorted(x for x in set.intersection(*[set(prices[c]) for c in full]) if x >= start_day)
+    idx = [round(sum(prices[c][x] / prices[c][common[0]] for c in full) / len(full) * 100, 2) for x in common]
+
+    sec_names = sorted({r["sector"] for r in rows})
+    sectors = sorted(({"name": s, "n": sum(1 for r in rows if r["sector"] == s),
+                       "mktcap_eok": sum(r["mktcap_eok"] for r in rows if r["sector"] == s)} for s in sec_names),
+                     key=lambda x: -x["mktcap_eok"])
+    pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]
+    dvds = [r["annual_dvd_pct"] for r in rows if r["annual_dvd_pct"]]
+    r1y = [r["ret_1y"] for r in rows if r["ret_1y"] is not None]
+    cfg_path = ROOT / "config.json"
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
+    return {
+        "collected_at": snap["collected_at"], "date": snap["date"],
+        "price_as_of": max((r.get("as_of") or "") for r in snap["listed"]),
+        "summary": {
+            "n": len(rows), "mktcap_eok": sum(r["mktcap_eok"] for r in rows),
+            "index_ret": round(idx[-1] - 100, 1), "index_n": len(full),
+            "up_1y": sum(1 for v in r1y if v > 0), "down_1y": sum(1 for v in r1y if v < 0),
+            "pnav_median": round(_median(pnavs), 2), "pnav_n": len(pnavs),
+            "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs), "pnav_max": max(pnavs),
+            "dvd_median": round(_median(dvds), 2), "dvd_n": len(dvds),
+        },
+        "index": {"dates": common, "values": idx, "excluded": sorted(skip.values())},
+        "sectors": sectors, "rows": rows,
+        "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
+    }
+
+
+def render(template: str, out: str, data: dict) -> int:
+    tpl = (ROOT / template).read_text(encoding="utf-8")
+    css = (ROOT / "style.css").read_text(encoding="utf-8")
+    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    if "/*__DATA__*/null" not in tpl or "/*__CSS__*/" not in tpl:
+        raise RuntimeError(f"{template}에서 자료나 스타일을 넣을 자리를 찾지 못함")
+    html = tpl.replace("/*__CSS__*/", css).replace("/*__DATA__*/null", payload)
+    SITE.mkdir(exist_ok=True)
+    (SITE / out).write_text(html, encoding="utf-8")
+    return len(html)
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     data = build_data()
-    tpl = (ROOT / "template.html").read_text(encoding="utf-8")
-    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-    html = tpl.replace("/*__DATA__*/null", payload)
-    if html == tpl:
-        raise RuntimeError("template.html에서 자료를 넣을 자리를 찾지 못함")
-    SITE.mkdir(exist_ok=True)
-    (SITE / "index.html").write_text(html, encoding="utf-8")
+    n_index = render("template.html", "index.html", data)
+    listed = build_listed_data()
+    n_listed = render("template_listed.html", "listed.html", listed)
     s = data["summary"]
     print(f"[빌드] {data['collected_at']} | 리츠 {s['n_reits']}개, 자산총계 {s['assets_eok']/10000:.2f}조원, "
           f"자산관리회사 {s['n_amc']}곳 | 최근 12개월 {s['new12']}건(직전 {s['prev12']}건) | "
-          f"프로젝트리츠 {s['proj_n']}건 | 접수 {s['filings_n']}건 | index.html {len(html):,}자")
+          f"프로젝트리츠 {s['proj_n']}건 | 접수 {s['filings_n']}건 | index.html {n_index:,}자")
+    ls = listed["summary"]
+    print(f"[빌드] 상장리츠 {ls['n']}개, 시가총액 {ls['mktcap_eok']/10000:.2f}조원, "
+          f"지수 1년 {ls['index_ret']:+.1f}%({ls['index_n']}개), "
+          f"P/NAV 중앙값 {ls['pnav_median']}(1배 미만 {ls['pnav_below1']}/{ls['pnav_n']}), "
+          f"연환산 배당률 중앙값 {ls['dvd_median']}% | listed.html {n_listed:,}자")
 
 
 if __name__ == "__main__":

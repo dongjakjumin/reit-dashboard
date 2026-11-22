@@ -20,7 +20,8 @@ python verify.py    # 배포 전 점검: 합계, 원문 건수, 상세 화면 �
 |---|---|
 | `reits_api.py` | 리츠정보시스템 조회 화면과 같은 요청을 보냄. 요청 사이 2초 간격 |
 | `collect.py` | 운영 중 리츠, 접수현황, 상장리츠를 받아 저장. 접수 건별, 리츠별 누적 기록 갱신 |
-| `build.py` | 집계 후 `template.html`에 넣어 `site/index.html` 생성 |
+| `build.py` | 집계 후 `template.html`, `template_listed.html`에 넣어 `site/index.html`(인가와 프로젝트리츠), `site/listed.html`(상장리츠 비교판) 생성. 공통 스타일은 `style.css` |
+| `data/prices.json` | 상장리츠 종목별 일별 종가. 처음에 최근 1년치를 받고 이후 영업일마다 하루씩 추가 |
 | `verify.py` | 배포 전 점검. 하나라도 어긋나면 종료 코드 1 |
 | `config.json` | 강조할 자산관리회사, 화면 아래 표기할 이름과 연락처 |
 | `data/snapshots/` | 날짜별 수집 원자료. 지우지 않고 쌓음 |
@@ -41,4 +42,5 @@ python verify.py    # 배포 전 점검: 합계, 원문 건수, 상세 화면 �
 
 ## 남은 일
 
-- 상장리츠 비교판(주가, 배당수익률, 차입 만기)
+- 상장리츠 시가배당률(주당 배당금 기준)과 차입 만기 일정: DART 공시 연동 필요
+- 국고채 금리와 배당률 비교: 한국은행 ECOS 연동 필요
