@@ -85,6 +85,12 @@ def main() -> int:
     check(sum(s["filings_by_type"].values()) == s["filings_n"], "접수 유형별 합 = 접수 전체")
     check(sum(1 for r in reits if r["kind"] == "신고" or r.get("project") == "Y") == s["proj_n"],
           "신고 구분이거나 프로젝트리츠 표시가 있는 건수 = 프로젝트리츠 건수")
+    check(sum(a["new"] + a["change"] for a in d["applicants"]) == len(snap["filings"]),
+          "신청인별 신규와 변경 합 = 처리 중인 신청 전체")
+    project = d["project"]
+    check(sum(a["n"] for a in project["companies"]) == s["proj_n"], "관리주체별 합 = 프로젝트리츠 전체")
+    check(sum(project["sectors"].values()) == s["proj_n"], "투자대상별 합 = 프로젝트리츠 전체")
+    check(sum(project["months"].values()) == s["proj_n"], "첫 신고 달부터 월별 합 = 프로젝트리츠 전체")
     check(sum(1 for e in d["events"] if e["what"] == "접수") == len(snap["filings"]),
           "최근 변동에 접수 중인 신청이 빠짐없이 들어 있음")
     check(all(x["result_date"] is None for x in d["done"] if x["is_change"]),
@@ -171,6 +177,33 @@ def main() -> int:
     check(all(abs(r["debt_eok"] / r["assets_eok"] * 100 - r["debt_to_assets"]) < 0.2 for r in fd["rows"]),
           "부채 ÷ 자산 재계산 일치")
     check(sum(g["n"] for g in fd["groups"]) == fd["summary"]["dis_major"], "공시 유형별 건수 합 = 주요 공시 건수")
+    timelines = fd["timelines"]
+    finance_codes = [r["code"] for r in fd["rows"]]
+    check(set(timelines) == set(finance_codes) and len(timelines) == len(finance_codes),
+          "타임라인과 재무 표의 종목 수 및 코드 일치")
+    reit_names = {r["id"]: r["name"] for r in reits}
+    for stock in listed:
+        code = stock["code"]
+        if code not in timelines:
+            continue
+        events = timelines[code]
+        changes = [e for e in reversed(events) if e["kind"] == "finance"]
+        source = sorted((r for r in fin[str(stock["reit_id"])]["series"] if build.safe_date(r.get("end"))),
+                        key=lambda r: r["end"])
+        valid = [e["date"] for e in changes] == [r["end"] for r in source]
+        for i, (e, row) in enumerate(zip(changes, source)):
+            for key in ("debt", "equity"):
+                prior = source[i - 1].get(key) if i else None
+                delta = row[key] - prior if prior is not None and row.get(key) is not None else None
+                flagged = bool(row.get("assets") and row["assets"] > 0 and delta is not None and delta * 20 > row["assets"])
+                valid &= e[key] == row.get(key) and e[key + "_change"] == delta and e[key + "_up"] == flagged
+        check(valid, f"{stock['name']} 기준일별 부채·자본 증감과 5% 표시 재계산")
+        aliases = {build._norm_company(name) for name in (stock.get("company"), reit_names.get(stock["reit_id"])) if name}
+        expected = sorted(no for no, x in dis.items() if build._norm_company(x["company"]) in aliases and build.safe_date(x.get("date")))
+        notices = [e for e in events if e["kind"] == "disclosure"]
+        check(sorted(e["no"] for e in notices) == expected, f"{stock['name']} 전체 기간 공시와 회사명 대조")
+        check(all(not e.get("text") for e in notices if "주주" in dis.get(e["no"], {}).get("matter", "")),
+              f"{stock['name']} 타임라인에 주주 공시 본문 없음")
     # 재무 자료는 주 1회만 받으므로, 오늘 받은 종목만 원문과 견준다(받은 지 며칠 된 값은 원문이 바뀌었을 수 있다)
     fresh = [r for r in listed if fin.get(str(r.get("reit_id")), {}).get("fetched") == snap["date"]]
     if not fresh:

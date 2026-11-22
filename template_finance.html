@@ -40,6 +40,22 @@
   <div class="tw"><table id="lev-table"></table></div>
 </section>
 
+<section id="timeline" aria-labelledby="h-timeline">
+  <h2 id="h-timeline">종목별 재무 변동과 공시</h2>
+  <div class="row">
+    <label for="stock">종목</label><select id="stock"></select>
+    <span id="stock-homepage" hidden></span>
+    <label><input type="checkbox" id="show-routine" autocomplete="off"> 일상 공시도 보기</label>
+  </div>
+  <p class="sub" id="coverage"></p>
+  <p class="sub" id="timeline-summary" hidden></p>
+  <p class="note" id="no-major"></p>
+  <div class="tw"><table id="events">
+    <thead><tr><th>기준일 / 공시일</th><th>자산총계</th><th>부채총계</th><th>자본총계</th><th>부채 ÷ 자산</th><th>부채 증감</th><th>자본 증감</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
 <section aria-labelledby="h-dis">
   <h2 id="h-dis">리츠 주요 공시</h2>
   <p class="sub" id="dis-sub"></p>
@@ -61,6 +77,9 @@
   <h2 id="h-read">읽는 법</h2>
   <div class="card read">
     <ul style="margin:0;padding-left:18px">
+      <li>종목별 재무 변동과 공시는 최근 날짜부터 표시합니다. 재무 줄의 증감은 직전 기준일과 비교한 금액입니다. ‘일상 공시도 보기’를 선택하면 일상 공시를 날짜별 건수로 표시합니다.</li>
+      <li>부채 또는 자본 증가액이 해당 기준일 자산총계의 5%를 넘으면 표시를 붙입니다. 5%는 이 화면에서 정한 기준이며 변동 원인은 투자보고서와 공시 원문에서 확인합니다.</li>
+      <li id="read-coverage"></li>
       <li><b>자산, 부채, 자본</b>: 리츠정보시스템 리츠 상세 화면의 값(직전 분기 투자보고서 기준)입니다. 종목마다 결산월이 달라 기준일이 같지 않으므로 표의 기준일을 함께 보아야 합니다.</li>
       <li><b>별도 기준</b>: 표의 숫자는 상장된 리츠 한 곳의 재무 수치입니다. 모리츠가 자리츠 주식이나 펀드 수익증권을 보유하는 구조에서는 부동산과 차입금이 자리츠 쪽에 있어, 모리츠의 부채가 거의 0으로 나옵니다. 부채 비중이 20% 미만이면 "간접 보유 구조일 수 있음"으로 표시했고, 실제 구조는 투자보고서에서 확인해야 합니다.</li>
       <li><b>부채 ÷ 자산</b>: 부채총계를 자산총계로 나눈 비율입니다. 담보인정비율(LTV)은 담보가치에 대한 담보대출금의 비율입니다. 두 지표는 분자와 분모에 넣는 항목의 범위가 다릅니다.</li>
@@ -91,6 +110,9 @@ const eok = v => { v = Math.round(v || 0); if (v >= 10000) { const j = Math.floo
 const SECTOR_COLOR = {'주택':'var(--s1)','오피스':'var(--s2)','물류':'var(--s3)','복합형':'var(--s4)','리테일':'var(--s5)','호텔':'var(--s6)','기타':'var(--s0)'};
 const secColor = s => SECTOR_COLOR[s] || 'var(--s0)';
 const S = D.summary, R = D.rows;
+function stockLink(code, label){
+  return `<a class="ext" href="?code=${encodeURIComponent(code)}#timeline" data-stock="${esc(code)}">${esc(label)}</a>`;
+}
 
 const tip = $('#tip');
 function showTip(html, e){ tip.innerHTML = html; tip.style.opacity = 1; moveTip(e); }
@@ -169,7 +191,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
     $('#lev-count').textContent = `${r.length}개 종목`;
     $('#lev-table').innerHTML = '<thead><tr>' + cols.map(c => c.k ? `<th class="sortable${c.txt ? '' : ' num'}" data-k="${c.k}"${sortK === c.k ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}><button type="button">${c.t}</button></th>` : `<th>${c.t}</th>`).join('') + '</tr></thead><tbody>' +
       r.map(x => '<tr>' + cols.map(c => {
-        if (c.k === 'name') return `<td><a class="ext" href="${esc(x.homepage || '#')}" target="_blank" rel="noopener">${esc(x.name)}</a><span class="s"><i class="dot" style="background:${secColor(x.sector)}"></i>${esc(x.sector)}${x.debt_to_assets < 20 ? ' · 간접 보유 구조일 수 있음' : ''}</span></td>`;
+        if (c.k === 'name') return `<td>${stockLink(x.code, x.name)}<span class="s"><i class="dot" style="background:${secColor(x.sector)}"></i>${esc(x.sector)}${x.debt_to_assets < 20 ? ' · 간접 보유 구조일 수 있음' : ''}</span></td>`;
         if (c.k === 'as_of') return `<td class="nw">${esc(x.as_of || '')}<span class="s">${esc(x.period || '')}</span></td>`;
         if (c.k === null) return `<td>${spark(x)}</td>`;
         if (c.txt) return `<td>${esc(x[c.k] || '')}</td>`;
@@ -180,6 +202,106 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
   $('#lev-csv').onclick = () => csv('상장리츠_재무구조', ['종목','종목코드','투자대상','기준일','자산총계(억원)','부채총계(억원)','자본총계(억원)','부채÷자산(%)','부채÷자본(배)','결산기 말일','영업수익(억원)','영업이익률(%)','최대주주'],
     rows().map(x => [x.name, x.code, x.sector, x.as_of, x.assets_eok, x.debt_eok, x.equity_eok, x.debt_to_assets, x.debt_to_equity, x.fy_end, x.revenue_eok, x.op_margin, x.top_shareholder]));
   draw();
+})();
+
+/* 종목별 재무 변동과 공시 */
+(function(){
+  const select = $('#stock');
+  const showRoutine = $('#show-routine');
+  const homepage = $('#stock-homepage');
+  const summary = $('#timeline-summary');
+  const stocks = [...R].sort((a, b) => b.assets_eok - a.assets_eok);
+  const coverage = D.dis_start ? `공시는 ${D.dis_start} 이후 수집분만 있습니다.` : '수집한 공시가 없습니다.';
+  $('#read-coverage').textContent = coverage;
+  $('#coverage').textContent = coverage + ' 부채나 자본 증가액이 해당 기준일 자산총계의 5%를 넘으면 표시합니다.';
+  select.replaceChildren(...stocks.map(r => new Option(r.name, r.code)));
+  if (!stocks.length) {
+    select.disabled = true;
+    showRoutine.disabled = true;
+    $('#no-major').textContent = '재무 자료가 없습니다.';
+    return;
+  }
+  const amount = value => value == null ? '자료 없음' : (value / 1e8).toLocaleString('ko-KR', {maximumFractionDigits: 1}) + '억원';
+  function financeRow(e){
+    const cells = [
+      ['자산총계', amount(e.assets)], ['부채총계', amount(e.debt)], ['자본총계', amount(e.equity)],
+      ['부채 ÷ 자산', e.ratio == null ? '자료 없음' : e.ratio.toFixed(1) + '%'],
+      ['부채 증감', amount(e.debt_change), e.debt_up && '부채 증가'],
+      ['자본 증감', amount(e.equity_change), e.equity_up && '자본 증가']
+    ];
+    return cells.map(([label, value, flag]) => `<td class="num" data-label="${label}">${value}${flag ? ` <span class="tag">${flag}</span>` : ''}</td>`).join('');
+  }
+  function draw(code){
+    select.value = code;
+    const url = stocks.find(r => String(r.code) === select.value)?.homepage;
+    homepage.innerHTML = url ? `<a class="ext" href="${esc(url)}" target="_blank" rel="noopener">홈페이지</a>` : '';
+    homepage.hidden = !url;
+    const events = D.timelines[code];
+    const latestFinance = events.find(e => e.kind === 'finance');
+    const latestDate = latestFinance?.date;
+    let majorCount = 0, routineCount = 0, majorAfter = 0, routineAfter = 0;
+    const routine = new Map();
+    for (const e of events) {
+      if (e.kind !== 'disclosure') continue;
+      const after = latestDate && e.date > latestDate;
+      if (e.group) {
+        majorCount++;
+        if (after) majorAfter++;
+      } else {
+        routineCount++;
+        if (after) routineAfter++;
+        if (showRoutine.checked) routine.set(e.date, (routine.get(e.date) || 0) + 1);
+      }
+    }
+    const recent = latestDate ? `가장 최근 재무 기준일은 ${esc(latestDate)}입니다. 그 뒤로 주요 공시 ${n0(majorAfter)}건, 일상 공시 ${n0(routineAfter)}건이 있었습니다. ` : '';
+    summary.innerHTML = `${recent}수집 기간 전체로는 주요 공시 ${n0(majorCount)}건, 일상 공시 ${n0(routineCount)}건입니다.`;
+    summary.hidden = false;
+    $('#no-major').textContent = majorCount ? '' : '수집 기간에 주요 공시가 없습니다.';
+    const hasVisibleAfter = majorAfter > 0 || (showRoutine.checked && routineAfter > 0);
+    const rows = [];
+    for (const e of events) {
+      let label, cells;
+      if (e.kind === 'finance') {
+        if (e === latestFinance && hasVisibleAfter) {
+          rows.push(`<tr class="finance-divider"><td colspan="7">최근 재무 기준일(${esc(latestDate)}) 이후 공시는 위쪽에 있습니다.</td></tr>`);
+        }
+        label = '재무';
+        cells = financeRow(e);
+      } else if (e.group) {
+        label = '주요 공시';
+        cells = `<td colspan="6"><span class="tag">${esc(e.group)}</span> ${esc(e.matter)}${e.text ? `<span class="s">${esc(e.text)}</span>` : ''}</td>`;
+      } else {
+        if (!routine.has(e.date)) continue;
+        label = '일상 공시';
+        cells = `<td colspan="6">${routine.get(e.date)}건</td>`;
+        routine.delete(e.date);
+      }
+      rows.push(`<tr><td class="nw">${esc(e.date)}<span class="s">${label}</span></td>${cells}</tr>`);
+    }
+    $('#events tbody').innerHTML = rows.join('') || '<tr><td colspan="7">재무 변동과 공시 자료가 없습니다.</td></tr>';
+  }
+  function choose(code, jump){
+    if (!stocks.some(r => String(r.code) === code)) return;
+    const url = new URL(location.href);
+    url.searchParams.set('code', code);
+    if (jump) url.hash = 'timeline';
+    try { history.replaceState(history.state, '', url); }
+    catch (err) {
+      if (err.name !== 'SecurityError' || location.protocol !== 'file:') throw err;
+    }
+    draw(code);
+    if (jump) { select.focus({preventScroll:true}); $('#timeline').scrollIntoView(); }
+  }
+  select.onchange = () => choose(select.value, false);
+  showRoutine.onchange = () => draw(select.value);
+  document.addEventListener('click', event => {
+    const link = event.target.closest('a[data-stock]');
+    if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    choose(link.dataset.stock, true);
+  });
+  const requested = new URLSearchParams(location.search).get('code');
+  draw(stocks.some(r => String(r.code) === requested) ? requested : stocks[0].code);
 })();
 
 /* 주요 공시 */
@@ -193,7 +315,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
     const r = rows();
     $('#dis-count').textContent = `${n0(r.length)}건 / 전체 ${n0(D.disclosures.length)}건`;
     $('#dis-table').innerHTML = `<thead><tr><th>공시일</th><th>유형</th><th>리츠</th><th>공시 제목과 내용</th></tr></thead><tbody>` +
-      (r.length ? r.slice(0, shown).map(x => `<tr><td class="nw">${x.date}</td><td class="nw"><span class="tag">${esc(x.group)}</span></td><td>${esc(x.company_s)}${x.listed ? `<span class="s">상장 · ${esc(x.listed)}</span>` : `<span class="s">${esc(x.type)}</span>`}</td><td>${esc(x.matter)}${x.text ? `<span class="s">${esc(x.text)}</span>` : ''}</td></tr>`).join('') : `<tr><td colspan="4" class="empty">조건에 맞는 공시가 없습니다.</td></tr>`) + '</tbody>';
+      (r.length ? r.slice(0, shown).map(x => `<tr><td class="nw">${x.date}</td><td class="nw"><span class="tag">${esc(x.group)}</span></td><td>${esc(x.company_s)}${x.listed ? `<span class="s">상장 · ${x.timeline_code ? stockLink(x.timeline_code, x.listed) : esc(x.listed)}</span>` : `<span class="s">${esc(x.type)}</span>`}</td><td>${esc(x.matter)}${x.text ? `<span class="s">${esc(x.text)}</span>` : ''}</td></tr>`).join('') : `<tr><td colspan="4" class="empty">조건에 맞는 공시가 없습니다.</td></tr>`) + '</tbody>';
     $('#dis-more').style.display = r.length > shown ? '' : 'none';
   }
   $('#dis-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;

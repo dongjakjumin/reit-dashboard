@@ -98,6 +98,8 @@ def solve_equity(p: dict) -> float:
     low, high = 0.0, share * develop(p, 0.0)["total"]
     for _ in range(200):
         mid = (low + high) / 2.0
+        if mid == low or mid == high:
+            break
         if share * develop(p, mid)["total"] > mid:
             low = mid
         else:
@@ -105,7 +107,7 @@ def solve_equity(p: dict) -> float:
     return (low + high) / 2.0
 
 
-def calc(p: dict) -> dict:
+def calc(p: dict, probe=None) -> dict:
     equity = solve_equity(p)
     dev = develop(p, equity)
     total, done = dev["total"], dev["done"]
@@ -166,6 +168,12 @@ def calc(p: dict) -> dict:
     net_b = sale_b * (1 - cost_rate) - perm
     flow_b[end] = flow_b.get(end, 0.0) + net_b
 
+    if probe is not None:
+        plan, target = probe
+        flows = flow_a if plan == "a" else flow_b
+        return {"balance": switch if plan == "refi" else math.fsum(
+            cf * (1 + target / 100) ** (-month / 12) for month, cf in flows.items())}
+
     return {
         "acq": dev["extra"], "hard": dev["hard"], "soft": dev["soft"], "fin": dev["interest"], "tpc": total,
         "equity": equity, "dev_debt": dev["loan"], "dev_debt_peak": highest,
@@ -186,3 +194,35 @@ def calc(p: dict) -> dict:
         "b.years.yield_on_equity": [r["cf"] / invested if invested else None for r in rows],
         "b.years.noi": [r["noi"] for r in rows], "b.years.cf": [r["cf"] for r in rows],
     }
+
+
+def inverse(p, key, plan, target):
+    """목표 할인율의 순현재가치가 0이 되는 구간을 4등분해 좁힌다."""
+    lo, hi = {
+        "land": (0, max(1000, 5 * p["land"])),
+        "cost_per_py": (0, max(1000, 5 * p["cost_per_py"])),
+        "rent": (0, max(100, 5 * p["rent"])),
+        "exit_cap": (0.1, max(20, 5 * p["exit_cap"])),
+    }[key]
+
+    def balance(x):
+        return calc(dict(p, **{key: x}), (plan, target))["balance"]
+
+    left, right = balance(lo), balance(hi)
+    if plan == "refi" and left >= 0:
+        return lo
+    if left * right > 0:
+        return None
+    while hi - lo > 1e-9 * max(1, abs(lo)):
+        width = (hi - lo) / 4
+        for x in (lo + width, lo + 2 * width, lo + 3 * width, hi):
+            value = balance(x)
+            if left * value <= 0:
+                hi = x
+                break
+            lo, left = x, value
+    if plan == "refi":
+        return hi
+    x = (lo + hi) / 2
+    irr = calc(dict(p, **{key: x}))[plan + ".irr"]
+    return x if irr is not None and abs(100 * irr - target) < 0.0001 else None

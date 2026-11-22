@@ -47,8 +47,8 @@ process.stdin.on('end', () => {
 """
 
 
-def run_js(cases: list[dict]) -> list[dict]:
-    res = subprocess.run(["node", "-e", RUNNER, str(ROOT / "calc_engine.js")],
+def run_js(cases: list[dict], runner=RUNNER) -> list[dict]:
+    res = subprocess.run(["node", "-e", runner, str(ROOT / "calc_engine.js")],
                          input=json.dumps(cases), capture_output=True, text=True, encoding="utf-8")
     if res.returncode != 0:
         raise RuntimeError(res.stderr[:500])
@@ -173,6 +173,37 @@ def main() -> int:
     actual = [round(b[k]) for k in ("tpc", "equity", "noi1", "value")]
     actual += [round(b[k] * 100, 2) for k in ("a.irr", "b.irr")]
     check(actual == expected, "기본 가정의 금액과 IRR 6개 유지")
+    check([round(b["b.loan_to_equity"], 2), round(b["b.dscr_min"], 2), round(-b["b.refi"])]
+          == [1.94, 1.62, 233], "운영 단계 차입 1.94배, 최저 DSCR 1.62배, 추가 출자 233억원 유지")
+    print("[4] 목표 수익률 역산")
+    specs = [(k, plan, 8) for k in ("land", "cost_per_py", "rent", "exit_cap") for plan in ("a", "b")]
+    specs += [("rent", plan, 0) for plan in ("a", "b", "refi")]
+    runner = """
+const { solveFor } = require(process.argv[1]);
+const cases = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+process.stdout.write(JSON.stringify(cases.map(({p, specs}) =>
+  specs.map(([key, plan, target]) => solveFor(p, key, plan, target)))));
+"""
+    samples = [{"p": p, "specs": specs} for p in cases[:31]]
+    roots = run_js(samples, runner)
+    differences = []
+    for i, (sample, values) in enumerate(zip(samples, roots)):
+        for spec, value in zip(specs, values):
+            expected_root = calc_ref.inverse(sample["p"], *spec)
+            if not same(value, expected_root, 1e-6):
+                differences.append((i, spec, value, expected_root))
+    check(not differences, "기본값과 무작위 가정 30가지에서 역산 11개씩 독립 구현과 대조"
+          + (f" (첫 불일치 {differences[0]})" if differences else ""))
+    for (key, plan, target), x in zip(specs[:-1], roots[0]):
+        irr = None if x is None else run_js([dict(BASE, **{key: x})])[0][plan + ".irr"]
+        check(irr is not None and abs(irr * 100 - target) <= 0.01,
+              f"{plan.upper()}안 {key} 재입력 시 목표 연 {target}%와 차이 0.01%p 이내")
+    x = roots[0][-1]
+    refi = [] if x is None else run_js([dict(BASE, rent=x), dict(BASE, rent=x * 0.99)])
+    check(bool(refi) and 0 <= refi[0]["b.refi"] < 1e-4 and refi[1]["b.refi"] < 0,
+          "대환 기준 임대료에서 추가 출자 0원, 임대료가 1% 낮으면 추가 출자 발생")
+    unreachable = run_js([{"p": BASE, "specs": [("land", plan, 200) for plan in ("a", "b")]}], runner)
+    check(unreachable == [[None, None]], "목표 연 200%를 맞출 토지비가 범위 밖이면 두 방안 모두 해 없음")
     print(f"결과: {checks}개 중 {checks - bad}개 통과")
     return 1 if bad else 0
 

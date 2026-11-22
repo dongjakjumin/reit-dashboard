@@ -58,16 +58,63 @@ def month_add(y: int, m: int, k: int) -> tuple[int, int]:
     return idx // 12, idx % 12 + 1
 
 
+def collection_changes(previous, latest, filings, reits):
+    changes = []
+    if previous:
+        for rec in filings.values():
+            name = short_reit(mask_person(rec["name"]))
+            company = clean_company(mask_person(rec["applicant"]))
+            def add(kind, detail):
+                changes.append({"kind": kind, "name": name, "company": company, "detail": detail})
+
+            if rec.get("last_seen") == latest:
+                if rec.get("first_seen") == latest:
+                    add("새 신청", rec["req_type"])
+                history = rec.get("status_history", [])
+                if len(history) >= 2 and history[-1][0] == latest:
+                    add("상태 변경", f"{history[-2][1]} → {history[-1][1]}")
+            if rec.get("gone_on") == latest:
+                add("목록에서 빠진 신청", rec["req_type"])
+        for rec in reits.values():
+            if rec.get("first_seen") == latest and rec.get("last_seen") == latest:
+                changes.append({"kind": "운영 목록에 새로 올라온 리츠", "name": short_reit(mask_person(rec["name"])),
+                                "company": clean_company(mask_person(rec["amc"])), "detail": rec["kind"]})
+    return {"previous": previous, "rows": changes}
+
+
+def project_comparison(proj, by_amc, today):
+    groups = defaultdict(list)
+    sectors = Counter()
+    month_counts = Counter()
+    for r in proj:
+        groups[r["amc_s"]].append(r)
+        sectors[r["sector"]] += 1
+        month_counts[r["date"][:7]] += 1
+    companies = [{"name": name, "n": len(rows), "total": len(by_amc[name]),
+                  "sectors": dict(Counter(r["sector"] for r in rows).most_common()),
+                  "latest": max(r["date"] for r in rows)} for name, rows in groups.items()]
+    companies.sort(key=lambda a: (a["n"], a["latest"]), reverse=True)
+    months = {}
+    if month_counts:
+        year, month = map(int, min(month_counts).split("-"))
+        for offset in range((today.year - year) * 12 + today.month - month + 1):
+            y, m = month_add(year, month, offset)
+            key = f"{y}-{m:02}"
+            months[key] = month_counts[key]
+    return {"companies": companies, "sectors": sectors, "months": months}
+
+
 def build_data() -> dict:
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
     flog = json.loads((DATA / "filings_log.json").read_text(encoding="utf-8"))
+    rlog = json.loads((DATA / "reits_log.json").read_text(encoding="utf-8"))
     today = d(snap["date"])
     reits = snap["reits"]
     filings = snap["filings"]
 
     for r in reits:
-        r["amc_s"] = clean_company(r["amc"])
-        r["name_s"] = short_reit(r["name"])
+        r["amc_s"] = clean_company(mask_person(r["amc"]))
+        r["name_s"] = short_reit(mask_person(r["name"]))
         r["assets_eok"] = r["assets_eok"] or 0
         r["project"] = "Y" if r["kind"] == "신고" or r["project"] == "Y" else "N"
 
@@ -154,17 +201,21 @@ def build_data() -> dict:
     frows = []
     for f in sorted(filings, key=lambda f: f["date"], reverse=True):
         rec = flog.get(str(f["id"]), {})
+        history = rec.get("status_history", [])
         frows.append({
             "date": safe_date(f["date"]),
             "days": (today - d(f["date"])).days,
             "req_type": f["req_type"],
-            "name_s": short_reit(f["name"]),
-            "project_name": short_reit(f["project_name"] or ""),
+            "name_s": short_reit(mask_person(f["name"])),
+            "project_name": short_reit(mask_person(f["project_name"] or "")),
             "biz_type": f["biz_type"] or "",
-            "applicant": clean_company(f["applicant"]),
+            "applicant": clean_company(mask_person(f["applicant"])),
             "status": f["status"],
             "existing": f["reit_id"] in reit_ids,
-            "first_seen": rec.get("first_seen"),
+            "first_seen": safe_date(rec.get("first_seen")),
+            "changed_on": safe_date(history[-1][0]) if len(history) > 1 else "",
+            "group": "변경" if f["req_type"] == CHANGE_REQUEST else "신규",
+            "capital_eok": f["founding_capital"] / 100_000_000 if f.get("founding_capital") is not None else None,
         })
 
     # 접수 기록에서 처리 완료(목록에서 빠진 건) 집계: 기록이 쌓인 뒤에 의미가 생김
@@ -177,15 +228,26 @@ def build_data() -> dict:
             end = None if is_change else safe_date(result.get("result_date")) or None
             done.append({
                 "date": safe_date(rec["date"]), "gone_on": safe_date(rec["gone_on"]), "req_type": rec["req_type"],
-                "name_s": short_reit(rec["name"]), "applicant": clean_company(rec["applicant"]),
+                "name_s": short_reit(mask_person(rec["name"])), "applicant": clean_company(mask_person(rec["applicant"])),
                 "is_change": is_change,
                 "result_kind": result.get("result_kind") if end else None,
                 "result_date": end,
                 "days_to_result": (d(end) - d(rec["date"])).days if end else None,
             })
     done.sort(key=lambda x: x["gone_on"], reverse=True)
-    log_days = len(list((DATA / "snapshots").glob("*.json")))
-    first_log = min((p.stem for p in (DATA / "snapshots").glob("*.json")), default=snap["date"])
+    dates = sorted(p.stem for p in (DATA / "snapshots").glob("*.json")
+                   if safe_date(p.stem) and p.stem <= snap["date"])
+    previous = max((day for day in dates if day < snap["date"]), default=None)
+    applicants = {}
+    for f in frows:
+        a = applicants.setdefault(f["applicant"], {"name": f["applicant"], "total": 0, "new": 0,
+                                                  "change": 0, "supplement": 0, "oldest": 0})
+        a["total"] += 1
+        a["change" if f["group"] == "변경" else "new"] += 1
+        a["supplement"] += f["status"] == "보완요청"
+        a["oldest"] = max(a["oldest"], f["days"])
+    summary["new_filings"] = sum(a["new"] for a in applicants.values())
+    summary["old_new"] = sum(f["group"] == "신규" and f["days"] > 90 for f in frows)
 
     # 최근 변동(접수와 인가, 등록, 신고를 날짜순으로)
     events = []
@@ -210,7 +272,10 @@ def build_data() -> dict:
     return {
         "collected_at": snap["collected_at"], "date": snap["date"],
         "summary": summary, "yearly": yearly, "monthly": monthly, "sector": sector,
-        "amc": amc, "filings": frows, "done": done, "log_days": log_days, "first_log": first_log,
+        "amc": amc, "filings": frows, "done": done, "log_days": len(dates), "first_log": min(dates, default=snap["date"]),
+        "changes": collection_changes(previous, snap["date"], flog, rlog),
+        "applicants": sorted(applicants.values(), key=lambda a: (-a["total"], a["name"])),
+        "project": project_comparison(proj, by_amc, today),
         "events": events, "reits": slim,
         "kinds": KINDS, "sectors": SECTORS,
         "highlight_amc": cfg.get("highlight_amc", ""),
@@ -294,6 +359,7 @@ def build_listed_data() -> dict:
             ppy = min(4, max(1, round(r["annual_dvd_pct"] / r["dvd_pct"])))
         rows.append({
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
+            "has_finance": _has_finance(fin.get(str(r.get("reit_id")))),
             "homepage": safe_url(r.get("homepage")), "listed_date": safe_date(r.get("listed_date")),
             "price": last, "mktcap_eok": mktcap,
             "chg_pct": round((last / hist[dates[-2]] - 1) * 100, 2) if len(dates) >= 2 and last_d not in breaks else None,
@@ -360,6 +426,30 @@ def _norm_company(name: str) -> str:
     return re.sub(r"\(주\)|㈜|주식회사|\s", "", name or "")
 
 
+def _has_finance(f):
+    return bool(f and f.get("assets") and f.get("debt") is not None and f.get("equity") is not None)
+
+
+def _finance_events(series):
+    events = []
+    previous = {}
+    for row in sorted(series, key=lambda x: x.get("end") or ""):
+        day = safe_date(row.get("end"))
+        if not day:
+            continue
+        assets, debt = row.get("assets"), row.get("debt")
+        event = {"date": day, "kind": "finance", "assets": assets, "debt": debt, "equity": row.get("equity"),
+                 "ratio": round(debt / assets * 100, 1) if assets and debt is not None else None}
+        for key in ("debt", "equity"):
+            current, prior = row.get(key), previous.get(key)
+            change = current - prior if current is not None and prior is not None else None
+            event[key + "_change"] = change
+            event[key + "_up"] = bool(assets and assets > 0 and change is not None and change * 20 > assets)
+        events.append(event)
+        previous = row
+    return events
+
+
 def build_finance_data() -> dict:
     """상장리츠 재무 구조와 리츠 주요 공시."""
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
@@ -368,11 +458,12 @@ def build_finance_data() -> dict:
     today = d(snap["date"])
     eok = lambda won: round(won / 1e8) if won is not None else None
 
-    rows = []
+    rows, timelines = [], {}
     for r in snap["listed"]:
         f = fin.get(str(r.get("reit_id")))
-        if not f or not f.get("assets") or f.get("debt") is None or f.get("equity") is None:
+        if not _has_finance(f):
             continue
+        timelines[r["code"]] = _finance_events(f["series"])
         ser = [x for x in f["series"] if x.get("assets") and x.get("debt") is not None]
         last = ser[-1] if ser else {}
         m = re.search(r"(\d+기)\s*(결산기|\d분기|반기)?", (last.get("label") or "").replace("\\n", " "))
@@ -403,11 +494,20 @@ def build_finance_data() -> dict:
     for r in snap["listed"]:
         for nm in (r.get("company"), reit_name_by_id.get(r.get("reit_id"))):
             if nm:
-                listed_names[_norm_company(nm)] = r["name"]
+                listed_names[_norm_company(nm)] = r
     cut90 = (today - timedelta(days=90)).isoformat()
     items, routine90 = [], 0
     for no, x in dis.items():
         grp = DISCLOSURE_GROUPS.get(x.get("matter_code"))
+        stock = listed_names.get(_norm_company(x["company"]))
+        code = stock["code"] if stock else None
+        day = safe_date(x.get("date"))
+        body = "" if "주주" in x["matter"] else (x.get("text") or "")
+        if code in timelines and day:
+            event = {"kind": "disclosure", "date": day, "no": no, "group": grp}
+            if grp:
+                event.update(matter=x["matter"], text=body)
+            timelines[code].append(event)
         if (x.get("date") or "") < cut90:
             continue
         if not grp:
@@ -415,7 +515,10 @@ def build_finance_data() -> dict:
             continue
         items.append({"no": no, "date": safe_date(x["date"]), "group": grp, "matter": x["matter"],
                       "company_s": short_reit(x["company"]), "type": x.get("company_type") or "",
-                      "listed": listed_names.get(_norm_company(x["company"])), "text": x.get("text") or ""})
+                      "listed": stock["name"] if stock else None,
+                      "timeline_code": code if code in timelines else None, "text": body})
+    for events in timelines.values():
+        events.sort(key=lambda e: (e["date"], e["kind"] == "finance", int(e.get("no", 0))), reverse=True)
     items.sort(key=lambda z: (z["date"], int(z["no"])), reverse=True)
     counts = {g: sum(1 for i in items if i["group"] == g) for g in GROUP_ORDER}
     cfg_path = ROOT / "config.json"
@@ -436,6 +539,8 @@ def build_finance_data() -> dict:
         },
         "rows": rows, "groups": [{"name": g, "n": counts[g]} for g in GROUP_ORDER if counts[g]],
         "disclosures": items,
+        "timelines": timelines,
+        "dis_start": min((day for x in dis.values() if (day := safe_date(x.get("date")))), default=None),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
     }
 

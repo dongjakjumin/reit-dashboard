@@ -32,7 +32,7 @@
   <div class="two">
     <div class="card">
       <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">상장리츠 주가 지수, 최근 1년</strong></div>
-      <div class="chart" id="idx-chart"></div>
+      <div class="chart" id="idx-chart" role="group" tabindex="0" aria-label="상장리츠 주가 지수. 좌우 화살표로 날짜를 옮깁니다. Home 키로 첫날, End 키로 마지막 날을 확인합니다."></div>
       <p class="note" id="idx-note"></p>
     </div>
     <div class="card">
@@ -141,14 +141,31 @@ function drawIndex(){
   g += `<rect id="idx-hit" x="${mL}" y="${mT}" width="${iw}" height="${ih}" fill="transparent"/>`;
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="상장리츠 주가 지수 최근 1년">${g}</svg>`;
   const svg = el.querySelector('svg'), hit = el.querySelector('#idx-hit'), cur = el.querySelector('#idx-cur');
-  hit.addEventListener('mousemove', e => {
-    const b = svg.getBoundingClientRect(), px = (e.clientX - b.left) / b.width * W;
-    const i = Math.max(0, Math.min(n - 1, Math.round((px - mL) / iw * (n - 1))));
+  let i = Number(el.dataset.index || 0);
+  function show(index, pointer){
+    i = Math.max(0, Math.min(n - 1, index));
+    el.dataset.index = i;
+    const box = svg.getBoundingClientRect();
+    const point = pointer || {clientX: box.left + X(i) * box.width / W, clientY: box.top + Y(ys[i]) * box.height / H};
     cur.style.display = ''; el.querySelector('#idx-vl').setAttribute('x1', X(i)); el.querySelector('#idx-vl').setAttribute('x2', X(i));
     el.querySelector('#idx-dot').setAttribute('cx', X(i)); el.querySelector('#idx-dot').setAttribute('cy', Y(ys[i]));
-    showTip(`<b>${xs[i]}</b><div class="tr"><span>지수</span><span>${ys[i].toFixed(1)}</span></div><div class="tr"><span>1년 전 대비</span><span>${pct(ys[i] - 100)}</span></div>`, e);
+    showTip(`<b>${esc(xs[i])}</b><div class="tr"><span>지수</span><span>${ys[i].toFixed(1)}</span></div><div class="tr"><span>1년 전 대비</span><span>${pct(ys[i] - 100)}</span></div>`, point);
+  }
+  function hide(){ cur.style.display = 'none'; hideTip(); }
+  hit.addEventListener('mousemove', e => {
+    const box = svg.getBoundingClientRect(), px = (e.clientX - box.left) / box.width * W;
+    show(Math.round((px - mL) / iw * (n - 1)), e);
   });
-  hit.addEventListener('mouseleave', () => { cur.style.display = 'none'; hideTip(); });
+  hit.addEventListener('mouseleave', () => document.activeElement === el ? show(i) : hide());
+  el.onfocus = () => show(i);
+  el.onblur = hide;
+  el.onkeydown = e => {
+    const next = {ArrowLeft: i - 1, ArrowRight: i + 1, Home: 0, End: n - 1};
+    if (!Object.hasOwn(next, e.key)) return;
+    e.preventDefault();
+    show(next[e.key]);
+  };
+  if (document.activeElement === el) show(i);
   $('#idx-note').textContent = `${S.index_n}개 종목의 단순평균이고 배당은 넣지 않았습니다. 기간은 ${xs[0]}부터 ${xs[n - 1]}까지입니다.` + (D.index.excluded.length ? ` 기준가가 바뀌었거나 거래가 없던 ${D.index.excluded.join(', ')}는 뺐습니다.` : '');
 }
 
@@ -206,7 +223,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     $('#tb-count').textContent = `${r.length}개 / 전체 ${R.length}개`;
     $('#tb').innerHTML = '<thead><tr>' + cols.map(c => c.k ? `<th class="sortable${c.txt ? '' : ' num'}" data-k="${c.k}"${sortK === c.k ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}><button type="button">${c.t}</button></th>` : `<th>${c.t}</th>`).join('') + '</tr></thead><tbody>' +
       r.map(x => '<tr>' + cols.map(c => {
-        if (c.k === 'name') return `<td><a class="ext" href="${esc(x.homepage || '#')}" target="_blank" rel="noopener">${esc(x.name)}</a><span class="s"><i class="dot" style="background:${secColor(x.sector)}"></i>${esc(x.sector)}${x.price_break ? ' · 기준가 변경 ' + esc(x.price_break) : ''}${x.halted ? ' · 최근 거래 없음' : ''}</span></td>`;
+        if (c.k === 'name') return `<td>${x.has_finance ? `<a class="ext" href="finance.html?code=${encodeURIComponent(x.code)}#timeline">${esc(x.name)}</a>` : esc(x.name)}<span class="s"><i class="dot" style="background:${secColor(x.sector)}"></i>${esc(x.sector)}${x.price_break ? ' · 기준가 변경 ' + esc(x.price_break) : ''}${x.halted ? ' · 최근 거래 없음' : ''}</span></td>`;
         if (c.k === null) return `<td>${spark(x)}</td>`;
         if (c.k === 'fiscal_end') return `<td class="nw">${esc(x.fiscal_end || '')}<span class="s">${esc(x.fiscal_period || '')}</span></td>`;
         if (c.txt) return `<td class="nw">${esc(x[c.k] || '')}</td>`;

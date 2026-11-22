@@ -50,7 +50,7 @@ function multiple(flows) {
   return neg > 0 ? pos / neg : null;
 }
 
-function reitCalc(p) {
+function reitCalc(p, probe) {
   const MAN = 1e-4;                                   // 만원 → 억원
   const hard = p.gfa_py * p.cost_per_py * MAN;        // 공사비
   const soft = hard * p.soft_pct / 100;               // 설계, 감리, 인허가, 예비비 등
@@ -86,6 +86,7 @@ function reitCalc(p) {
   let eLo = 0, eHi = share * devRun(0).tpc;
   for (let i = 0; i < 200; i++) {
     const mid = (eLo + eHi) / 2;
+    if (mid === eLo || mid === eHi) break;
     if (share * devRun(mid).tpc - mid > 0) eLo = mid; else eHi = mid;
   }
   const E = (eLo + eHi) / 2, run = devRun(E);
@@ -145,6 +146,8 @@ function reitCalc(p) {
   cfB[Tend] += netB;
   flowsB.push(netB);
 
+  if (probe) return probe(cfA, cfB, refi);
+
   return {
     land: p.land, acq, hard, soft, fin: run.fin, tpc, equity: E,
     dev_debt: devDebt, dev_debt_peak: peak, ltc: tpc > 0 ? devDebt / tpc : null,
@@ -160,4 +163,42 @@ function reitCalc(p) {
   };
 }
 
-if (typeof module !== 'undefined') module.exports = { reitCalc, irrMonthly, annualize, multiple };
+// 목표는 연 % 단위다. 임대료가 오르면 회수액이 늘고, 비용·Cap Rate가 오르면
+// 줄어드는 구간을 전제로 한다. B안은 대출 한도 전환과 현금흐름의 부호 변화로
+// 단조성이 깨질 수 있다. 양 끝 사이의 해 하나를 찾고 해당 방안의 IRR로 확인한다.
+function solveFor(p, key, plan, target = p.target_irr ?? 8) {
+  const floors = {land: 1000, cost_per_py: 1000, rent: 100, exit_cap: 20};
+  let lo = key === 'exit_cap' ? 0.1 : 0;
+  let hi = Math.max(floors[key], 5 * p[key]);
+  if (!Number.isFinite(hi) || !Number.isFinite(target) || target <= -100) return null;
+  const monthly = (1 + target / 100) ** (1 / 12);
+  function probe(cfA, cfB, refi) {
+    if (plan === 'refi') return refi;
+    const flows = plan === 'a' ? cfA : cfB;
+    // IRR이 없는 구간도 목표 수익률로 할인한 현금흐름의 부호는 구할 수 있다.
+    let sum = 0;
+    if (monthly >= 1) {
+      for (let i = flows.length - 1; i >= 0; i--) sum = flows[i] + sum / monthly;
+    } else {
+      for (const flow of flows) sum = sum * monthly + flow;
+    }
+    return sum;
+  }
+  const at = x => reitCalc({...p, [key]: x}, probe);
+  const left = at(lo), right = at(hi);
+  if (!Number.isFinite(left) || !Number.isFinite(right)) return null;
+  if (plan === 'refi' && left >= 0) return lo;
+  if (left === 0) hi = lo;
+  else if (right !== 0 && Math.sign(left) === Math.sign(right)) return null;
+  for (let i = 0; i < 32 && hi > lo; i++) {
+    const mid = (lo + hi) / 2, value = at(mid);
+    if (!Number.isFinite(value)) return null;
+    if (value === 0 || Math.sign(value) !== Math.sign(left)) hi = mid;
+    else lo = mid;
+  }
+  if (plan === 'refi') return hi;
+  const irr = reitCalc({...p, [key]: hi})[plan].irr;
+  return irr != null && Math.abs(irr * 100 - target) < 0.0001 ? hi : null;
+}
+
+if (typeof module !== 'undefined') module.exports = { reitCalc, irrMonthly, annualize, multiple, solveFor };

@@ -7,7 +7,7 @@
     "equity_pct": 30, "dev_rate": 6.5,
     "rent_area_pct": 100, "rent": 27, "vacancy": 5, "opex": 22, "growth": 2, "reit_cost": 0.3,
     "perm_ltv": 55, "perm_rate": 5.0, "perm_dscr_min": 1.2,
-    "exit_cap": 4.7, "sale_cost": 1.0
+    "exit_cap": 4.7, "sale_cost": 1.0, "target_irr": 8
   },
   "downside": {
     "rent_pct": -10, "cost_pct": 10, "dev_rate_pp": 1.0, "perm_rate_pp": 1.0, "exit_cap_pp": 0.5, "con_m_add": 6, "lease_m_add": 6
