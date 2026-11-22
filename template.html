@@ -155,6 +155,7 @@ section[aria-labelledby="h-proj"] .card{min-width:0}
 <div id="tip" role="status"></div>
 
 <script>
+/*__FOLD_TABLE__*/
 const D = /*__DATA__*/null;
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -348,6 +349,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     ['capital_eok','설립자본금',v => v == null ? '–' : v.toLocaleString('ko-KR', {maximumFractionDigits:1}) + '억원'], ['status','진행상태']], 'date', 'applicant');
   $('#proj-table').innerHTML = `<thead><tr><th>신고일</th><th>리츠</th><th>투자대상</th><th>자산관리회사</th><th class="num">자산총계</th></tr></thead><tbody>` +
     rows.map(r => `<tr class="${rowClass(r.amc_s)}"><td class="nw">${r.date}</td><td>${esc(r.name_s)}</td><td class="nw"><i class="dot" style="background:${SECTOR_COLOR[r.sector]}"></i>${esc(r.sector)}</td><td>${esc(r.amc_s)}</td><td class="num">${r.assets_eok ? eok(r.assets_eok) : '–'}</td></tr>`).join('') + '</tbody>';
+  foldTable($('#proj-table'));
   $('#proj-csv').onclick = () => csv('프로젝트리츠_목록', ['신고일','리츠','투자대상','자산관리회사','자산총계(억원)'], rows.map(r => [r.date, r.name_s, r.sector, r.amc_s, r.assets_eok]));
 })();
 
@@ -389,6 +391,8 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 /* 최근 변동 */
 $('#ev-table').innerHTML = `<thead><tr><th>날짜</th><th>구분</th><th>리츠</th><th>자산관리회사, 신청회사</th><th>내용</th></tr></thead><tbody>` +
   D.events.map(e => `<tr><td class="nw">${e.date}</td><td class="nw">${e.what === '접수' ? '<span class="tag">접수</span>' : `<i class="dot" style="background:${KIND_COLOR[e.what]}"></i>${esc(e.what)}`}</td><td>${esc(e.name_s)}</td><td>${esc(e.who)}</td><td class="nw">${esc(e.note)}</td></tr>`).join('') + '</tbody>';
+
+foldTable($('#ev-table'));
 
 /* 전체 목록 */
 (function(){

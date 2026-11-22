@@ -18,6 +18,7 @@ import re
 import sys
 from calendar import monthrange
 from datetime import date, timedelta
+from itertools import groupby
 from pathlib import Path
 from statistics import median
 
@@ -49,7 +50,7 @@ def verify_upcoming(check, notes, confirmed, upcoming, as_of):
     expected = {}
     passed_keys = set()
     past_amount = overdue_amount = overdue_count = within6 = 0
-    fields = ("code", "maturity", "kind", "rate_text", "rate_type")
+    fields = ("code", "maturity", "kind", "rate_text", "rate_type", "fx")
     for code in confirmed:
         issuer = notes[code]
         for loan in issuer["loans"]:
@@ -132,6 +133,7 @@ def verify_loans(check, statements, page, listed, as_of):
         try:
             valid = all(date.fromisoformat(x["maturity"]).isoformat() == x["maturity"]
                         and type(x["amount"]) is int and x["amount"] > 0
+                        and isinstance(x.get("fx"), bool)
                         and x["rate_type"] in ("고정","변동","모름")
                         and (x["rate"] is None or x["rate_type"] == "고정") for x in rows)
         except (TypeError, ValueError):
@@ -339,6 +341,39 @@ def main() -> int:
         check(abs(ld["index"]["values"][0] - 100) < 0.001, "주가 지수 첫날 = 100")
     else:
         check(ls["index_ret"] is None, "지수 자료가 없으면 수익률을 비움")
+    start = date.fromisoformat(snap["date"])
+    window_start = str(start - timedelta(days=372))
+    index_start = str(start - timedelta(days=366))
+    histories = {r["code"]: {day: price for day, price in prices.get(str(r["code"]), {}).items()
+                             if day >= window_start and price} for r in listed}
+    trading_days = sorted({day for h in histories.values() if len(h) >= 2 for day in h if day >= index_start})
+    members = []
+    for stock in listed:
+        h = histories[stock["code"]]
+        series = [h[day] for day in sorted(h)]
+        changed = any(abs(b / a - 1) > .31 for a, b in zip(series, series[1:]))
+        flat = any(sum(1 for _ in run) >= 61 for _, run in groupby(series))
+        if (len(h) >= 2 and any(day in h for day in trading_days[:6])
+                and not changed and not (flat and not stock.get("volume"))):
+            members.append(h)
+    dates = [day for day in trading_days if members and all(day in h for h in members)]
+    moves = []
+    for history in members if dates else []:
+        last = max(history)
+        cutoff = str(date.fromisoformat(last) - timedelta(days=365))
+        base = max((day for day in history if day <= cutoff), default=None)
+        if base:
+            moves.append(round((history[last] / history[base] - 1) * 100, 1))
+    summary = page_data.get("summary", {}) if codes is not None else {}
+    check((len(members) if dates else 0, sum(v > 0 for v in moves), sum(v < 0 for v in moves)) ==
+          tuple(summary.get(k) for k in ("index_n", "up_1y", "down_1y")), "지수 표본과 상승·하락 종목 수 재계산")
+    expected_dvd = {r["code"]: r.get("annual_dvd_pct") or None for r in listed}
+    dividends = [v for v in expected_dvd.values() if v is not None]
+    check(codes is not None and {r["code"]: r["annual_dvd_pct"] for r in page_data["rows"]} == expected_dvd
+          and {r["id"]: r["dividend_pct"] for r in d["reits"]} == {r["id"]: r.get("dividend_pct") or None for r in reits}
+          and summary.get("dvd_n") == len(dividends)
+          and summary.get("dvd_median") == (round(median(dividends), 2) if dividends else None),
+          "두 화면 연환산 배당률의 0% 빈값 처리와 중앙값 재계산")
     nav_rows = ask("/main/searchMainStock", {"stockTab": "3"})
     ffo_rows = ask("/main/searchMainStock", {"stockTab": "4"})
     nav_main = {str(x.get("stockNm")).strip(): x.get("navThstrm") for x in (nav_rows or [])}
@@ -479,6 +514,7 @@ def main() -> int:
             stored = {day: value for day, value in series.get("ktb10", {}).get("values", {}).items()
                       if str(start) <= day <= str(d1)}
             check(all(live.get(day) == value for day, value in stored.items()), "국고채 10년 최근 14일 원문 대조")
+    notes = saved_json("loans.json")
     expected_spreads = []
     price_window_start = (d1 - timedelta(days=372)).isoformat()
 
@@ -555,10 +591,12 @@ def main() -> int:
         if spread is not None:
             expected_spreads.append(spread)
         corp = latest_rates.get("corp_aa")
-        difference = (round(rate - corp, 1) if rate is not None and corp is not None
+        fx = (code in finance_payload.get("loans", {}).get("issuers", {})
+              and any(x["fx"] for x in notes[code]["loans"]))
+        difference = (round(rate - corp, 1) if not fx and rate is not None and corp is not None
                       and record["current"]["total"] else None)
         check("spread" in market_row and spread == market_row["spread"], f"{name} 국고채 대비 배당률 차이")
-        check("corp_spread" in maturity_row and difference == maturity_row["corp_spread"], f"{name} 회사채 금리와 차이")
+        check(fx == maturity_row.get("fx") and "corp_spread" in maturity_row and difference == maturity_row["corp_spread"], f"{name} 회사채 금리와 차이")
         check(matches(share, maturity_row.get("share")) and matches(rate, maturity_row.get("rate"))
               and matches(coverage, maturity_row.get("coverage")) and interest_source == maturity_row.get("interest_source"),
               f"{name} 화면 만기 비중, 추정 금리와 근거, 영업이익 ÷ 이자")

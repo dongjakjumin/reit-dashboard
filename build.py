@@ -267,6 +267,7 @@ def build_data() -> dict:
 
     for x in slim:
         x["date"] = safe_date(x["date"])
+        x["dividend_pct"] = x["dividend_pct"] or None
     cfg_path = ROOT / "config.json"
     cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
 
@@ -344,10 +345,10 @@ def upcoming_loans(issuers, as_of):
     for code, issuer in issuers.items():
         groups = defaultdict(list)
         for loan in issuer["loans"]:
-            key = (loan["maturity"], loan["kind"], loan["rate_text"], loan["rate_type"])
+            key = (loan["maturity"], loan["kind"], loan["rate_text"], loan["rate_type"], loan.get("fx", False))
             groups[key].append(loan)
         has_passed = False
-        for (maturity, kind, rate_text, rate_type), loans in groups.items():
+        for (maturity, kind, rate_text, rate_type, fx), loans in groups.items():
             amount = sum(x["amount"] for x in loans)
             if maturity < issuer["end"]:
                 overdue["amount"] += amount
@@ -364,7 +365,7 @@ def upcoming_loans(issuers, as_of):
                 rows.append(dict(code=code, name=issuer["name"], maturity=maturity, days=(d(maturity)-start).days,
                                  kind=kind, rate_text=rate_text, rate_type=rate_type, amount=amount,
                                  lenders=[name for name, _ in lenders.most_common(3)], lender_n=len(lenders),
-                                 end=issuer["end"], rate=loans[0]["rate"]))
+                                 end=issuer["end"], rate=loans[0]["rate"], fx=fx))
                 months[maturity[:7]][rate_type] += amount
         passed["issuers"] += int(has_passed)
     rows.sort(key=lambda row: row["maturity"])
@@ -419,11 +420,12 @@ def loan_schedule(stocks, as_of):
                 upcoming=upcoming_loans(issuers, as_of))
 
 
-def maturity_rows(stocks, corporate_rate=None):
+def maturity_rows(stocks, issuers, corporate_rate=None):
     source = optional_data("dart.json")
     rows = []
     for stock in stocks:
         row = {"code": stock["code"], "name": stock["name"], "corp_spread": None}
+        row["fx"] = any(x.get("fx") for x in issuers.get(stock["code"], {}).get("loans", []))
         rows.append(row)
         record = source.get(stock["code"])
         if not record:
@@ -440,7 +442,7 @@ def maturity_rows(stocks, corporate_rate=None):
                    interest_source=s.get("interest_source", s["cost_name"]),
                    coverage=op / interest if total and interest and op is not None else None, extra=short * 0.01 / 1e8,
                    impact=short / (op * annual) if op and op > 0 and annual else None)
-        if total and row["rate"] is not None and corporate_rate is not None:
+        if not row["fx"] and total and row["rate"] is not None and corporate_rate is not None:
             row["corp_spread"] = round(row["rate"] - corporate_rate, 1)
     return rows
 
@@ -514,7 +516,7 @@ def build_listed_data() -> dict:
             "chg_pct": round((last / hist[dates[-2]] - 1) * 100, 2) if len(dates) >= 2 and last_d not in breaks else None,
             "price_date": last_d,
             "ret_1m": ret(30), "ret_3m": ret(91), "ret_1y": ret(365),
-            "dvd_pct": r.get("dvd_pct"), "annual_dvd_pct": r.get("annual_dvd_pct"),
+            "dvd_pct": r.get("dvd_pct"), "annual_dvd_pct": r.get("annual_dvd_pct") or None,
             "nav_eok": nav_eok, "ffo_eok": ffo_eok, "periods_per_year": ppy,
             "pnav": round(mktcap / nav_eok, 2) if nav_eok and nav_eok > 0 and mktcap else None,
             "pffo": round(mktcap / (ffo_eok * ppy), 1) if ffo_eok and ffo_eok > 0 and ppy and mktcap else None,
@@ -542,7 +544,9 @@ def build_listed_data() -> dict:
     yields = [r["market_yield"] for r in rows if r["market_yield"] is not None]
     spreads = [r["spread"] for r in rows if r["spread"] is not None]
     dvds = [r["annual_dvd_pct"] for r in rows if r["annual_dvd_pct"]]
-    r1y = [r["ret_1y"] for r in rows if r["ret_1y"] is not None]
+    changes = [r["ret_1y"] for r in rows if str(r["code"]) in full and r["ret_1y"] is not None] if common else []
+    excluded = Counter("기준가 변경" if r["price_break"] else "장기 동일 종가와 거래량 없음" if r["halted"]
+                       else "종가 이력 부족" for r in rows if not common or str(r["code"]) not in full)
     cfg_path = ROOT / "config.json"
     cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
     return {
@@ -551,14 +555,14 @@ def build_listed_data() -> dict:
         "summary": {
             "n": len(rows), "mktcap_eok": sum(r["mktcap_eok"] for r in rows),
             "index_ret": round(idx[-1] - 100, 1) if idx else None, "index_n": len(full) if idx else 0,
-            "up_1y": sum(1 for v in r1y if v > 0), "down_1y": sum(1 for v in r1y if v < 0),
+            "up_1y": sum(1 for v in changes if v > 0), "down_1y": sum(1 for v in changes if v < 0),
             "pnav_median": _median(pnavs, 2), "pnav_n": len(pnavs),
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
             "yield_median": _median(yields, 2), "yield_n": len(yields),
             "rates": rates, "spread_median": _median(spreads, 2), "spread_n": len(spreads),
             "dvd_median": _median(dvds, 2), "dvd_n": len(dvds),
         },
-        "index": {"dates": common, "values": idx, "excluded": sorted(skip.values())},
+        "index": {"dates": common, "values": idx, "excluded": sorted(skip.values()), "exclusion_counts": excluded},
         "sectors": sectors, "rows": rows,
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
     }
@@ -677,6 +681,7 @@ def build_finance_data() -> dict:
     counts = {g: sum(1 for i in items if i["group"] == g) for g in GROUP_ORDER}
     cfg_path = ROOT / "config.json"
     cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
+    loans = loan_schedule(snap["listed"], snap["date"])
     return {
         "collected_at": snap["collected_at"], "date": snap["date"],
         "fin_fetched": max((f["fetched"] for f in fin.values()), default=None),
@@ -694,8 +699,8 @@ def build_finance_data() -> dict:
         "rows": rows, "groups": [{"name": g, "n": counts[g]} for g in GROUP_ORDER if counts[g]],
         "disclosures": items,
         "rates": rates,
-        "loans": loan_schedule(snap["listed"], snap["date"]),
-        "maturity": maturity_rows(snap["listed"], rates.get("corp_aa", {}).get("value")),
+        "loans": loans,
+        "maturity": maturity_rows(snap["listed"], loans["issuers"], rates.get("corp_aa", {}).get("value")),
         "timelines": timelines,
         "dis_start": min((day for x in dis.values() if (day := safe_date(x.get("date")))), default=None),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
@@ -723,6 +728,11 @@ def render(template: str, out: str, data: dict | None, page: str, extra: dict[st
         if mark not in tpl:
             raise RuntimeError(f"{template}에서 {mark} 자리를 찾지 못함")
     html = tpl.replace("/*__CSS__*/", css).replace("<!--__NAV__-->", nav_html(page))
+    headings = re.findall(r'<h2 id="([^"]+)"[^>]*>([^<]+)</h2>', tpl)
+    links = "".join(f'<a href="#{anchor}">{title}</a>' for anchor, title in headings)
+    html = html.replace("</header>", f'<nav class="sections" aria-label="구역 바로가기">{links}</nav>\n</header>')
+    if "/*__FOLD_TABLE__*/" in html:
+        html = html.replace("/*__FOLD_TABLE__*/", (ROOT / "fold_table.js").read_text(encoding="utf-8"))
     if data is not None:
         if "/*__DATA__*/null" not in html:
             raise RuntimeError(f"{template}에서 자료를 넣을 자리를 찾지 못함")

@@ -83,6 +83,10 @@ VARIABLE = re.compile(r"변동|CD|KORIBOR|LIBOR|EURIBOR|SOFR|COFIX|MOR|기준금
 MARK = re.compile(r"\((?:주|\*)(\d*)\)")
 
 
+FX = re.compile(r"외화|(?<![A-Za-z])(?:EUR|USD|JPY|GBP|AUD|CAD|CHF|HKD|SGD|CNY)(?![A-Za-z])"
+                r"|유로|달러|엔화|(?<![가-힣])엔(?![가-힣])|파운드|위안|EURIBOR|SOFR|LIBOR|TONA|TIBOR|SONIA|€STR|ESTR|BBSW", re.I)
+
+
 def number(s):
     s = s.replace(",", "").strip()
     if not re.fullmatch(r"-?\d+(?:\.\d+)?|\(\d+(?:\.\d+)?\)", s):
@@ -99,7 +103,7 @@ def maturity(s):
             pass
 
 
-def loan(kind, lender, day, text, flag, amount, fraction=False):
+def loan(kind, lender, day, text, flag, amount, fx, fraction=False):
     simple = MARK.sub("", text).strip()
     m = re.fullmatch(r"(?:연\s*)?(\d+(?:\.\d+)?)\s*%?", simple)
     category = "모름"
@@ -118,7 +122,7 @@ def loan(kind, lender, day, text, flag, amount, fraction=False):
         value = Decimal(m[1])
         rate = float(value * 100 if fraction and "%" not in simple and value < 1 else value)
     return dict(kind=kind, lender=lender if lender != "-" else "", maturity=day,
-                rate_text=text, rate=rate, rate_type=category, amount=amount)
+                rate_text=text, rate=rate, rate_type=category, amount=amount, fx=fx)
 
 
 def ratio(rows):
@@ -139,7 +143,7 @@ class Skip(ValueError):
     pass
 
 
-def xbrl(rows, context, unit, foreign=False):
+def xbrl(rows, context, unit, foreign=False, fx_unit=False):
     if period(context) != "당기":
         raise Skip("전기 표" if period(context) else "XBRL 당기·전기 구분 불명")
     # 건을 열로 놓은 표와 행으로 놓은 표를 같은 방향으로 맞춘다.
@@ -193,7 +197,9 @@ def xbrl(rows, context, unit, foreign=False):
                 if field("차입금,이자율", k):
                     rate, flag = field("차입금,이자율", k), names[-1][k]
                     break
-        loans.append(loan(kind, lender, day, rate, flag, amount, fraction=True))
+        fx = fx_unit or any(FX.search(k) for k in fields) or bool(FX.search(" ".join(
+            [rate] + [r[j] for r in rows if j < len(r)])))
+        loans.append(loan(kind, lender, day, rate, flag, amount, fx, fraction=True))
         adjustment += sum(int(number(v[j])*unit) for k,v in fields.items()
                           if ADJUST.search(k) and "외화" not in k and j < len(v))
     return loans, adjustment, 0
@@ -211,7 +217,7 @@ def parse_table(rows, context, tail, end=None):
     if rows[0][0] == "" and any("명목금액" in s or s in ("단기차입금", "장기차입금")
                                     for row in rows for s in row):
         unit_name = unit_name or "원"
-        loans, adj, transfer = xbrl(rows, context, UNITS[unit_name], foreign)
+        loans, adj, transfer = xbrl(rows, context, UNITS[unit_name], foreign, bool(FX.search(unit_text)))
         return loans, adj, transfer, unit_name
     header_index = next((i for i,r in enumerate(rows[:4]) if any(re.search("만기|상환일", s) for s in r)
                          and any(re.search("이자율|금리|이율", s) for s in r)), None)
@@ -259,6 +265,7 @@ def parse_table(rows, context, tail, end=None):
     loans, adj, transfer = [], 0, 0
     prior = None
     refs = {m[1]:m[2] for m in re.finditer(r"\((?:주|\*)(\d*)\)\s*(.*?)(?=\((?:주|\*)\d*\)|$)", tail,re.S)}
+    fx_header = bool(FX.search(" ".join([unit_text, *h, *sub])))
     for row in body:
         if prior and len(row) in (2,3) and len(row)<len(h) and h[-2:]==["당기말","전기말"] and all(
                 re.fullmatch(r"[\d,()-]+", s) for s in row[-2:]):
@@ -293,7 +300,8 @@ def parse_table(rows, context, tail, end=None):
                     if re.search("변동금리|고정금리",note):
                         flag = re.search("변동금리|고정금리",note)[0]
                         break
-            loans.append(loan(cell(kind_col) or default, cell(lender_col), day, text, flag, value))
+            fx = fx_header or bool(FX.search(" ".join(row)))
+            loans.append(loan(cell(kind_col) or default, cell(lender_col), day, text, flag, value, fx))
     return loans, adj, transfer, unit_name
 
 

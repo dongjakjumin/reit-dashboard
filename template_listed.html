@@ -62,8 +62,8 @@
       <li><b>시가배당률</b>은 DART에서 확인한 가장 최근 결산기 말일까지 12개월 동안 끝난 결산기의 보통주 주당 현금배당금을 더해 현재가로 나눕니다. 배당 기준일과 지급일은 반영하지 않습니다. 배당 집계 시작일부터 현재가 기준일까지 주가 기준가가 바뀌었거나 당기 주당 배당금을 확인할 수 없으면 값을 비웁니다.</li>
       <li><b>국고채 대비</b>는 종목의 시가배당률에서 국고채 10년 금리를 뺀 값(%p)입니다. 금리 기준일은 <span id="bond-date">자료 없음</span>입니다.</li>
       <li>리츠 배당에는 자산 매각 대금 분배 같은 일회성 금액이 포함될 수 있습니다. 국고채와 달리 리츠는 원금과 배당을 보장하지 않습니다. 종목별 배당금은 DART 사업보고서에서 확인할 수 있습니다.</li>
-      <li><b>배당수익률, 연환산 배당률</b>: 리츠정보시스템 정의를 그대로 옮겼습니다. 배당수익률은 배당액을 기초와 기말 납입자본금의 평균으로 나눈 값이고, 연환산 배당률은 여기에 365일을 곱하고 사업연도 일수로 나눈 값입니다. 주가로 나눈 시가배당률과는 다릅니다.</li>
-      <li><b>NAV</b>: 자산의 최근 감정평가액에서 부채총계를 뺀 값입니다(리츠정보시스템 정의).</li>
+      <li><b>배당수익률, 연환산 배당률</b>: 리츠정보시스템 정의를 그대로 옮겼습니다. 배당수익률은 배당액을 기초와 기말 납입자본금의 평균으로 나눈 값이고, 연환산 배당률은 여기에 365일을 곱하고 사업연도 일수로 나눈 값입니다. 주가로 나눈 시가배당률과는 다릅니다. 연환산 배당률이 0%인 원자료는 무배당과 자료 없음을 구별할 수 없어 화면에 ‘–’로 표시하고 CSV에서는 비웁니다.</li>
+      <li><b>NAV</b>는 리츠정보시스템에 공시된 값을 그대로 썼습니다. 감정평가액 반영 여부 등 산정 방법은 종목마다 다를 수 있어 투자보고서에서 확인해야 합니다.</li>
       <li><b>FFO</b>: 당기순이익에 감가상각비를 더하고 평가손익, 매각손익, 손상차손과 환입, 판매손익을 조정한 값입니다(리츠정보시스템 정의). 결산기 한 번의 금액입니다.</li>
       <li><b>P/NAV</b>: 현재 시가총액 ÷ 직전 결산기 NAV로 이 화면에서 계산했습니다. 리츠정보시스템 화면의 P/NAV는 결산월 말 주가(원)를 NAV 총액(백만원)으로 나눈 값으로 보여 배수로 읽기 어려워 쓰지 않았습니다.</li>
       <li><b>P/FFO</b>: 현재 시가총액 ÷ 연환산 FFO입니다. 직전 결산기 FFO에 365를 곱하고 해당 결산기의 일수로 나눕니다. 연속된 두 결산기 말일을 확인할 수 없으면 연환산 배당률과 배당수익률로 연간 결산 횟수를 추정합니다. FFO가 0 이하이거나 결산 횟수를 추정할 수 없으면 비워 두었습니다.</li>
@@ -121,8 +121,8 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   const secTxt = D.sectors.slice(0, 3).map(s => `${esc(s.name)} <b>${eok(s.mktcap_eok)}</b>`).join(', ');
   const tiles = [
     {lab: '상장 리츠', val: n0(S.n), unit: '개', det: `시가총액 합계 <b>${eok(S.mktcap_eok)}원</b>. ${secTxt}`},
-    {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 1년 수익률이 오른 종목 <b>${S.up_1y}</b>, 내린 종목 <b>${S.down_1y}</b>`},
-    {lab: 'P/NAV 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배`},
+    {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>.<br>제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
+    {lab: 'P/NAV 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배. NAV는 리츠정보시스템에 공시된 값을 그대로 썼습니다. 감정평가액 반영 여부 등 산정 방법은 종목마다 다를 수 있어 투자보고서에서 확인해야 합니다.`},
     {lab: '시가배당률 중앙값', val: S.yield_median?.toFixed(2) ?? '자료 없음', unit: S.yield_n ? '%' : '', det: `DART에서 확인한 최근 결산기 말일까지 12개월 동안 끝난 결산기의 보통주 주당 현금배당금 합을 현재가로 나눕니다. ${S.yield_n}개 종목 기준입니다.`},
     {lab: '국고채 10년', val: bond?.value.toFixed(3) ?? '자료 없음', unit: bond ? '%' : '', det: `${sharedBondDate ? '기준일' : '10년 기준일'} ${bond?.date ?? '자료 없음'}, 3년 ${rateText(S.rates.ktb3)}, 5년 ${rateText(S.rates.ktb5)}`},
     {lab: '국고채 10년 대비 배당률 차이 중앙값', val: S.spread_n ? signed(S.spread_median) : '자료 없음', unit: S.spread_n ? '%p' : '', det: `시가배당률과 국고채 금리를 비교한 ${S.spread_n}개 종목 기준`},

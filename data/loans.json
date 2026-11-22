@@ -18,7 +18,8 @@
         "rate_text": "3.43",
         "rate": 3.43,
         "rate_type": "고정",
-        "amount": 85000000000
+        "amount": 85000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -27,7 +28,8 @@
         "rate_text": "3.43",
         "rate": 3.43,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -36,7 +38,8 @@
         "rate_text": "3.51",
         "rate": 3.51,
         "rate_type": "고정",
-        "amount": 14000000000
+        "amount": 14000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -45,7 +48,8 @@
         "rate_text": "3.51",
         "rate": 3.51,
         "rate_type": "고정",
-        "amount": 18000000000
+        "amount": 18000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -54,7 +58,8 @@
         "rate_text": "3.51",
         "rate": 3.51,
         "rate_type": "고정",
-        "amount": 18000000000
+        "amount": 18000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -63,7 +68,8 @@
         "rate_text": "3.51",
         "rate": 3.51,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -72,7 +78,8 @@
         "rate_text": "3.51",
         "rate": 3.51,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -81,7 +88,8 @@
         "rate_text": "3.32",
         "rate": 3.32,
         "rate_type": "고정",
-        "amount": 97500000000
+        "amount": 97500000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -90,7 +98,8 @@
         "rate_text": "3.32",
         "rate": 3.32,
         "rate_type": "고정",
-        "amount": 32500000000
+        "amount": 32500000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -99,7 +108,8 @@
         "rate_text": "3.37",
         "rate": 3.37,
         "rate_type": "고정",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -108,7 +118,8 @@
         "rate_text": "3.37",
         "rate": 3.37,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -117,7 +128,8 @@
         "rate_text": "3.37",
         "rate": 3.37,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -126,7 +138,8 @@
         "rate_text": "2.99",
         "rate": 2.99,
         "rate_type": "고정",
-        "amount": 90000000000
+        "amount": 90000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -135,7 +148,8 @@
         "rate_text": "2.99",
         "rate": 2.99,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -144,7 +158,8 @@
         "rate_text": "3.06",
         "rate": 3.06,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -153,7 +168,8 @@
         "rate_text": "3.06",
         "rate": 3.06,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "공모회사채",
@@ -162,7 +178,8 @@
         "rate_text": "3.06",
         "rate": 3.06,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "사모회사채",
@@ -171,7 +188,8 @@
         "rate_text": "4.33",
         "rate": 4.33,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -180,7 +198,8 @@
         "rate_text": "3.41",
         "rate": 3.41,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -189,7 +208,8 @@
         "rate_text": "3.41",
         "rate": 3.41,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -198,7 +218,8 @@
         "rate_text": "3.41",
         "rate": 3.41,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -207,7 +228,8 @@
         "rate_text": "3.41",
         "rate": 3.41,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -216,7 +238,8 @@
         "rate_text": "3.41",
         "rate": 3.41,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -225,7 +248,8 @@
         "rate_text": "3.40",
         "rate": 3.4,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -234,7 +258,8 @@
         "rate_text": "3.40",
         "rate": 3.4,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -243,7 +268,8 @@
         "rate_text": "3.56",
         "rate": 3.56,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -252,7 +278,8 @@
         "rate_text": "3.56",
         "rate": 3.56,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -261,7 +288,8 @@
         "rate_text": "3.56",
         "rate": 3.56,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -270,7 +298,8 @@
         "rate_text": "3.56",
         "rate": 3.56,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "전자단기사채",
@@ -279,7 +308,8 @@
         "rate_text": "3.56",
         "rate": 3.56,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -288,7 +318,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 76800000000
+        "amount": 76800000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -297,7 +328,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -306,7 +338,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -315,7 +348,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 115000000000
+        "amount": 115000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -324,7 +358,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 85000000000
+        "amount": 85000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -333,7 +368,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -342,7 +378,8 @@
         "rate_text": "3.72",
         "rate": 3.72,
         "rate_type": "고정",
-        "amount": 32000000000
+        "amount": 32000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -351,7 +388,8 @@
         "rate_text": "3.72",
         "rate": 3.72,
         "rate_type": "고정",
-        "amount": 34000000000
+        "amount": 34000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -360,7 +398,8 @@
         "rate_text": "3.72",
         "rate": 3.72,
         "rate_type": "고정",
-        "amount": 44000000000
+        "amount": 44000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -369,7 +408,8 @@
         "rate_text": "3.72",
         "rate": 3.72,
         "rate_type": "고정",
-        "amount": 44000000000
+        "amount": 44000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -378,7 +418,8 @@
         "rate_text": "3.74",
         "rate": 3.74,
         "rate_type": "고정",
-        "amount": 73200000000
+        "amount": 73200000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -387,7 +428,8 @@
         "rate_text": "3.74",
         "rate": 3.74,
         "rate_type": "고정",
-        "amount": 73200000000
+        "amount": 73200000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -396,7 +438,8 @@
         "rate_text": "3.74",
         "rate": 3.74,
         "rate_type": "고정",
-        "amount": 70000000000
+        "amount": 70000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -405,7 +448,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 125530996000
+        "amount": 125530996000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -414,7 +458,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 50506253000
+        "amount": 50506253000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -423,7 +468,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 32140343000
+        "amount": 32140343000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -432,7 +478,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 114786939000
+        "amount": 114786939000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -441,7 +488,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 18365910000
+        "amount": 18365910000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -450,7 +498,8 @@
         "rate_text": "3.57",
         "rate": 3.57,
         "rate_type": "고정",
-        "amount": 59689208000
+        "amount": 59689208000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -459,7 +508,8 @@
         "rate_text": "3.67",
         "rate": 3.67,
         "rate_type": "고정",
-        "amount": 83000000000
+        "amount": 83000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -468,7 +518,8 @@
         "rate_text": "3.67",
         "rate": 3.67,
         "rate_type": "고정",
-        "amount": 80800000000
+        "amount": 80800000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -477,7 +528,8 @@
         "rate_text": "3.67",
         "rate": 3.67,
         "rate_type": "고정",
-        "amount": 65000000000
+        "amount": 65000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -486,7 +538,8 @@
         "rate_text": "3.67",
         "rate": 3.67,
         "rate_type": "고정",
-        "amount": 16000000000
+        "amount": 16000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -495,7 +548,8 @@
         "rate_text": "5.49",
         "rate": 5.49,
         "rate_type": "고정",
-        "amount": 150000000000
+        "amount": 150000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -504,7 +558,8 @@
         "rate_text": "5.49",
         "rate": 5.49,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -513,7 +568,8 @@
         "rate_text": "5.49",
         "rate": 5.49,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -522,7 +578,8 @@
         "rate_text": "5.49",
         "rate": 5.49,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -531,7 +588,8 @@
         "rate_text": "5.49",
         "rate": 5.49,
         "rate_type": "고정",
-        "amount": 25000000000
+        "amount": 25000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -540,7 +598,8 @@
         "rate_text": "5.49",
         "rate": 5.49,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -549,7 +608,8 @@
         "rate_text": "4.32",
         "rate": 4.32,
         "rate_type": "고정",
-        "amount": 100300000000
+        "amount": 100300000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -558,7 +618,8 @@
         "rate_text": "4.32",
         "rate": 4.32,
         "rate_type": "고정",
-        "amount": 100000000000
+        "amount": 100000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -567,7 +628,8 @@
         "rate_text": "4.32",
         "rate": 4.32,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -576,7 +638,8 @@
         "rate_text": "4.32",
         "rate": 4.32,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -585,7 +648,8 @@
         "rate_text": "4.32",
         "rate": 4.32,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -594,7 +658,8 @@
         "rate_text": "4.32",
         "rate": 4.32,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       }
     ],
     "nominal": 3113319649000,
@@ -626,7 +691,8 @@
         "rate_text": "3.75",
         "rate": 3.75,
         "rate_type": "고정",
-        "amount": 165000000000
+        "amount": 165000000000,
+        "fx": false
       },
       {
         "kind": "유동성장기부채(주1,2)",
@@ -635,7 +701,8 @@
         "rate_text": "CD+0.87%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 160000000000
+        "amount": 160000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -644,7 +711,8 @@
         "rate_text": "4.05",
         "rate": 4.05,
         "rate_type": "고정",
-        "amount": 107000000000
+        "amount": 107000000000,
+        "fx": false
       },
       {
         "kind": "제6-2회 사채(주1,2)",
@@ -653,7 +721,8 @@
         "rate_text": "3.45",
         "rate": 3.45,
         "rate_type": "고정",
-        "amount": 160000000000
+        "amount": 160000000000,
+        "fx": false
       },
       {
         "kind": "제6-3회 사채(주1,3)",
@@ -662,7 +731,8 @@
         "rate_text": "2.89",
         "rate": 2.89,
         "rate_type": "고정",
-        "amount": 80000000000
+        "amount": 80000000000,
+        "fx": false
       },
       {
         "kind": "제7-2회 사채(주1,2)",
@@ -671,7 +741,8 @@
         "rate_text": "3.48",
         "rate": 3.48,
         "rate_type": "고정",
-        "amount": 75000000000
+        "amount": 75000000000,
+        "fx": false
       },
       {
         "kind": "제7-3회 사채(주1,3)",
@@ -680,7 +751,8 @@
         "rate_text": "3.10",
         "rate": 3.1,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "제8회 사채(주1,3)",
@@ -689,7 +761,8 @@
         "rate_text": "3.26",
         "rate": 3.26,
         "rate_type": "고정",
-        "amount": 160000000000
+        "amount": 160000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1,2)",
@@ -698,7 +771,8 @@
         "rate_text": "CD+1.00%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 258000000000
+        "amount": 258000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1,4)",
@@ -707,7 +781,8 @@
         "rate_text": "CD+0.95%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 130000000000
+        "amount": 130000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1,4)",
@@ -716,7 +791,8 @@
         "rate_text": "CD+1.05%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 159000000000
+        "amount": 159000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1,4)",
@@ -725,7 +801,8 @@
         "rate_text": "CD+1.05%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 75000000000
+        "amount": 75000000000,
+        "fx": false
       }
     ],
     "nominal": 1579000000000,
@@ -758,7 +835,8 @@
         "rate_text": "3.460%",
         "rate": 3.46,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "장기사채",
@@ -767,7 +845,8 @@
         "rate_text": "2.946%",
         "rate": 2.946,
         "rate_type": "고정",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "장기사채",
@@ -776,7 +855,8 @@
         "rate_text": "3.001%",
         "rate": 3.001,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 3년물변동금리",
@@ -785,7 +865,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 80500000000
+        "amount": 80500000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 3년물변동금리",
@@ -794,7 +875,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 36000000000
+        "amount": 36000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 3년물변동금리",
@@ -803,7 +885,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 70000000000
+        "amount": 70000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 3년물변동금리",
@@ -812,7 +895,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물변동금리",
@@ -821,7 +905,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 0.75%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물변동금리",
@@ -830,7 +915,8 @@
         "rate_text": "91일 CD금리 + 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물변동금리",
@@ -839,7 +925,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 161600000000
+        "amount": 161600000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물변동금리",
@@ -848,7 +935,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물변동금리",
@@ -857,7 +945,8 @@
         "rate_text": "91일 CD금리(10일 산술평균) + 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물고정금리",
@@ -866,7 +955,8 @@
         "rate_text": "3.40%",
         "rate": 3.4,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물고정금리",
@@ -875,7 +965,8 @@
         "rate_text": "3.90%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "선순위 차입금 2년물고정금리",
@@ -884,7 +975,8 @@
         "rate_text": "3.90%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       }
     ],
     "nominal": 808100000000,
@@ -917,7 +1009,8 @@
         "rate_text": "4.09(*2)",
         "rate": 4.09,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "일반자금 대출",
@@ -926,7 +1019,8 @@
         "rate_text": "4.12(*3)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "기업운전일반자금대출",
@@ -935,7 +1029,8 @@
         "rate_text": "4.61(*4)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A(*1)(*3)",
@@ -944,7 +1039,8 @@
         "rate_text": "3.63",
         "rate": null,
         "rate_type": "변동",
-        "amount": 100000000000
+        "amount": 100000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A(*1)(*3)",
@@ -953,7 +1049,8 @@
         "rate_text": "3.63",
         "rate": null,
         "rate_type": "변동",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A(*1)(*3)",
@@ -962,7 +1059,8 @@
         "rate_text": "3.63",
         "rate": null,
         "rate_type": "변동",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A(*1)(*3)",
@@ -971,7 +1069,8 @@
         "rate_text": "3.98",
         "rate": null,
         "rate_type": "변동",
-        "amount": 77000000000
+        "amount": 77000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A(*1)(*3)",
@@ -980,7 +1079,8 @@
         "rate_text": "4.28",
         "rate": null,
         "rate_type": "변동",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A(*1)(*3)",
@@ -989,7 +1089,8 @@
         "rate_text": "4.28",
         "rate": null,
         "rate_type": "변동",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -998,7 +1099,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 48800000000
+        "amount": 48800000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -1007,7 +1109,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 3300000000
+        "amount": 3300000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -1016,7 +1119,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 8300000000
+        "amount": 8300000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -1025,7 +1129,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 48800000000
+        "amount": 48800000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -1034,7 +1139,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 8300000000
+        "amount": 8300000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -1043,7 +1149,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 22200000000
+        "amount": 22200000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -1052,7 +1159,8 @@
         "rate_text": "4.19",
         "rate": null,
         "rate_type": "변동",
-        "amount": 22200000000
+        "amount": 22200000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-1(*1)(*4)",
@@ -1061,7 +1169,8 @@
         "rate_text": "4.17",
         "rate": null,
         "rate_type": "변동",
-        "amount": 33200000000
+        "amount": 33200000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1070,7 +1179,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 19500000000
+        "amount": 19500000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1079,7 +1189,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 1300000000
+        "amount": 1300000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1088,7 +1199,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 3300000000
+        "amount": 3300000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1097,7 +1209,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 19500000000
+        "amount": 19500000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1106,7 +1219,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 3300000000
+        "amount": 3300000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1115,7 +1229,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 8800000000
+        "amount": 8800000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1124,7 +1239,8 @@
         "rate_text": "4.19",
         "rate": null,
         "rate_type": "변동",
-        "amount": 8800000000
+        "amount": 8800000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-2(*1)(*4)",
@@ -1133,7 +1249,8 @@
         "rate_text": "4.17",
         "rate": null,
         "rate_type": "변동",
-        "amount": 13300000000
+        "amount": 13300000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1142,7 +1259,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 8600000000
+        "amount": 8600000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1151,7 +1269,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 600000000
+        "amount": 600000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1160,7 +1279,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 1500000000
+        "amount": 1500000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1169,7 +1289,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 8600000000
+        "amount": 8600000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1178,7 +1299,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 1500000000
+        "amount": 1500000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1187,7 +1309,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 3900000000
+        "amount": 3900000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1196,7 +1319,8 @@
         "rate_text": "4.19",
         "rate": null,
         "rate_type": "변동",
-        "amount": 3900000000
+        "amount": 3900000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-3(*1)(*4)",
@@ -1205,7 +1329,8 @@
         "rate_text": "4.17",
         "rate": null,
         "rate_type": "변동",
-        "amount": 6000000000
+        "amount": 6000000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1214,7 +1339,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 11100000000
+        "amount": 11100000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1223,7 +1349,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 800000000
+        "amount": 800000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1232,7 +1359,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 1900000000
+        "amount": 1900000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1241,7 +1369,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 11100000000
+        "amount": 11100000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1250,7 +1379,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 1900000000
+        "amount": 1900000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1259,7 +1389,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 5100000000
+        "amount": 5100000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1268,7 +1399,8 @@
         "rate_text": "4.19",
         "rate": null,
         "rate_type": "변동",
-        "amount": 5100000000
+        "amount": 5100000000,
+        "fx": false
       },
       {
         "kind": "Tranche A1-4(*1)(*4)",
@@ -1277,7 +1409,8 @@
         "rate_text": "4.17",
         "rate": null,
         "rate_type": "변동",
-        "amount": 7500000000
+        "amount": 7500000000,
+        "fx": false
       },
       {
         "kind": "Tranche C-2(*1)",
@@ -1286,7 +1419,8 @@
         "rate_text": "2.70",
         "rate": 2.7,
         "rate_type": "고정",
-        "amount": 114500000000
+        "amount": 114500000000,
+        "fx": false
       },
       {
         "kind": "시설자금대출(*6)",
@@ -1295,7 +1429,8 @@
         "rate_text": "4.03",
         "rate": null,
         "rate_type": "변동",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "일반자금대출(*7)",
@@ -1304,7 +1439,8 @@
         "rate_text": "4.30",
         "rate": null,
         "rate_type": "변동",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
@@ -1313,7 +1449,8 @@
         "rate_text": "4.32",
         "rate": null,
         "rate_type": "변동",
-        "amount": 3900000000
+        "amount": 3900000000,
+        "fx": false
       },
       {
         "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
@@ -1322,7 +1459,8 @@
         "rate_text": "4.32",
         "rate": null,
         "rate_type": "변동",
-        "amount": 7900000000
+        "amount": 7900000000,
+        "fx": false
       },
       {
         "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
@@ -1331,7 +1469,8 @@
         "rate_text": "4.32",
         "rate": null,
         "rate_type": "변동",
-        "amount": 3900000000
+        "amount": 3900000000,
+        "fx": false
       },
       {
         "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
@@ -1340,7 +1479,8 @@
         "rate_text": "4.32",
         "rate": null,
         "rate_type": "변동",
-        "amount": 21200000000
+        "amount": 21200000000,
+        "fx": false
       },
       {
         "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
@@ -1349,7 +1489,8 @@
         "rate_text": "4.32",
         "rate": null,
         "rate_type": "변동",
-        "amount": 20100000000
+        "amount": 20100000000,
+        "fx": false
       },
       {
         "kind": "이천물류센터8 담보대출(*1)(*5)",
@@ -1358,7 +1499,8 @@
         "rate_text": "3.98",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "이천물류센터8 담보대출(*1)(*5)",
@@ -1367,7 +1509,8 @@
         "rate_text": "3.98",
         "rate": null,
         "rate_type": "변동",
-        "amount": 15400000000
+        "amount": 15400000000,
+        "fx": false
       },
       {
         "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
@@ -1376,7 +1519,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 174000000000
+        "amount": 174000000000,
+        "fx": false
       },
       {
         "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
@@ -1385,7 +1529,8 @@
         "rate_text": "3.93",
         "rate": null,
         "rate_type": "변동",
-        "amount": 100000000000
+        "amount": 100000000000,
+        "fx": false
       },
       {
         "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
@@ -1394,7 +1539,8 @@
         "rate_text": "4.23",
         "rate": null,
         "rate_type": "변동",
-        "amount": 26000000000
+        "amount": 26000000000,
+        "fx": false
       },
       {
         "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
@@ -1403,7 +1549,8 @@
         "rate_text": "4.23",
         "rate": null,
         "rate_type": "변동",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
@@ -1412,7 +1559,8 @@
         "rate_text": "3.92",
         "rate": null,
         "rate_type": "변동",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
@@ -1421,7 +1569,8 @@
         "rate_text": "4.42",
         "rate": null,
         "rate_type": "변동",
-        "amount": 87000000000
+        "amount": 87000000000,
+        "fx": false
       },
       {
         "kind": "천안물류센터1(*1)(*9)",
@@ -1430,7 +1579,8 @@
         "rate_text": "4.02",
         "rate": null,
         "rate_type": "변동",
-        "amount": 46500000000
+        "amount": 46500000000,
+        "fx": false
       },
       {
         "kind": "이천물류센터9(*1)(*10)",
@@ -1439,7 +1589,8 @@
         "rate_text": "4.51",
         "rate": null,
         "rate_type": "변동",
-        "amount": 49000000000
+        "amount": 49000000000,
+        "fx": false
       }
     ],
     "nominal": 1563400000000,
@@ -1475,7 +1626,8 @@
         "rate_text": "5.5%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 27000000000
+        "amount": 27000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(후순위)",
@@ -1484,7 +1636,8 @@
         "rate_text": "5.5%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(후순위)",
@@ -1493,7 +1646,8 @@
         "rate_text": "5.5%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(후순위)",
@@ -1502,7 +1656,8 @@
         "rate_text": "5.5%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(후순위)",
@@ -1511,7 +1666,8 @@
         "rate_text": "5.5%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(후순위)",
@@ -1520,7 +1676,8 @@
         "rate_text": "5.5%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 판교담보대출(선순위)",
@@ -1529,7 +1686,8 @@
         "rate_text": "2.7%",
         "rate": 2.7,
         "rate_type": "고정",
-        "amount": 190000000000
+        "amount": 190000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 판교담보대출(선순위)",
@@ -1538,7 +1696,8 @@
         "rate_text": "2.7%",
         "rate": 2.7,
         "rate_type": "고정",
-        "amount": 100000000000
+        "amount": 100000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 판교담보대출(선순위)",
@@ -1547,7 +1706,8 @@
         "rate_text": "2.7%",
         "rate": 2.7,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 판교담보대출(선순위)",
@@ -1556,7 +1716,8 @@
         "rate_text": "2.7%",
         "rate": 2.7,
         "rate_type": "고정",
-        "amount": 100000000000
+        "amount": 100000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 판교담보대출(선순위)",
@@ -1565,7 +1726,8 @@
         "rate_text": "2.7%",
         "rate": 2.7,
         "rate_type": "고정",
-        "amount": 65000000000
+        "amount": 65000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 판교담보대출(선순위)",
@@ -1574,7 +1736,8 @@
         "rate_text": "2.7%",
         "rate": 2.7,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
@@ -1583,7 +1746,8 @@
         "rate_text": "CD 91일물+연 1.8%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 70000000000
+        "amount": 70000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
@@ -1592,7 +1756,8 @@
         "rate_text": "CD 91일물+연 1.8%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 33300000000
+        "amount": 33300000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
@@ -1601,7 +1766,8 @@
         "rate_text": "CD 91일물+연 1.8%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
@@ -1610,7 +1776,8 @@
         "rate_text": "CD 91일물+연 1.8%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 9500000000
+        "amount": 9500000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
@@ -1619,7 +1786,8 @@
         "rate_text": "CD 91일물+연 1.8%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 57200000000
+        "amount": 57200000000,
+        "fx": false
       },
       {
         "kind": "신한L타워담보대출(선순위)",
@@ -1628,7 +1796,8 @@
         "rate_text": "3.9%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 80000000000
+        "amount": 80000000000,
+        "fx": false
       },
       {
         "kind": "신한L타워담보대출(선순위)",
@@ -1637,7 +1806,8 @@
         "rate_text": "3.9%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 38500000000
+        "amount": 38500000000,
+        "fx": false
       },
       {
         "kind": "신한L타워담보대출(선순위)",
@@ -1646,7 +1816,8 @@
         "rate_text": "3.9%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "신한L타워담보대출(선순위)",
@@ -1655,7 +1826,8 @@
         "rate_text": "3.9%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "트윈시티 남산담보대출(선순위)",
@@ -1664,7 +1836,8 @@
         "rate_text": "4.0%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 69200000000
+        "amount": 69200000000,
+        "fx": false
       },
       {
         "kind": "트윈시티 남산담보대출(선순위)",
@@ -1673,7 +1846,8 @@
         "rate_text": "4.0%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 5800000000
+        "amount": 5800000000,
+        "fx": false
       },
       {
         "kind": "트윈시티 남산담보대출(선순위)",
@@ -1682,7 +1856,8 @@
         "rate_text": "4.0%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "트윈시티 남산담보대출(선순위)",
@@ -1691,7 +1866,8 @@
         "rate_text": "4.0%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "삼성화재 역삼빌딩담보대출(선순위)",
@@ -1700,7 +1876,8 @@
         "rate_text": "CD 91일물+연 1.75%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "삼성화재 역삼빌딩담보대출(선순위)",
@@ -1709,7 +1886,8 @@
         "rate_text": "CD 91일물+연 1.75%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 25000000000
+        "amount": 25000000000,
+        "fx": false
       },
       {
         "kind": "삼성화재 역삼빌딩담보대출(선순위)",
@@ -1718,7 +1896,8 @@
         "rate_text": "CD 91일물+연 1.75%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 32500000000
+        "amount": 32500000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1727,7 +1906,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1736,7 +1916,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 600000000
+        "amount": 600000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1745,7 +1926,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1754,7 +1936,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 1300000000
+        "amount": 1300000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1763,7 +1946,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1772,7 +1956,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 2000000000
+        "amount": 2000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1781,7 +1966,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 1600000000
+        "amount": 1600000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1790,7 +1976,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 1600000000
+        "amount": 1600000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1799,7 +1986,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 69000000000
+        "amount": 69000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1808,7 +1996,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1817,7 +2006,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 500000000
+        "amount": 500000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1826,7 +2016,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1835,7 +2026,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 900000000
+        "amount": 900000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1844,7 +2036,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 100000000000
+        "amount": 100000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1853,7 +2046,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 1200000000
+        "amount": 1200000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1862,7 +2056,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1871,7 +2066,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 1500000000
+        "amount": 1500000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1880,7 +2076,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 200000000
+        "amount": 200000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1889,7 +2086,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1898,7 +2096,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1907,7 +2106,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 700000000
+        "amount": 700000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1916,7 +2116,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 1000000000
+        "amount": 1000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1925,7 +2126,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 2000000000
+        "amount": 2000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(선순위)",
@@ -1934,7 +2136,8 @@
         "rate_text": "2.8%",
         "rate": 2.8,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(중순위)",
@@ -1943,7 +2146,8 @@
         "rate_text": "4.3%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 15000000000
+        "amount": 15000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(중순위)",
@@ -1952,7 +2156,8 @@
         "rate_text": "4.3%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 숭례담보대출(중순위)",
@@ -1961,7 +2166,8 @@
         "rate_text": "4.3%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "GS건설 서초타워담보대출(선순위)",
@@ -1970,7 +2176,8 @@
         "rate_text": "CD 91일물+연 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 41000000000
+        "amount": 41000000000,
+        "fx": false
       },
       {
         "kind": "GS건설 서초타워담보대출(선순위)",
@@ -1979,7 +2186,8 @@
         "rate_text": "CD 91일물+연 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "GS건설 서초타워담보대출(선순위)",
@@ -1988,7 +2196,8 @@
         "rate_text": "CD 91일물+연 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "GS건설 서초타워담보대출(선순위)",
@@ -1997,7 +2206,8 @@
         "rate_text": "CD 91일물+연 1.25%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "씨티스퀘어담보대출(선순위)",
@@ -2006,7 +2216,8 @@
         "rate_text": "4.5%",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "씨티스퀘어담보대출(선순위)",
@@ -2015,7 +2226,8 @@
         "rate_text": "4.5%",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "씨티스퀘어담보대출(선순위)",
@@ -2024,7 +2236,8 @@
         "rate_text": "4.5%",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "씨티스퀘어담보대출(선순위)",
@@ -2033,7 +2246,8 @@
         "rate_text": "4.5%",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "씨티스퀘어담보대출(선순위)",
@@ -2042,7 +2256,8 @@
         "rate_text": "4.5%",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "씨티스퀘어담보대출(선순위)",
@@ -2051,7 +2266,8 @@
         "rate_text": "4.5%",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "씨티스퀘어담보대출(선순위)",
@@ -2060,7 +2276,8 @@
         "rate_text": "4.5%",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2069,7 +2286,8 @@
         "rate_text": "3.6%",
         "rate": 3.6,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2078,7 +2296,8 @@
         "rate_text": "3.6%",
         "rate": 3.6,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2087,7 +2306,8 @@
         "rate_text": "3.6%",
         "rate": 3.6,
         "rate_type": "고정",
-        "amount": 41500000000
+        "amount": 41500000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2096,7 +2316,8 @@
         "rate_text": "3.6%",
         "rate": 3.6,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2105,7 +2326,8 @@
         "rate_text": "3.6%",
         "rate": 3.6,
         "rate_type": "고정",
-        "amount": 41500000000
+        "amount": 41500000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2114,7 +2336,8 @@
         "rate_text": "3.9%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2123,7 +2346,8 @@
         "rate_text": "3.9%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "그레이츠 강남담보대출(선순위)",
@@ -2132,7 +2356,8 @@
         "rate_text": "3.9%",
         "rate": 3.9,
         "rate_type": "고정",
-        "amount": 25000000000
+        "amount": 25000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -2141,7 +2366,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 58000000000
+        "amount": 58000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -2150,7 +2376,8 @@
         "rate_text": "4.10%",
         "rate": 4.1,
         "rate_type": "고정",
-        "amount": 25000000000
+        "amount": 25000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -2159,7 +2386,8 @@
         "rate_text": "4.10%",
         "rate": 4.1,
         "rate_type": "고정",
-        "amount": 15000000000
+        "amount": 15000000000,
+        "fx": false
       }
     ],
     "nominal": 2234000000000,
@@ -2194,7 +2422,8 @@
         "rate_text": "91일 CD금리+1.1",
         "rate": null,
         "rate_type": "변동",
-        "amount": 70000000000
+        "amount": 70000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -2203,7 +2432,8 @@
         "rate_text": "91일 CD금리+1.1",
         "rate": null,
         "rate_type": "변동",
-        "amount": 110000000000
+        "amount": 110000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -2212,7 +2442,8 @@
         "rate_text": "91일 CD금리+1.1",
         "rate": null,
         "rate_type": "변동",
-        "amount": 250000000000
+        "amount": 250000000000,
+        "fx": false
       },
       {
         "kind": "제1-1회 무보증사채",
@@ -2221,7 +2452,8 @@
         "rate_text": "3.971",
         "rate": 3.971,
         "rate_type": "고정",
-        "amount": 90000000000
+        "amount": 90000000000,
+        "fx": false
       },
       {
         "kind": "제1-2회 무보증사채",
@@ -2230,7 +2462,8 @@
         "rate_text": "4.239",
         "rate": 4.239,
         "rate_type": "고정",
-        "amount": 110000000000
+        "amount": 110000000000,
+        "fx": false
       }
     ],
     "nominal": 630000000000,
@@ -2269,7 +2502,8 @@
         "rate_text": "5.30(*)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 21030000000
+        "amount": 21030000000,
+        "fx": false
       },
       {
         "kind": "죽전물류센터",
@@ -2278,7 +2512,8 @@
         "rate_text": "4.26(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 12000000000
+        "amount": 12000000000,
+        "fx": false
       },
       {
         "kind": "주차전용건물",
@@ -2287,7 +2522,8 @@
         "rate_text": "4.03(*1)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 5300000000
+        "amount": 5300000000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2296,7 +2532,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 242056676000
+        "amount": 242056676000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2305,7 +2542,8 @@
         "rate_text": "3.60",
         "rate": 3.6,
         "rate_type": "고정",
-        "amount": 116187812000
+        "amount": 116187812000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2314,7 +2552,8 @@
         "rate_text": "4.31(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 39502945000
+        "amount": 39502945000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2323,7 +2562,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 29046194000
+        "amount": 29046194000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2332,7 +2572,8 @@
         "rate_text": "4.00",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 17331969000
+        "amount": 17331969000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2341,7 +2582,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 2904316000
+        "amount": 2904316000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2350,7 +2592,8 @@
         "rate_text": "4.41(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 8908390000
+        "amount": 8908390000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2359,7 +2602,8 @@
         "rate_text": "4.00",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 6873699000
+        "amount": 6873699000,
+        "fx": false
       },
       {
         "kind": "주유소",
@@ -2368,7 +2612,8 @@
         "rate_text": "5.00",
         "rate": 5.0,
         "rate_type": "고정",
-        "amount": 10794233000
+        "amount": 10794233000,
+        "fx": false
       },
       {
         "kind": "남청라물류센터",
@@ -2377,7 +2622,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "남청라물류센터",
@@ -2386,7 +2632,8 @@
         "rate_text": "4.49(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "남청라물류센터",
@@ -2395,7 +2642,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "남청라물류센터",
@@ -2404,7 +2652,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "남청라물류센터",
@@ -2413,7 +2662,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "숙박시설",
@@ -2422,7 +2672,8 @@
         "rate_text": "4.62(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 23700000000
+        "amount": 23700000000,
+        "fx": false
       },
       {
         "kind": "숙박시설",
@@ -2431,7 +2682,8 @@
         "rate_text": "4.62(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 10300000000
+        "amount": 10300000000,
+        "fx": false
       },
       {
         "kind": "서비스센터 및 판매사옥 등",
@@ -2440,7 +2692,8 @@
         "rate_text": "3.98(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 150000000000
+        "amount": 150000000000,
+        "fx": false
       },
       {
         "kind": "서비스센터 및 판매사옥 등",
@@ -2449,7 +2702,8 @@
         "rate_text": "4.00(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 114000000000
+        "amount": 114000000000,
+        "fx": false
       },
       {
         "kind": "서비스센터 및 판매사옥 등",
@@ -2458,7 +2712,8 @@
         "rate_text": "3.70(*2)",
         "rate": null,
         "rate_type": "변동",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -2467,7 +2722,8 @@
         "rate_text": "5.00",
         "rate": 5.0,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -2476,7 +2732,8 @@
         "rate_text": "4.40",
         "rate": 4.4,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -2485,7 +2742,8 @@
         "rate_text": "4.50",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 105000000000
+        "amount": 105000000000,
+        "fx": false
       },
       {
         "kind": "사채",
@@ -2494,7 +2752,8 @@
         "rate_text": "5.20",
         "rate": 5.2,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "제1회 전환사채",
@@ -2503,7 +2762,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "제3회 전환사채",
@@ -2512,7 +2772,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "제4회 전환사채",
@@ -2521,7 +2782,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 12000000000
+        "amount": 12000000000,
+        "fx": false
       }
     ],
     "nominal": 1191936234000,
@@ -2559,7 +2821,8 @@
         "rate_text": "CD수익률 + 3.500%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 55000000000
+        "amount": 55000000000,
+        "fx": false
       },
       {
         "kind": "장기 차입금 2",
@@ -2568,7 +2831,8 @@
         "rate_text": "0.0660",
         "rate": 6.6,
         "rate_type": "고정",
-        "amount": 450000000
+        "amount": 450000000,
+        "fx": false
       },
       {
         "kind": "Finance Tower Complex 매입 자금",
@@ -2577,7 +2841,8 @@
         "rate_text": "0.044",
         "rate": 4.4,
         "rate_type": "고정",
-        "amount": 988577063691
+        "amount": 988577063691,
+        "fx": true
       },
       {
         "kind": "제 3-1회 무보증 공모사채",
@@ -2586,7 +2851,8 @@
         "rate_text": "0.0640",
         "rate": 6.4,
         "rate_type": "고정",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "제 3-2회 무보증 공모사채",
@@ -2595,7 +2861,8 @@
         "rate_text": "0.0660",
         "rate": 6.6,
         "rate_type": "고정",
-        "amount": 80000000000
+        "amount": 80000000000,
+        "fx": false
       },
       {
         "kind": "제 4회 무보증 공모사채",
@@ -2604,7 +2871,8 @@
         "rate_text": "0.0650",
         "rate": 6.5,
         "rate_type": "고정",
-        "amount": 120000000000
+        "amount": 120000000000,
+        "fx": false
       },
       {
         "kind": "제 6회 무보증 공모사채",
@@ -2613,7 +2881,8 @@
         "rate_text": "0.0630",
         "rate": 6.3,
         "rate_type": "고정",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "제 8회 무보증 사모사채",
@@ -2622,7 +2891,8 @@
         "rate_text": "0.0600",
         "rate": 6.0,
         "rate_type": "고정",
-        "amount": 16000000000
+        "amount": 16000000000,
+        "fx": false
       }
     ],
     "nominal": 1380027063691,
@@ -2661,7 +2931,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 150000000000
+        "amount": 150000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -2670,7 +2941,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -2679,7 +2951,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 60000000000
+        "amount": 60000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -2688,7 +2961,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "차입금",
@@ -2697,7 +2971,8 @@
         "rate_text": "3.50",
         "rate": 3.5,
         "rate_type": "고정",
-        "amount": 96600000000
+        "amount": 96600000000,
+        "fx": false
       }
     ],
     "nominal": 406600000000,
@@ -2729,7 +3004,8 @@
         "rate_text": "4.31",
         "rate": 4.31,
         "rate_type": "고정",
-        "amount": 73000000000
+        "amount": 73000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*1)(*4)(*6)",
@@ -2738,7 +3014,8 @@
         "rate_text": "4.31",
         "rate": 4.31,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*1)(*4)(*6)",
@@ -2747,7 +3024,8 @@
         "rate_text": "4.31",
         "rate": 4.31,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*1)(*4)(*6)",
@@ -2756,7 +3034,8 @@
         "rate_text": "4.31",
         "rate": 4.31,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*1)(*4)(*6)",
@@ -2765,7 +3044,8 @@
         "rate_text": "4.31",
         "rate": 4.31,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*2)(*5)(*6)",
@@ -2774,7 +3054,8 @@
         "rate_text": "4.90",
         "rate": 4.9,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*2)(*5)(*6)",
@@ -2783,7 +3064,8 @@
         "rate_text": "4.90",
         "rate": 4.9,
         "rate_type": "고정",
-        "amount": 32000000000
+        "amount": 32000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*2)(*5)(*6)",
@@ -2792,7 +3074,8 @@
         "rate_text": "4.90",
         "rate": 4.9,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*3)(*4)(*6)",
@@ -2801,7 +3084,8 @@
         "rate_text": "3.70",
         "rate": 3.7,
         "rate_type": "고정",
-        "amount": 61000000000
+        "amount": 61000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*3)(*4)(*6)",
@@ -2810,7 +3094,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*3)(*4)(*6)",
@@ -2819,7 +3104,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*3)(*4)(*6)",
@@ -2828,7 +3114,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 61000000000
+        "amount": 61000000000,
+        "fx": false
       },
       {
         "kind": "선순위대출(*3)(*4)(*6)",
@@ -2837,7 +3124,8 @@
         "rate_text": "4.20",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "중순위대출(*3)(*4)(*6)",
@@ -2846,7 +3134,8 @@
         "rate_text": "4.50",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 57000000000
+        "amount": 57000000000,
+        "fx": false
       },
       {
         "kind": "중순위대출(*3)(*4)(*6)",
@@ -2855,7 +3144,8 @@
         "rate_text": "4.30",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "중순위대출(*3)(*4)(*6)",
@@ -2864,7 +3154,8 @@
         "rate_text": "5.90",
         "rate": 5.9,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "중순위대출(*3)(*4)(*6)",
@@ -2873,7 +3164,8 @@
         "rate_text": "5.90",
         "rate": 5.9,
         "rate_type": "고정",
-        "amount": 4000000000
+        "amount": 4000000000,
+        "fx": false
       }
     ],
     "nominal": 588000000000,
@@ -2909,7 +3201,8 @@
         "rate_text": "5.50",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 55000000000
+        "amount": 55000000000,
+        "fx": false
       },
       {
         "kind": "단기차입금",
@@ -2918,7 +3211,8 @@
         "rate_text": "5.80",
         "rate": 5.8,
         "rate_type": "고정",
-        "amount": 35000000000
+        "amount": 35000000000,
+        "fx": false
       },
       {
         "kind": "단기차입금",
@@ -2927,7 +3221,8 @@
         "rate_text": "5.80",
         "rate": 5.8,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "단기차입금",
@@ -2936,7 +3231,8 @@
         "rate_text": "5.80",
         "rate": 5.8,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "단기차입금",
@@ -2945,7 +3241,8 @@
         "rate_text": "5.80",
         "rate": 5.8,
         "rate_type": "고정",
-        "amount": 6000000000
+        "amount": 6000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -2954,7 +3251,8 @@
         "rate_text": "CD(3개월)+1.60",
         "rate": null,
         "rate_type": "변동",
-        "amount": 36000000000
+        "amount": 36000000000,
+        "fx": false
       },
       {
         "kind": "7회차 전자단기사채",
@@ -2963,7 +3261,8 @@
         "rate_text": "4.60",
         "rate": 4.6,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       }
     ],
     "nominal": 197000000000,
@@ -2995,7 +3294,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 55000000000
+        "amount": 55000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3004,7 +3304,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3013,7 +3314,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3022,7 +3324,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3031,7 +3334,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3040,7 +3344,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3049,7 +3354,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3058,7 +3364,8 @@
         "rate_text": "CD 91일물+ 1.70%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3067,7 +3374,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3076,7 +3384,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 45000000000
+        "amount": 45000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3085,7 +3394,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 15000000000
+        "amount": 15000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3094,7 +3404,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 25000000000
+        "amount": 25000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3103,7 +3414,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       }
     ],
     "nominal": 430000000000,
@@ -3137,7 +3449,8 @@
         "rate_text": "EURIBOR+1.20%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 475984918123
+        "amount": 475984918123,
+        "fx": true
       },
       {
         "kind": "차입금",
@@ -3146,7 +3459,8 @@
         "rate_text": "EURIBOR+1.20%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 61732573877
+        "amount": 61732573877,
+        "fx": true
       },
       {
         "kind": "장기사채",
@@ -3155,7 +3469,8 @@
         "rate_text": "5.40",
         "rate": 5.4,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "장기사채",
@@ -3164,7 +3479,8 @@
         "rate_text": "5.90",
         "rate": 5.9,
         "rate_type": "고정",
-        "amount": 35000000000
+        "amount": 35000000000,
+        "fx": false
       },
       {
         "kind": "단기차입금",
@@ -3173,7 +3489,8 @@
         "rate_text": "4.50",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 40000000000
+        "amount": 40000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3182,7 +3499,8 @@
         "rate_text": "4.50",
         "rate": 4.5,
         "rate_type": "고정",
-        "amount": 80000000000
+        "amount": 80000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3191,7 +3509,8 @@
         "rate_text": "5.40",
         "rate": 5.4,
         "rate_type": "고정",
-        "amount": 15000000000
+        "amount": 15000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3200,7 +3519,8 @@
         "rate_text": "5.40",
         "rate": 5.4,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       }
     ],
     "nominal": 742717492000,
@@ -3233,7 +3553,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 100000000000
+        "amount": 100000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3242,7 +3563,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 70000000000
+        "amount": 70000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3251,7 +3573,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3260,7 +3583,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 39700000000
+        "amount": 39700000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3269,7 +3593,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 35000000000
+        "amount": 35000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3278,7 +3603,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3287,7 +3613,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3296,7 +3623,8 @@
         "rate_text": "4.87%",
         "rate": 4.87,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3305,7 +3633,8 @@
         "rate_text": "4.87%",
         "rate": 4.87,
         "rate_type": "고정",
-        "amount": 31700000000
+        "amount": 31700000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3314,7 +3643,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 61800000000
+        "amount": 61800000000,
+        "fx": false
       },
       {
         "kind": "장기차입금(주1)",
@@ -3323,7 +3653,8 @@
         "rate_text": "4.40%",
         "rate": 4.4,
         "rate_type": "고정",
-        "amount": 96100000000
+        "amount": 96100000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -3332,7 +3663,8 @@
         "rate_text": "4.30%",
         "rate": 4.3,
         "rate_type": "고정",
-        "amount": 78000000000
+        "amount": 78000000000,
+        "fx": false
       },
       {
         "kind": "단기사채",
@@ -3341,7 +3673,8 @@
         "rate_text": "4.80%",
         "rate": 4.8,
         "rate_type": "고정",
-        "amount": 22000000000
+        "amount": 22000000000,
+        "fx": false
       }
     ],
     "nominal": 674300000000,
@@ -3375,7 +3708,8 @@
         "rate_text": "3.30%",
         "rate": 3.3,
         "rate_type": "고정",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3384,7 +3718,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 20200000000
+        "amount": 20200000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3393,7 +3728,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3402,7 +3738,8 @@
         "rate_text": "4.70%",
         "rate": 4.7,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3411,7 +3748,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 65000000000
+        "amount": 65000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3420,7 +3758,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 75000000000
+        "amount": 75000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3429,7 +3768,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 37000000000
+        "amount": 37000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3438,7 +3778,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 68000000000
+        "amount": 68000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3447,7 +3788,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3456,7 +3798,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3465,7 +3808,8 @@
         "rate_text": "4.81%",
         "rate": 4.81,
         "rate_type": "고정",
-        "amount": 27900000000
+        "amount": 27900000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3474,7 +3818,8 @@
         "rate_text": "3.40%",
         "rate": 3.4,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3483,7 +3828,8 @@
         "rate_text": "4.20%",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3492,7 +3838,8 @@
         "rate_text": "4.20%",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 26000000000
+        "amount": 26000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3501,7 +3848,8 @@
         "rate_text": "4.20%",
         "rate": 4.2,
         "rate_type": "고정",
-        "amount": 25000000000
+        "amount": 25000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3510,7 +3858,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3519,7 +3868,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3528,7 +3878,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 5000000000
+        "amount": 5000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3537,7 +3888,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 3000000000
+        "amount": 3000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3546,7 +3898,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 3000000000
+        "amount": 3000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3555,7 +3908,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 3000000000
+        "amount": 3000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3564,7 +3918,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3573,7 +3928,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 24500000000
+        "amount": 24500000000,
+        "fx": false
       },
       {
         "kind": "선순위 담보대출",
@@ -3582,7 +3938,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 10000000000
+        "amount": 10000000000,
+        "fx": false
       },
       {
         "kind": "중순위담보대출",
@@ -3591,7 +3948,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "주식담보대출",
@@ -3600,7 +3958,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 65000000000
+        "amount": 65000000000,
+        "fx": false
       },
       {
         "kind": "주식담보대출",
@@ -3609,7 +3968,8 @@
         "rate_text": "5.50%",
         "rate": 5.5,
         "rate_type": "고정",
-        "amount": 20000000000
+        "amount": 20000000000,
+        "fx": false
       },
       {
         "kind": "전환사채",
@@ -3618,7 +3978,8 @@
         "rate_text": "4.00%",
         "rate": 4.0,
         "rate_type": "고정",
-        "amount": 2000000000
+        "amount": 2000000000,
+        "fx": false
       }
     ],
     "nominal": 684600000000,
@@ -3652,7 +4013,8 @@
         "rate_text": "0.0520",
         "rate": 5.2,
         "rate_type": "고정",
-        "amount": 50000000000
+        "amount": 50000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3661,7 +4023,8 @@
         "rate_text": "0.0580",
         "rate": 5.8,
         "rate_type": "고정",
-        "amount": 82000000000
+        "amount": 82000000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3670,7 +4033,8 @@
         "rate_text": "0.0580",
         "rate": 5.8,
         "rate_type": "고정",
-        "amount": 8000000000
+        "amount": 8000000000,
+        "fx": false
       }
     ],
     "nominal": 140000000000,
@@ -3767,7 +4131,8 @@
         "rate_text": "CD(91일)수익률 + 1.67%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "담보대출(*1)",
@@ -3776,7 +4141,8 @@
         "rate_text": "CD(91일)수익률 + 1.67%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "담보대출(*1)",
@@ -3785,7 +4151,8 @@
         "rate_text": "CD(91일)수익률 + 1.77%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 32000000000
+        "amount": 32000000000,
+        "fx": false
       },
       {
         "kind": "담보대출(*1)",
@@ -3794,7 +4161,8 @@
         "rate_text": "CD(91일)수익률 + 1.77%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 30000000000
+        "amount": 30000000000,
+        "fx": false
       },
       {
         "kind": "담보대출(*1)",
@@ -3803,7 +4171,8 @@
         "rate_text": "CD(91일)수익률 + 1.77%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 32000000000
+        "amount": 32000000000,
+        "fx": false
       }
     ],
     "nominal": 154000000000,
@@ -3835,7 +4204,8 @@
         "rate_text": "4.80",
         "rate": 4.8,
         "rate_type": "고정",
-        "amount": 12628540000
+        "amount": 12628540000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3844,7 +4214,8 @@
         "rate_text": "4.80",
         "rate": 4.8,
         "rate_type": "고정",
-        "amount": 5602480000
+        "amount": 5602480000,
+        "fx": false
       }
     ],
     "nominal": 18231020000,
@@ -3878,7 +4249,8 @@
         "rate_text": "2.13",
         "rate": 2.13,
         "rate_type": "고정",
-        "amount": 126580776000
+        "amount": 126580776000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3887,7 +4259,8 @@
         "rate_text": "LIBOR+1.60%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 85809780000
+        "amount": 85809780000,
+        "fx": true
       }
     ],
     "nominal": 212390556000,
@@ -3920,7 +4293,8 @@
         "rate_text": "5.39%",
         "rate": 5.39,
         "rate_type": "고정",
-        "amount": 4500000000
+        "amount": 4500000000,
+        "fx": false
       },
       {
         "kind": "장기차입금",
@@ -3929,7 +4303,8 @@
         "rate_text": "3M EURIBOR+1.1%",
         "rate": null,
         "rate_type": "변동",
-        "amount": 40391854000
+        "amount": 40391854000,
+        "fx": true
       }
     ],
     "nominal": 44891854000,
