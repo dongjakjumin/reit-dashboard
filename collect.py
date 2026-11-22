@@ -314,7 +314,9 @@ def main():
     _save(DATA / "latest.json", snap)
     update_logs(snap)
     from dart import update as update_dart
-    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures), ("DART", update_dart)):
+    from ecos import update as update_rates
+    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures), ("DART", update_dart),
+                          ("금리", update_rates)):
         try:
             update(snap)
         except Exception as exc:

@@ -60,7 +60,8 @@
   <div class="card read">
     <ul style="margin:0;padding-left:18px">
       <li><b>시가배당률</b>은 DART 사업보고서에서 최근 12개월에 끝난 결산기의 보통주 주당 현금배당금을 더한 뒤 표의 현재가로 나누어 계산합니다. 배당 기준일과 지급일은 반영하지 않습니다. 이 기간에 주가 기준가가 바뀌었거나 당기 주당 배당금을 확인할 수 없으면 값을 비웁니다.</li>
-      <li>자산 매각 대금 분배 같은 일회성 배당이 포함되면 시가배당률이 높아집니다. 종목별 결산기 배당금은 DART 사업보고서에서 확인할 수 있습니다.</li>
+      <li><b>국고채 대비</b>는 종목의 시가배당률에서 국고채 10년 금리를 뺀 값(%p)입니다. 금리 기준일은 <span id="bond-date">자료 없음</span>입니다.</li>
+      <li>리츠 배당에는 자산 매각 대금 분배 같은 일회성 금액이 포함될 수 있습니다. 국고채와 달리 리츠는 원금과 배당을 보장하지 않습니다. 종목별 배당금은 DART 사업보고서에서 확인할 수 있습니다.</li>
       <li><b>배당수익률, 연환산 배당률</b>: 리츠정보시스템 정의를 그대로 옮겼습니다. 배당수익률은 배당액을 기초와 기말 납입자본금의 평균으로 나눈 값이고, 연환산 배당률은 여기에 365일을 곱하고 사업연도 일수로 나눈 값입니다. 주가로 나눈 시가배당률과는 다릅니다.</li>
       <li><b>NAV</b>: 자산의 최근 감정평가액에서 부채총계를 뺀 값입니다(리츠정보시스템 정의).</li>
       <li><b>FFO</b>: 당기순이익에 감가상각비를 더하고 평가손익, 매각손익, 손상차손과 환입, 판매손익을 조정한 값입니다(리츠정보시스템 정의). 결산기 한 번의 금액입니다.</li>
@@ -76,7 +77,7 @@
 </section>
 
 <footer>
-  <p>출처: 국토교통부 리츠정보시스템(reits.molit.go.kr) 상장리츠 현황, 리츠통계 상장리츠현황. 이 화면은 공개된 자료를 자동으로 모아 정리한 개인 참고용 자료이며, 수집과 가공 과정에서 누락이나 오기가 생길 수 있고 원문과 다를 수 있습니다.</p>
+  <p>출처: 한국은행 ECOS 시장금리, 국토교통부 리츠정보시스템(reits.molit.go.kr) 상장리츠 현황, 리츠통계 상장리츠현황. 이 화면은 공개된 자료를 자동으로 모아 정리한 개인 참고용 자료이며, 수집과 가공 과정에서 누락이나 오기가 생길 수 있고 원문과 다를 수 있습니다.</p>
   <p>이 화면의 어떤 내용도 투자 권유나 의사결정의 근거로 쓸 수 없으며, 이를 이용해 생긴 결과에 대해 작성자는 책임지지 않습니다. 정확한 내용은 각 리츠의 투자보고서와 공시 원문에서 확인하시기 바랍니다.</p>
   <p id="by"></p>
 </footer>
@@ -92,6 +93,10 @@ const eok = v => { v = Math.round(v || 0); if (v >= 10000) { const j = Math.floo
 const SECTOR_COLOR = {'주택':'var(--s1)','오피스':'var(--s2)','물류':'var(--s3)','복합형':'var(--s4)','리테일':'var(--s5)','호텔':'var(--s6)','기타':'var(--s0)'};
 const secColor = s => SECTOR_COLOR[s] || 'var(--s0)';
 const S = D.summary, R = D.rows;
+const bond = S.rates.ktb10;
+const rateText = rate => rate ? rate.value.toFixed(3) + '%' : '–';
+const signed = v => (v > 0 ? '+' : '') + v.toFixed(2);
+$('#bond-date').textContent = bond?.date ?? '자료 없음';
 const pct = v => v == null ? '–' : (v > 0 ? '▲ ' : v < 0 ? '▼ ' : '') + Math.abs(v).toFixed(1) + '%';
 const cls = v => v == null || v === 0 ? '' : v > 0 ? ' pos' : ' neg';
 
@@ -118,6 +123,8 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
     {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 1년 수익률이 오른 종목 <b>${S.up_1y}</b>, 내린 종목 <b>${S.down_1y}</b>`},
     {lab: 'P/NAV 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배`},
     {lab: '시가배당률 중앙값', val: S.yield_median?.toFixed(2) ?? '자료 없음', unit: S.yield_n ? '%' : '', det: `최근 12개월 보통주 배당과 현재가를 확인한 ${S.yield_n}개 종목 기준`},
+    {lab: '국고채 10년', val: bond?.value.toFixed(3) ?? '자료 없음', unit: bond ? '%' : '', det: `기준일 ${bond?.date ?? '자료 없음'} · 3년 ${rateText(S.rates.ktb3)}, 5년 ${rateText(S.rates.ktb5)}`},
+    {lab: '국고채 10년 대비 배당률 차이 중앙값', val: S.spread_n ? signed(S.spread_median) : '자료 없음', unit: S.spread_n ? '%p' : '', det: `시가배당률과 국고채 금리를 비교한 ${S.spread_n}개 종목 기준`},
     {lab: '연환산 배당률 중앙값', val: S.dvd_median?.toFixed(2) ?? '–', unit: '%', det: `납입자본금 기준, 직전 결산기. 배당이 있는 <b>${S.dvd_n}개</b> 종목 기준`},
   ];
   $('#tiles').innerHTML = tiles.map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
@@ -207,6 +214,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     {k: null, t: '1년 흐름'},
     {k: 'market_yield', t: '시가배당률', f: r => r.market_yield != null ? r.market_yield.toFixed(2) + '%' :
       '–' + (r.market_yield_reason ? `<span class="s">${esc(r.market_yield_reason)}</span>` : '')},
+    {k: 'spread', t: '국고채 대비', f: r => r.spread == null ? '–' : signed(r.spread) + '%p'},
     {k: 'annual_dvd_pct', t: '연환산 배당률(납입자본금)', f: r => r.annual_dvd_pct != null ? r.annual_dvd_pct.toFixed(2) + '%' : '–'},
     {k: 'pnav', t: 'P/NAV', f: r => r.pnav != null ? r.pnav.toFixed(2) + '배' : '–'},
     {k: 'pffo', t: 'P/FFO(연환산)', f: r => r.pffo != null ? r.pffo.toFixed(1) + '배' : '–'},
@@ -237,8 +245,8 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   }
   $('#sec-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
     $('#sec-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); sec = b.dataset.v; draw(); });
-  $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','연환산 배당률(납입자본금, %)','NAV(억원)','P/NAV','FFO(억원, 결산기)','P/FFO(연환산)','WALE(년)','직전 결산','기수','상장일'],
-    rows().map(x => [x.name, x.code, x.sector, x.price, x.chg_pct, x.mktcap_eok, x.ret_1m, x.ret_3m, x.ret_1y, x.dvd_pct, x.market_yield, x.annual_dvd_pct, x.nav_eok, x.pnav, x.ffo_eok, x.pffo, x.wale_years, x.fiscal_end, x.fiscal_period, x.listed_date]));
+  $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','국고채 대비(%p)','연환산 배당률(납입자본금, %)','NAV(억원)','P/NAV','FFO(억원, 결산기)','P/FFO(연환산)','WALE(년)','직전 결산','기수','상장일'],
+    rows().map(x => [x.name, x.code, x.sector, x.price, x.chg_pct, x.mktcap_eok, x.ret_1m, x.ret_3m, x.ret_1y, x.dvd_pct, x.market_yield, x.spread, x.annual_dvd_pct, x.nav_eok, x.pnav, x.ffo_eok, x.pffo, x.wale_years, x.fiscal_end, x.fiscal_period, x.listed_date]));
   draw();
 })();
 </script>

@@ -21,6 +21,7 @@ from pathlib import Path
 from statistics import median
 
 import build
+import ecos
 import reits_api
 from dart import previous_year
 from textutil import PRIVATE_LABEL, mask_person, phone_files
@@ -64,6 +65,7 @@ def main() -> int:
         check(bool(html.strip()), f"{path.name} 생성 및 내용 확인")
         if name == "listed":
             listed_page = html
+    finance_payload = {}
     try:
         page_data, _ = json.JSONDecoder().raw_decode(listed_page.split("const D = ", 1)[1])
         codes = {row["code"] for row in page_data["rows"]}
@@ -239,6 +241,57 @@ def main() -> int:
         maturity, market = {}, {}
     check(set(maturity) == set(market) == {r["code"] for r in listed}, "DART 표와 상장 종목 목록 일치")
     expected_yields = []
+    print("[6-1] ECOS 시장금리")
+    rate_data = build.optional_data("rates.json")
+    series = rate_data.get("series", {})
+    check(set(series) == set(ecos.SERIES), "금리 6개 계열 확인")
+    latest_rates = {}
+    yield_summary = page_data.get("summary", {}) if codes is not None else {}
+    for code, (name, stat, item) in ecos.SERIES.items():
+        row = series.get(code, {})
+        values = row.get("values", {})
+        days = list(values)
+        try:
+            dates = [date.fromisoformat(day) for day in days]
+            fetched = date.fromisoformat(rate_data["fetched"])
+            valid_dates = days == sorted(day.isoformat() for day in dates)
+        except (ValueError, KeyError, TypeError):
+            valid_dates = False
+        check(bool(days) and valid_dates, f"{name} 날짜 형식과 오름차순")
+        valid_values = bool(days) and all(type(v) in (float, int) and 0 < v < 20 for v in values.values())
+        check(valid_values and (row.get("stat"), row.get("item")) == (stat, item), f"{name} 금리 범위와 계열 코드")
+        if not (valid_dates and valid_values):
+            continue
+        latest = dates[-1]
+        check(0 <= (fetched - latest).days, f"{name} 최근 관측일이 수집일보다 늦지 않음")
+        if (d1 - latest).days > 10:
+            # 금리 원문이 오래 막혀도 화면 전체 배포는 막지 않는다. 화면에 기준일이 함께 나온다.
+            print(f"  주의  {name} 최근 관측일이 {latest}로 10일 넘게 지났습니다")
+        value = values[latest.isoformat()]
+        latest_rates[code] = value
+        prior = next((day for day in reversed(dates) if 28 <= (latest - day).days <= 35), None)
+        expected_summary = dict(value=value, date=latest.isoformat(),
+                                change=round(value - values[str(prior)], 3) if prior else None)
+        check(yield_summary.get("rates", {}).get(code) == expected_summary
+              and finance_payload.get("rates", {}).get(code) == expected_summary, f"{name} 화면 기준일과 한 달 변동")
+    secret = os.environ.get("ECOS_API_KEY", "").strip()
+    if secret and secret != "sample":
+        check(all(secret.encode() not in path.read_bytes() for root in (DATA, build.SITE)
+                  for path in root.rglob("*") if path.is_file()), "금리 인증키 저장 여부")
+    if os.environ.get("VERIFY_OFFLINE"):
+        skipped += 1
+    else:
+        start = d1 - timedelta(days=13)
+        try:
+            live = ecos.fetch(*ecos.SERIES["ktb10"][1:], start, d1, ecos.api_key())
+        except Exception as exc:
+            skipped += 1
+            print(f"  건너뜀  국고채 10년 원문 재조회 ({type(exc).__name__})")
+        else:
+            stored = {day: value for day, value in series.get("ktb10", {}).get("values", {}).items()
+                      if str(start) <= day <= str(d1)}
+            check(live == stored, "국고채 10년 최근 14일 원문 대조")
+    expected_spreads = []
     price_window_start = (d1 - timedelta(days=372)).isoformat()
 
     def matches(x, y):
@@ -294,13 +347,24 @@ def main() -> int:
         if not yield_reason and annual_dps is not None and price and price > 0:
             expected = annual_dps / price * 100
             expected_yields.append(expected)
+        benchmark = latest_rates.get("ktb10")
+        spread = round(expected - benchmark, 2) if expected is not None and benchmark is not None else None
+        if spread is not None:
+            expected_spreads.append(spread)
+        corp = latest_rates.get("corp_aa")
+        difference = (round(rate - corp, 1) if rate is not None and corp is not None
+                      and record["current"]["total"] else None)
+        check("spread" in market_row and spread == market_row["spread"], f"{name} 국고채 대비 배당률 차이")
+        check("corp_spread" in maturity_row and difference == maturity_row["corp_spread"], f"{name} 회사채 금리와 차이")
         check(matches(share, maturity_row.get("share")) and matches(rate, maturity_row.get("rate"))
               and matches(coverage, maturity_row.get("coverage")) and interest_source == maturity_row.get("interest_source"),
               f"{name} 화면 만기 비중, 추정 금리와 근거, 영업이익 ÷ 이자")
         check(price == market_row.get("price") and price_break == market_row.get("price_break")
               and yield_reason == market_row.get("market_yield_reason")
               and matches(expected, market_row.get("market_yield")), f"{name} 화면 시가배당률과 기준가 변경")
-    yield_summary = page_data.get("summary", {}) if codes is not None else {}
+    spread_median = round(median(expected_spreads), 2) if expected_spreads else None
+    check(yield_summary.get("spread_n") == len(expected_spreads) and yield_summary.get("spread_median") == spread_median,
+          "국고채 대비 배당률 차이 중앙값과 종목 수")
     expected_median = round(median(expected_yields), 2) if expected_yields else None
     check(yield_summary.get("yield_n") == len(expected_yields) and matches(yield_summary.get("yield_median"), expected_median),
           "시가배당률 값이 있는 종목 수와 중앙값 재계산")

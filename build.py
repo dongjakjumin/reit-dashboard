@@ -317,11 +317,25 @@ def optional_data(name):
     return json.loads(content) if content.strip() else {}
 
 
-def maturity_rows(stocks):
+def rate_summary():
+    result = {}
+    for code, series in optional_data("rates.json").get("series", {}).items():
+        values = series["values"]
+        if not values:
+            continue
+        latest = max(values)
+        end = d(latest)
+        previous = max((day for day in values if 28 <= (end - d(day)).days <= 35), default=None)
+        result[code] = {"value": values[latest], "date": latest,
+                        "change": round(values[latest] - values[previous], 3) if previous else None}
+    return result
+
+
+def maturity_rows(stocks, corporate_rate=None):
     source = optional_data("dart.json")
     rows = []
     for stock in stocks:
-        row = {"code": stock["code"], "name": stock["name"]}
+        row = {"code": stock["code"], "name": stock["name"], "corp_spread": None}
         rows.append(row)
         record = source.get(stock["code"])
         if not record:
@@ -338,6 +352,8 @@ def maturity_rows(stocks):
                    interest_source=s.get("interest_source", s["cost_name"]),
                    coverage=op / interest if total and interest and op is not None else None, extra=short * 0.01 / 1e8,
                    impact=short / (op * annual) if op and op > 0 and annual else None)
+        if total and row["rate"] is not None and corporate_rate is not None:
+            row["corp_spread"] = round(row["rate"] - corporate_rate, 1)
     return rows
 
 
@@ -345,6 +361,8 @@ def build_listed_data() -> dict:
     """상장리츠 비교판 자료. P/NAV, P/FFO, 수익률, 지수는 여기서 계산한다."""
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
     dart = optional_data("dart.json")
+    rates = rate_summary()
+    benchmark = rates.get("ktb10", {}).get("value")
     prices = optional_data("prices.json")
     fin = optional_data("financials.json")
     rows = []
@@ -390,11 +408,13 @@ def build_listed_data() -> dict:
             ppy = 365 / days
         elif r.get("dvd_pct") and r.get("annual_dvd_pct"):
             ppy = min(4, max(1, round(r["annual_dvd_pct"] / r["dvd_pct"])))
+        market_yield = dps / last * 100 if not yield_blocked and dps is not None and last and last > 0 else None
         rows.append({
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "has_finance": _has_finance(fin.get(str(r.get("reit_id")))),
             "homepage": safe_url(r.get("homepage")), "listed_date": safe_date(r.get("listed_date")),
-            "market_yield": dps / last * 100 if not yield_blocked and dps is not None and last and last > 0 else None,
+            "market_yield": market_yield,
+            "spread": round(market_yield - benchmark, 2) if market_yield is not None and benchmark is not None else None,
             "market_yield_reason": "기준가 변경" if yield_blocked else None,
             "price": last, "mktcap_eok": mktcap,
             "chg_pct": round((last / hist[dates[-2]] - 1) * 100, 2) if len(dates) >= 2 and last_d not in breaks else None,
@@ -426,6 +446,7 @@ def build_listed_data() -> dict:
                      key=lambda x: -x["mktcap_eok"])
     pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]
     yields = [r["market_yield"] for r in rows if r["market_yield"] is not None]
+    spreads = [r["spread"] for r in rows if r["spread"] is not None]
     dvds = [r["annual_dvd_pct"] for r in rows if r["annual_dvd_pct"]]
     r1y = [r["ret_1y"] for r in rows if r["ret_1y"] is not None]
     cfg_path = ROOT / "config.json"
@@ -440,6 +461,7 @@ def build_listed_data() -> dict:
             "pnav_median": _median(pnavs, 2), "pnav_n": len(pnavs),
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
             "yield_median": _median(yields, 2), "yield_n": len(yields),
+            "rates": rates, "spread_median": _median(spreads, 2), "spread_n": len(spreads),
             "dvd_median": _median(dvds, 2), "dvd_n": len(dvds),
         },
         "index": {"dates": common, "values": idx, "excluded": sorted(skip.values())},
@@ -491,6 +513,7 @@ def build_finance_data() -> dict:
     """상장리츠 재무 구조와 리츠 주요 공시."""
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
     fin = optional_data("financials.json")
+    rates = rate_summary()
     dis = optional_data("disclosures.json")
     today = d(snap["date"])
     eok = lambda won: round(won / 1e8) if won is not None else None
@@ -576,7 +599,8 @@ def build_finance_data() -> dict:
         },
         "rows": rows, "groups": [{"name": g, "n": counts[g]} for g in GROUP_ORDER if counts[g]],
         "disclosures": items,
-        "maturity": maturity_rows(snap["listed"]),
+        "rates": rates,
+        "maturity": maturity_rows(snap["listed"], rates.get("corp_aa", {}).get("value")),
         "timelines": timelines,
         "dis_start": min((day for x in dis.values() if (day := safe_date(x.get("date")))), default=None),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
