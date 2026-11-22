@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>리츠 인가와 프로젝트리츠 현황판</title>
+<meta name="description" content="국토교통부 리츠정보시스템 공개 자료로 리츠 접수, 인가, 등록, 프로젝트리츠 신고 현황을 영업일마다 집계합니다.">
+<style>
+:root{
+  color-scheme:light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --wash:rgba(11,11,11,.04);
+  --accent:#2a78d6; --mark:#fff3cf;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s0:#898781;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --wash:rgba(255,255,255,.05);
+    --accent:#3987e5; --mark:#3a3216;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c; --s0:#898781;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);
+  font-family:"Pretendard Variable",Pretendard,system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:15px;line-height:1.55;word-break:keep-all}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 56px}
+header h1{font-size:26px;line-height:1.25;margin:0 0 8px;letter-spacing:-.01em}
+header p{margin:0;color:var(--ink2);max-width:780px}
+.stamp{margin-top:10px;font-size:13px;color:var(--muted)}
+section{margin-top:36px}
+h2{font-size:19px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--ink2);font-size:13.5px;margin:0 0 14px;max-width:820px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.tile .lab{font-size:13px;color:var(--ink2)}
+.tile .val{font-size:30px;font-weight:700;line-height:1.2;margin:4px 0 2px;letter-spacing:-.02em}
+.tile .val small{font-size:15px;font-weight:600;color:var(--ink2);margin-left:2px}
+.tile .det{font-size:13px;color:var(--ink2)}
+.tile .det b{color:var(--ink);font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.row .sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;color:var(--ink2);font:inherit;font-size:13px;padding:6px 11px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--surface);font-weight:600}
+.seg button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=search],select{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
+input[type=search]{min-width:220px}
+.btn{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 11px;cursor:pointer}
+.btn:hover,.seg button:hover{background:var(--wash)}
+.seg button[aria-pressed=true]:hover{background:var(--ink)}
+.count{font-size:13px;color:var(--muted)}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--grid)}
+th{font-size:12.5px;font-weight:600;color:var(--ink2);white-space:nowrap;background:var(--surface);position:sticky;top:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--wash)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.nw{white-space:nowrap}
+td .s{display:block;font-size:12.5px;color:var(--muted)}
+tr.hl{background:var(--mark)}
+tr.hl:hover{background:var(--mark)}
+.tag{display:inline-block;font-size:12px;line-height:1.5;padding:0 7px;border-radius:999px;border:1px solid var(--border);color:var(--ink2);white-space:nowrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:baseline}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink2);margin:0 0 6px}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:inherit;fill:var(--muted);font-size:12px}
+.chart .tot{fill:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.bar{display:inline-block;height:8px;border-radius:2px;background:var(--s1);vertical-align:middle;margin-right:6px}
+.mix{display:inline-flex;height:8px;width:96px;gap:1px;vertical-align:middle;border-radius:2px;overflow:hidden}
+.mix i{display:block;height:100%}
+#tip{position:fixed;z-index:10;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12.5px;line-height:1.5;padding:7px 10px;border-radius:8px;max-width:260px;opacity:0;transition:opacity .08s}
+#tip b{font-weight:600}
+#tip .tr{display:flex;justify-content:space-between;gap:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+details{margin-top:10px}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+.read{font-size:13.5px;color:var(--ink2)}
+.read li{margin:4px 0}
+footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--grid);font-size:12.5px;color:var(--muted)}
+footer p{margin:0 0 8px;max-width:860px}
+.empty{padding:18px;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>리츠 인가와 프로젝트리츠 현황판</h1>
+  <p>국토교통부 리츠정보시스템에 공개된 운영 중 리츠 목록과 접수현황을 영업일마다 한 번 받아, 새로 인가, 등록, 신고된 리츠와 심사 중인 신청, 자산관리회사별 운용 규모를 집계합니다.</p>
+  <div class="stamp" id="stamp"></div>
+</header>
+
+<section aria-labelledby="h-sum">
+  <h2 id="h-sum">요약</h2>
+  <p class="sub">자산총계는 리츠정보시스템 목록에 표시된 값(직전 분기 투자보고서 기준)을 더한 것입니다. 새로 인가된 리츠는 투자보고서가 나오기 전까지 0으로 표시됩니다.</p>
+  <div class="tiles" id="tiles"></div>
+</section>
+
+<section aria-labelledby="h-fil">
+  <h2 id="h-fil">접수현황</h2>
+  <p class="sub" id="fil-sub"></p>
+  <div class="row">
+    <div class="seg" id="fil-seg" role="group" aria-label="신청유형"></div>
+    <span class="sp"></span>
+    <span class="count" id="fil-count"></span>
+    <button class="btn" id="fil-csv">엑셀(CSV) 내려받기</button>
+  </div>
+  <div class="tw"><table id="fil-table"></table></div>
+  <div id="done-box"></div>
+</section>
+
+<section aria-labelledby="h-trend">
+  <h2 id="h-trend">신규 리츠 추이</h2>
+  <p class="sub">현재 운영 중인 리츠를 인가, 등록, 신고일 기준으로 셌습니다. 해산하거나 인가가 취소된 리츠는 목록에 없으므로 과거 연도의 실제 인가 건수는 이 숫자보다 많습니다.</p>
+  <div class="two">
+    <div class="card">
+      <div class="row" style="margin-bottom:8px">
+        <strong style="font-size:14px">연도별</strong><span class="sp"></span>
+        <div class="seg" id="yr-seg" role="group" aria-label="나누는 기준">
+          <button data-v="kind" aria-pressed="true">구분</button><button data-v="sector" aria-pressed="false">투자대상</button>
+        </div>
+      </div>
+      <div class="legend" id="yr-legend"></div>
+      <div class="chart" id="yr-chart"></div>
+      <p class="note" id="yr-note"></p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">월별, 최근 24개월</strong></div>
+      <div class="legend" id="mo-legend"></div>
+      <div class="chart" id="mo-chart"></div>
+      <p class="note">신고는 프로젝트리츠 설립신고입니다. 프로젝트리츠 제도는 2025년 11월에 시행됐습니다.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-proj">
+  <h2 id="h-proj">프로젝트리츠</h2>
+  <p class="sub" id="proj-sub"></p>
+  <div class="row"><span class="sp"></span><button class="btn" id="proj-csv">엑셀(CSV) 내려받기</button></div>
+  <div class="tw"><table id="proj-table"></table></div>
+</section>
+
+<section aria-labelledby="h-amc">
+  <h2 id="h-amc">자산관리회사별 현황</h2>
+  <p class="sub" id="amc-sub"></p>
+  <div class="row">
+    <div class="seg" id="amc-seg" role="group" aria-label="정렬">
+      <button data-v="assets" aria-pressed="true">자산총계순</button><button data-v="n" aria-pressed="false">리츠 수순</button><button data-v="new12" aria-pressed="false">최근 12개월 신규순</button>
+    </div>
+    <span class="sp"></span>
+    <div class="legend" id="amc-legend" style="margin:0"></div>
+    <button class="btn" id="amc-more">전체 보기</button>
+    <button class="btn" id="amc-csv">엑셀(CSV) 내려받기</button>
+  </div>
+  <div class="tw"><table id="amc-table"></table></div>
+</section>
+
+<section aria-labelledby="h-ev">
+  <h2 id="h-ev">최근 변동</h2>
+  <p class="sub">최근 90일의 인가, 등록, 신고와 현재 접수 중인 신청을 날짜순으로 모았습니다.</p>
+  <div class="tw"><table id="ev-table"></table></div>
+</section>
+
+<section aria-labelledby="h-all">
+  <h2 id="h-all">운영 중 리츠 전체 목록</h2>
+  <p class="sub">검색어는 리츠 이름과 자산관리회사 이름에서 찾습니다.</p>
+  <div class="row">
+    <input type="search" id="all-q" placeholder="리츠, 자산관리회사 검색" aria-label="검색">
+    <select id="all-kind" aria-label="구분"></select>
+    <select id="all-sector" aria-label="투자대상"></select>
+    <span class="sp"></span>
+    <span class="count" id="all-count"></span>
+    <button class="btn" id="all-csv">엑셀(CSV) 내려받기</button>
+  </div>
+  <div class="tw"><table id="all-table"></table></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="all-more">50건 더 보기</button></div>
+</section>
+
+<section aria-labelledby="h-read">
+  <h2 id="h-read">읽는 법</h2>
+  <div class="card read">
+    <ul style="margin:0;padding-left:18px">
+      <li><b>인가</b>: 부동산투자회사가 국토교통부 장관의 영업인가를 받은 경우입니다.</li>
+      <li><b>등록</b>: 법에서 정한 요건을 갖춘 리츠가 인가 대신 등록으로 영업을 시작한 경우입니다.</li>
+      <li><b>신고</b>: 프로젝트리츠 설립신고입니다. 개발 단계에서는 설립신고만으로 사업을 시작하고, 준공 뒤 정해진 기간 안에 영업인가를 받거나 등록합니다. 이 화면에서는 구분이 신고인 리츠를 프로젝트리츠로 셌습니다.</li>
+      <li><b>접수현황</b>: 리츠정보시스템이 현재 처리 중인 신청만 보여 줍니다. 이 화면은 영업일마다 목록을 저장해, 목록에서 빠진 신청과 그 뒤에 나온 인가 결과를 이어서 기록합니다.</li>
+      <li><b>경과일</b>: 접수일부터 최종 수집일까지의 달력 날짜 수입니다. 보완 요청으로 멈춘 기간도 포함합니다. 접수일이 몇 년 전인 건은 리츠정보시스템 목록에 남아 있는 그대로 옮긴 것입니다.</li>
+      <li><b>리츠 수와 자산총계</b>: 리츠조회 목록에 지금 올라 있는 리츠를 센 값입니다. 리츠정보시스템 첫 화면의 통계(전월 말 기준)와는 기준 시점이 달라 숫자가 조금 다를 수 있습니다.</li>
+      <li><b>자산관리회사별 자산총계</b>: 각 리츠의 자산총계를 단순히 더한 값입니다. 모리츠와 자리츠가 같이 있으면 겹쳐 계산될 수 있습니다.</li>
+      <li><b>회사 이름</b>: (주), 주식회사 표기를 빼고 "위탁관리부동산투자회사"를 "리츠"로 줄여 적었습니다.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>출처: 국토교통부 리츠정보시스템(reits.molit.go.kr) 리츠조회, 접수현황. 이 화면은 공개된 자료를 자동으로 모아 정리한 개인 참고용 자료이며, 수집과 가공 과정에서 누락이나 오기가 생길 수 있고 원문과 다를 수 있습니다.</p>
+  <p>이 화면의 어떤 내용도 투자 권유나 의사결정의 근거로 쓸 수 없으며, 이를 이용해 생긴 결과에 대해 작성자는 책임지지 않습니다. 정확한 내용은 리츠정보시스템과 각 리츠의 투자보고서 원문에서 확인하시기 바랍니다.</p>
+  <p id="by"></p>
+</footer>
+</div>
+<div id="tip" role="status"></div>
+
+<script>
+const D = /*__DATA__*/null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n0 = v => Number(v || 0).toLocaleString('ko-KR');
+const eok = v => { v = Math.round(v || 0); if (v >= 10000) { const j = Math.floor(v / 10000), r = v % 10000; return j + '조' + (r ? ' ' + n0(r) + '억' : ''); } return n0(v) + '억'; };
+const jo = v => (v / 10000).toFixed(1);
+const dshort = s => s ? "'" + s.slice(2, 4) + '.' + s.slice(5, 7) + '.' + s.slice(8, 10) : '';
+const KIND_COLOR = {'인가':'var(--s1)','등록':'var(--s2)','신고':'var(--s3)'};
+const SECTOR_COLOR = {'주택':'var(--s1)','오피스':'var(--s2)','물류':'var(--s3)','복합형':'var(--s4)','리테일':'var(--s5)','호텔':'var(--s6)','기타':'var(--s0)'};
+const S = D.summary;
+
+/* 말풍선 */
+const tip = $('#tip');
+function showTip(html, e){ tip.innerHTML = html; tip.style.opacity = 1; moveTip(e); }
+function moveTip(e){ const w = tip.offsetWidth, h = tip.offsetHeight; let x = e.clientX + 14, y = e.clientY + 14; if (x + w > innerWidth - 8) x = e.clientX - w - 14; if (y + h > innerHeight - 8) y = e.clientY - h - 14; tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px'; }
+function hideTip(){ tip.style.opacity = 0; }
+
+/* CSV */
+function csv(name, head, rows){
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const text = '﻿' + [head, ...rows].map(r => r.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv;charset=utf-8'}));
+  a.download = name + '_' + D.date + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+function seg(el, onChange){
+  el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+    el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); onChange(b.dataset.v); });
+}
+function legend(el, names, colors){ el.innerHTML = names.map(n => `<span><i class="dot" style="background:${colors[n]}"></i>${esc(n)}</span>`).join(''); }
+
+/* 머리말 */
+$('#stamp').textContent = `최종 수집 ${D.collected_at} · 영업일 오전 10시 갱신 · 수집 기록 ${D.log_days}일째(${D.first_log}부터)`;
+$('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' (' + D.contact + ')' : ''}` : '';
+
+/* 요약 */
+(function(){
+  const diff = S.new12 - S.prev12, arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '–';
+  const ft = S.filings_by_type, ftxt = Object.entries(ft).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} <b>${v}</b>`).join(', ');
+  const tiles = [
+    {lab: '운영 중 리츠', val: n0(S.n_reits), unit: '개', det: `자산총계 합계 <b>${jo(S.assets_eok)}조원</b>, 자산관리회사 <b>${S.n_amc}곳</b>, 상장 <b>${S.listed_n}개</b>`},
+    {lab: '최근 12개월 신규', val: n0(S.new12), unit: '건', det: `직전 12개월 ${S.prev12}건 대비 ${arrow} ${Math.abs(diff)}건. 인가 <b>${S.new12_by_kind['인가']}</b>, 등록 <b>${S.new12_by_kind['등록']}</b>, 신고 <b>${S.new12_by_kind['신고']}</b>`},
+    {lab: '프로젝트리츠(설립신고)', val: n0(S.proj_n), unit: '건', det: `첫 신고 ${dshort(S.proj_first)}, 자산관리회사 <b>${S.proj_amc_n}곳</b>, 자산총계 합계 <b>${eok(S.proj_assets_eok)}원</b>`},
+    {lab: '접수 중인 신청', val: n0(S.filings_n), unit: '건', det: ftxt},
+  ];
+  $('#tiles').innerHTML = tiles.map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
+})();
+
+/* 접수현황 */
+(function(){
+  const types = ['전체', ...Object.keys(S.filings_by_type).sort((a, b) => S.filings_by_type[b] - S.filings_by_type[a])];
+  let cur = '전체';
+  $('#fil-seg').innerHTML = types.map((t, i) => `<button data-v="${esc(t)}" aria-pressed="${i === 0}">${esc(t)}${t === '전체' ? '' : ' ' + S.filings_by_type[t]}</button>`).join('');
+  const st = S.filings_by_status;
+  $('#fil-sub').textContent = `리츠정보시스템이 현재 처리 중인 신청 ${S.filings_n}건입니다. 진행상태는 ${Object.entries(st).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v + '건').join(', ')}입니다. 신청 담당자 이름과 연락처는 수집하지 않습니다.`;
+  const rows = () => D.filings.filter(f => cur === '전체' || f.req_type === cur);
+  function draw(){
+    const r = rows();
+    $('#fil-count').textContent = `${r.length}건 / 전체 ${D.filings.length}건`;
+    $('#fil-table').innerHTML = `<thead><tr><th>접수일</th><th class="num">경과일</th><th>신청유형</th><th>리츠</th><th>사업</th><th>신청회사</th><th>진행상태</th></tr></thead><tbody>` +
+      r.map(f => `<tr><td class="nw">${f.date}</td><td class="num">${f.days}일</td><td class="nw">${esc(f.req_type)}</td><td>${esc(f.name_s)}</td><td>${esc(f.project_name)}${f.biz_type ? `<span class="s">${esc(f.biz_type)}</span>` : ''}</td><td>${esc(f.applicant)}</td><td class="nw"><span class="tag">${esc(f.status)}</span></td></tr>`).join('') + '</tbody>';
+  }
+  seg($('#fil-seg'), v => { cur = v; draw(); });
+  $('#fil-csv').onclick = () => csv('리츠_접수현황', ['접수일','경과일','신청유형','리츠','사업','사업구분','신청회사','진행상태'], rows().map(f => [f.date, f.days, f.req_type, f.name_s, f.project_name, f.biz_type, f.applicant, f.status]));
+  draw();
+  const box = $('#done-box');
+  if (!D.done.length){
+    box.innerHTML = `<p class="note">처리가 끝나 목록에서 빠진 신청과 접수에서 인가까지 걸린 기간은 수집 기록이 쌓이면 이 자리에 표시됩니다. 수집 시작일은 ${D.first_log}입니다.</p>`;
+  } else {
+    const t = D.done.filter(x => x.days_to_result != null);
+    const avg = t.length ? Math.round(t.reduce((s, x) => s + x.days_to_result, 0) / t.length) : null;
+    box.innerHTML = `<details open><summary>처리가 끝난 신청 ${D.done.length}건 (${D.first_log} 이후 기록)</summary><p class="note">${avg != null ? `접수에서 인가, 등록, 신고까지 평균 ${avg}일(${t.length}건 기준). ` : ''}목록에서 빠진 날은 수집 시점에 처음 확인한 날입니다.</p><div class="tw"><table><thead><tr><th>접수일</th><th>목록에서 빠진 날</th><th>신청유형</th><th>리츠</th><th>신청회사</th><th>결과</th><th class="num">걸린 기간</th></tr></thead><tbody>` +
+      D.done.map(x => `<tr><td class="nw">${x.date}</td><td class="nw">${x.gone_on}</td><td class="nw">${esc(x.req_type)}</td><td>${esc(x.name_s)}</td><td>${esc(x.applicant)}</td><td class="nw">${x.result_kind ? esc(x.result_kind) + ' ' + x.result_date : '확인 전'}</td><td class="num">${x.days_to_result != null ? x.days_to_result + '일' : ''}</td></tr>`).join('') + '</tbody></table></div></details>';
+  }
+})();
+
+/* 누적 막대 */
+function stacked(el, labels, series, opt){
+  const W = Math.max(320, el.clientWidth), H = opt.h || 250, mL = 30, mR = 6, mT = 18, mB = 26;
+  const iw = W - mL - mR, ih = H - mT - mB, n = labels.length;
+  const tot = labels.map((_, i) => series.reduce((s, x) => s + x.values[i], 0));
+  const maxv = Math.max(1, ...tot);
+  const step = [1, 2, 5, 10, 20, 25, 50, 100].find(s => maxv / s <= 5) || 200;
+  const top = Math.ceil(maxv / step) * step, y = v => mT + ih - v / top * ih;
+  const band = iw / n, bw = Math.max(4, Math.min(34, band * .7));
+  let g = '';
+  for (let v = 0; v <= top; v += step) g += `<line x1="${mL}" x2="${W - mR}" y1="${y(v)}" y2="${y(v)}" stroke="var(--${v ? 'grid' : 'axis'})" stroke-width="1"/><text x="${mL - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  labels.forEach((lab, i) => {
+    const x = mL + band * i + (band - bw) / 2; let acc = 0;
+    const live = series.filter(s => s.values[i] > 0);
+    live.forEach((s, k) => {
+      const v = s.values[i], y1 = y(acc + v), y0 = y(acc), isTop = k === live.length - 1;
+      const h = Math.max(1, y0 - y1 - (k ? 2 : 0)), r = isTop ? Math.min(4, h, bw / 2) : 0;
+      const yy = y1, yb = yy + h;
+      g += `<path d="M${x},${yb}V${yy + r}Q${x},${yy} ${x + r},${yy}H${x + bw - r}Q${x + bw},${yy} ${x + bw},${yy + r}V${yb}Z" fill="${s.color}"/>`;
+      acc += v;
+    });
+    if (opt.totals && tot[i]) g += `<text class="tot" x="${x + bw / 2}" y="${y(tot[i]) - 5}" text-anchor="middle">${tot[i]}</text>`;
+    if (!opt.every || i % opt.every === (n - 1) % opt.every) g += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${esc(opt.fmt ? opt.fmt(lab) : lab)}</text>`;
+    g += `<rect data-i="${i}" x="${mL + band * i}" y="${mT}" width="${band}" height="${ih}" fill="transparent"/>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label)}">${g}</svg>`;
+  el.querySelectorAll('rect[data-i]').forEach(r => {
+    const i = +r.dataset.i;
+    const html = () => `<b>${esc(opt.tipLabel ? opt.tipLabel(labels[i]) : labels[i])}</b>` + series.filter(s => s.values[i]).map(s => `<div class="tr"><span><i class="dot" style="background:${s.color}"></i>${esc(s.name)}</span><span>${s.values[i]}건</span></div>`).join('') + `<div class="tr"><span>합계</span><span>${tot[i]}건</span></div>`;
+    r.addEventListener('mouseenter', e => showTip(html(), e)); r.addEventListener('mousemove', moveTip); r.addEventListener('mouseleave', hideTip);
+  });
+}
+let yrMode = 'kind';
+function drawYear(){
+  const names = yrMode === 'kind' ? D.kinds : D.sectors, colors = yrMode === 'kind' ? KIND_COLOR : SECTOR_COLOR;
+  legend($('#yr-legend'), names, colors);
+  stacked($('#yr-chart'), D.yearly.years, names.map(n => ({name: n, color: colors[n], values: D.yearly[yrMode][n]})),
+    {totals: true, label: '연도별 신규 리츠 건수', fmt: y => "'" + String(y).slice(2), tipLabel: y => y + '년'});
+  $('#yr-note').textContent = `${D.yearly.ytd_label}의 누적입니다. ${D.yearly.years[0] - 1}년 이전에 인가된 ${D.yearly.before}건은 그림에서 뺐습니다.`;
+}
+function drawMonth(){
+  legend($('#mo-legend'), D.kinds, KIND_COLOR);
+  stacked($('#mo-chart'), D.monthly.months, D.kinds.map(n => ({name: n, color: KIND_COLOR[n], values: D.monthly.kind[n]})),
+    {label: '월별 신규 리츠 건수', every: 3, fmt: m => "'" + m.slice(2, 4) + '.' + m.slice(5), tipLabel: m => m.slice(0, 4) + '년 ' + (+m.slice(5)) + '월'});
+}
+seg($('#yr-seg'), v => { yrMode = v; drawYear(); });
+drawYear(); drawMonth();
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { drawYear(); drawMonth(); }, 120); });
+
+/* 프로젝트리츠 */
+(function(){
+  const rows = D.reits.filter(r => r.project === 'Y');
+  const bySec = {}; rows.forEach(r => bySec[r.sector] = (bySec[r.sector] || 0) + 1);
+  $('#proj-sub').textContent = `구분이 신고인 리츠 ${rows.length}건입니다. 투자대상은 ${Object.entries(bySec).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v + '건').join(', ')}입니다. 자산총계가 0인 건은 아직 투자보고서가 반영되지 않은 리츠입니다.`;
+  $('#proj-table').innerHTML = `<thead><tr><th>신고일</th><th>리츠</th><th>투자대상</th><th>자산관리회사</th><th class="num">자산총계</th></tr></thead><tbody>` +
+    rows.map(r => `<tr><td class="nw">${r.date}</td><td>${esc(r.name_s)}</td><td class="nw"><i class="dot" style="background:${SECTOR_COLOR[r.sector]}"></i>${esc(r.sector)}</td><td>${esc(r.amc_s)}</td><td class="num">${r.assets_eok ? eok(r.assets_eok) : '–'}</td></tr>`).join('') + '</tbody>';
+  $('#proj-csv').onclick = () => csv('프로젝트리츠_목록', ['신고일','리츠','투자대상','자산관리회사','자산총계(억원)'], rows.map(r => [r.date, r.name_s, r.sector, r.amc_s, r.assets_eok]));
+})();
+
+/* 자산관리회사 */
+(function(){
+  let sort = 'assets', all = false;
+  const hl = (new URLSearchParams(location.search).get('amc') || D.highlight_amc || '').trim();
+  const hlRow = hl ? D.amc.find(a => a.name.includes(hl)) : null;
+  $('#amc-sub').textContent = `운영 중 리츠를 자산관리회사별로 묶었습니다. 자산관리회사는 ${D.amc.length}곳이고, 공공기관(한국토지주택공사, 주택도시보증공사 등)이 자산관리를 맡은 리츠도 포함합니다.` + (hlRow ? ` ${hlRow.name}은 리츠 ${hlRow.n}개, 자산총계 ${eok(hlRow.assets_eok)}원으로 자산총계 기준 ${hlRow.rank_assets}위입니다.` : '');
+  legend($('#amc-legend'), D.sectors, SECTOR_COLOR);
+  const maxA = Math.max(...D.amc.map(a => a.assets_eok));
+  const sorted = () => [...D.amc].sort((a, b) => sort === 'assets' ? b.assets_eok - a.assets_eok || b.n - a.n : sort === 'n' ? b.n - a.n || b.assets_eok - a.assets_eok : b.new12 - a.new12 || b.assets_eok - a.assets_eok);
+  function draw(){
+    let rows = sorted(); const total = rows.length;
+    if (!all){ const topN = rows.slice(0, 20); if (hlRow && !topN.includes(hlRow)) topN.push(hlRow); rows = topN; }
+    const rank = a => sorted().indexOf(a) + 1;
+    $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>자산관리회사</th><th class="num">리츠 수</th><th class="num">자산총계</th><th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th><th class="num">최근 12개월 신규</th><th>최근 인가일</th></tr></thead><tbody>` +
+      rows.map(a => { const mix = D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
+        const mixTip = D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ');
+        return `<tr class="${hlRow === a ? 'hl' : ''}"><td class="num">${rank(a)}</td><td>${esc(a.name)}</td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td><span class="bar" style="width:${Math.max(1, a.assets_eok / maxA * 110)}px"></span></td><td title="${esc(mixTip)}"><span class="mix">${mix}</span></td><td class="num">${a.proj_n || '–'}</td><td class="num">${a.new12 || '–'}</td><td class="nw">${a.latest}</td></tr>`; }).join('') + '</tbody>';
+    $('#amc-more').textContent = all ? '상위 20곳만 보기' : `전체 ${total}곳 보기`;
+  }
+  seg($('#amc-seg'), v => { sort = v; draw(); });
+  $('#amc-more').onclick = () => { all = !all; draw(); };
+  $('#amc-csv').onclick = () => csv('자산관리회사별_리츠현황', ['자산관리회사','리츠 수','자산총계(억원)','프로젝트리츠','최근 12개월 신규','최근 인가일', ...D.sectors], sorted().map(a => [a.name, a.n, a.assets_eok, a.proj_n, a.new12, a.latest, ...D.sectors.map(s => a.sectors[s] || 0)]));
+  draw();
+})();
+
+/* 최근 변동 */
+$('#ev-table').innerHTML = `<thead><tr><th>날짜</th><th>구분</th><th>리츠</th><th>자산관리회사, 신청회사</th><th>내용</th></tr></thead><tbody>` +
+  D.events.map(e => `<tr><td class="nw">${e.date}</td><td class="nw">${e.what === '접수' ? '<span class="tag">접수</span>' : `<i class="dot" style="background:${KIND_COLOR[e.what]}"></i>${esc(e.what)}`}</td><td>${esc(e.name_s)}</td><td>${esc(e.who)}</td><td class="nw">${esc(e.note)}</td></tr>`).join('') + '</tbody>';
+
+/* 전체 목록 */
+(function(){
+  let shown = 50;
+  $('#all-kind').innerHTML = '<option value="">구분 전체</option>' + D.kinds.map(k => `<option>${k}</option>`).join('');
+  $('#all-sector').innerHTML = '<option value="">투자대상 전체</option>' + D.sectors.map(k => `<option>${k}</option>`).join('');
+  const rows = () => { const q = $('#all-q').value.trim().toLowerCase(), k = $('#all-kind').value, s = $('#all-sector').value;
+    return D.reits.filter(r => (!k || r.kind === k) && (!s || r.sector === s) && (!q || (r.name_s + ' ' + r.amc_s).toLowerCase().includes(q))); };
+  function draw(){
+    const r = rows();
+    $('#all-count').textContent = `${n0(r.length)}건 / 전체 ${n0(D.reits.length)}건`;
+    $('#all-table').innerHTML = `<thead><tr><th>인가, 등록, 신고일</th><th>구분</th><th>리츠</th><th>유형</th><th>투자대상</th><th>자산관리회사</th><th class="num">자산총계</th><th class="num">연환산배당률</th><th>공모</th></tr></thead><tbody>` +
+      (r.length ? r.slice(0, shown).map(x => `<tr><td class="nw">${x.date}</td><td class="nw"><i class="dot" style="background:${KIND_COLOR[x.kind]}"></i>${esc(x.kind)}</td><td>${esc(x.name_s)}</td><td class="nw">${esc(x.type)}</td><td class="nw">${esc(x.sector)}</td><td>${esc(x.amc_s)}</td><td class="num">${x.assets_eok ? eok(x.assets_eok) : '–'}</td><td class="num">${x.dividend_pct ? x.dividend_pct.toFixed(2) + '%' : '–'}</td><td class="nw">${esc(x.public_offering)}</td></tr>`).join('') : `<tr><td colspan="9" class="empty">조건에 맞는 리츠가 없습니다.</td></tr>`) + '</tbody>';
+    $('#all-more').style.display = r.length > shown ? '' : 'none';
+  }
+  ['input', 'change'].forEach(ev => ['#all-q', '#all-kind', '#all-sector'].forEach(id => $(id).addEventListener(ev, () => { shown = 50; draw(); })));
+  $('#all-more').onclick = () => { shown += 50; draw(); };
+  $('#all-csv').onclick = () => csv('운영중_리츠_목록', ['일자','구분','리츠','유형','투자대상','자산관리회사','자산총계(억원)','연환산배당률(%)','공모'], rows().map(x => [x.date, x.kind, x.name_s, x.type, x.sector, x.amc_s, x.assets_eok, x.dividend_pct ?? '', x.public_offering]));
+  draw();
+})();
+</script>
+</body>
+</html>

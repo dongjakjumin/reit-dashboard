@@ -1,0 +1,508 @@
+{
+ "11909": {
+  "id": 11909,
+  "reit_id": 1270,
+  "date": "2026-11-18",
+  "req_type": "프로젝트리츠 설립신고",
+  "name": "주식회사 코람코개발앵커제1호프로젝트위탁관리자부동산투자회사",
+  "applicant": "(주)코람코자산신탁",
+  "status": "보완완료",
+  "project_name": "마포 상수동 역세권장기전세주택 개발사업",
+  "biz_type": "개발",
+  "founding_capital": 10300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11908": {
+  "id": 11908,
+  "reit_id": 687,
+  "date": "2026-11-19",
+  "req_type": "변경인가/등록/신고",
+  "name": "주식회사 민간임대허브제5호위탁관리부동산투자회사",
+  "applicant": "주택도시보증공사",
+  "status": "보완요청",
+  "project_name": "민간임대허브제5호",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11907": {
+  "id": 11907,
+  "reit_id": 1206,
+  "date": "2026-11-16",
+  "req_type": "변경인가/등록/신고",
+  "name": "주식회사 코크렙제75호위탁관리부동산투자회사",
+  "applicant": "(주)코람코자산신탁",
+  "status": "검토완료",
+  "project_name": "한누리빌딩",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "Y",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "검토완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11906": {
+  "id": 11906,
+  "reit_id": 672,
+  "date": "2026-11-17",
+  "req_type": "변경인가/등록/신고",
+  "name": "주식회사 민간임대허브제4호위탁관리부동산투자회사",
+  "applicant": "주택도시보증공사",
+  "status": "보완요청",
+  "project_name": "민간임대허브제4호",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11905": {
+  "id": 11905,
+  "reit_id": 1269,
+  "date": "2026-11-13",
+  "req_type": "프로젝트리츠 설립신고",
+  "name": "주식회사 베스타스함덕프로젝트위탁관리부동산투자회사1호",
+  "applicant": "베스타스자산운용 주식회사",
+  "status": "보완완료",
+  "project_name": "제주 함덕 관광숙박시설 개발사업",
+  "biz_type": "개발",
+  "founding_capital": 5000000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11901": {
+  "id": 11901,
+  "reit_id": 1268,
+  "date": "2026-11-05",
+  "req_type": "프로젝트리츠 설립신고",
+  "name": "주식회사 신세계동서울프로젝트위탁관리부동산투자회사",
+  "applicant": "주식회사 신세계프라퍼티투자운용",
+  "status": "보완완료",
+  "project_name": "신세계동서울터미널 개발사업",
+  "biz_type": "개발",
+  "founding_capital": 6081500000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11877": {
+  "id": 11877,
+  "reit_id": 1249,
+  "date": "2026-11-10",
+  "req_type": "변경인가/등록/신고",
+  "name": "주식회사코람코가치투자양지위탁관리부동산투자회사",
+  "applicant": "(주)코람코자산신탁",
+  "status": "보완요청",
+  "project_name": "아레나스 양지 물류센터",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "Y",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11857": {
+  "id": 11857,
+  "reit_id": 1264,
+  "date": "2026-10-19",
+  "req_type": "영업인가",
+  "name": "(주)반도하나제1호위탁관리부동산투자회사",
+  "applicant": "(주)하나자산신탁",
+  "status": "보완완료",
+  "project_name": "화성장안 공공지원민간임대주택",
+  "biz_type": "개발",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11856": {
+  "id": 11856,
+  "reit_id": 1263,
+  "date": "2026-11-10",
+  "req_type": "영업인가",
+  "name": "(주)부산희망대한제73호위탁관리부동산투자회사",
+  "applicant": "대한토지신탁(주)",
+  "status": "보완요청",
+  "project_name": "부산 온천동 공공지원민간임대주택",
+  "biz_type": "개발",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11842": {
+  "id": 11842,
+  "reit_id": 185,
+  "date": "2026-10-30",
+  "req_type": "변경인가/등록/신고",
+  "name": "(주)서울리츠임대주택제3호위탁관리부동산투자회사",
+  "applicant": "서울투자운용주식회사",
+  "status": "보완요청",
+  "project_name": "(주)서울리츠임대주택제3호위탁관리부동산투자회사",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11838": {
+  "id": 11838,
+  "reit_id": 1260,
+  "date": "2026-10-13",
+  "req_type": "영업등록",
+  "name": "주식회사 하나하우징하월곡위탁관리부동산투자회사",
+  "applicant": "하나대체투자자산운용",
+  "status": "보완완료",
+  "project_name": "하월곡동 청년주택 매입 및 운영사업",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11834": {
+  "id": 11834,
+  "reit_id": 1245,
+  "date": "2026-09-30",
+  "req_type": "영업인가",
+  "name": "(주)명품대한제67호위탁관리부동산투자회사",
+  "applicant": "대한토지신탁(주)",
+  "status": "보완완료",
+  "project_name": "부산 괘법동 공공지원민간임대주택사업",
+  "biz_type": "개발",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11827": {
+  "id": 11827,
+  "reit_id": 1258,
+  "date": "2026-10-01",
+  "req_type": "영업인가",
+  "name": "(주)케이트러스트제1호위탁관리부동산투자회사",
+  "applicant": "코리아신탁(주)",
+  "status": "보완완료",
+  "project_name": "문정동 BS사옥 매입",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "Y",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11823": {
+  "id": 11823,
+  "reit_id": 900,
+  "date": "2026-09-21",
+  "req_type": "변경인가/등록/신고",
+  "name": "주식회사마스턴제146호위탁관리부동산투자회사",
+  "applicant": "마스턴투자운용(주)",
+  "status": "보완완료",
+  "project_name": "마포 염리동 공공지원민간임대주택(청년안심주택) 개발사업",
+  "biz_type": "개발",
+  "founding_capital": 5000000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11719": {
+  "id": 11719,
+  "reit_id": 248,
+  "date": "2026-08-28",
+  "req_type": "변경인가/등록/신고",
+  "name": "(주)에이자기관리부동산투자회사",
+  "applicant": "(주)에이자기관리부동산투자회사",
+  "status": "보완요청",
+  "project_name": "대구광역시 중구 동인동2가 12번지 일원 시니어레지던스 개발사업",
+  "biz_type": "개발",
+  "founding_capital": 750000000,
+  "public_duty": "Y",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11693": {
+  "id": 11693,
+  "reit_id": 244,
+  "date": "2026-08-12",
+  "req_type": "변경인가/등록/신고",
+  "name": "(주)제이케이리버스톤자기관리부동산투자회사",
+  "applicant": "(주)제이케이리버스톤자기관리부동산투자회사",
+  "status": "보완요청",
+  "project_name": "본점 소재지 이전",
+  "biz_type": "매입(일반)",
+  "founding_capital": 4580000000,
+  "public_duty": "Y",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11515": {
+  "id": 11515,
+  "reit_id": 1181,
+  "date": "2025-12-22",
+  "req_type": "영업인가",
+  "name": "주식회사 알파씨엘씨제1호위탁관리부동산투자회사",
+  "applicant": "알파씨엘씨리츠운용 주식회사",
+  "status": "보완완료",
+  "project_name": "주식회사 알파씨엘씨제1호위탁관리부동산투자회사",
+  "biz_type": "매입(일반)",
+  "founding_capital": 300000000,
+  "public_duty": "Y",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완완료"
+   ]
+  ],
+  "gone_on": null
+ },
+ "8521": {
+  "id": 8521,
+  "reit_id": 1097,
+  "date": "2022-07-14",
+  "req_type": "영업인가",
+  "name": "주식회사 미래에셋세이지제5호위탁관리부동산투자회사",
+  "applicant": "미래에셋자산운용(주)",
+  "status": "보완요청",
+  "project_name": "SIFC",
+  "biz_type": "",
+  "founding_capital": 300000000,
+  "public_duty": "",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "8520": {
+  "id": 8520,
+  "reit_id": 1096,
+  "date": "2022-07-14",
+  "req_type": "영업인가",
+  "name": "주식회사 미래에셋세이지제4호위탁관리부동산투저회사",
+  "applicant": "미래에셋자산운용(주)",
+  "status": "보완요청",
+  "project_name": "SIFC",
+  "biz_type": "",
+  "founding_capital": 300000000,
+  "public_duty": "",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "8509": {
+  "id": 8509,
+  "reit_id": 1095,
+  "date": "2022-07-14",
+  "req_type": "영업인가",
+  "name": "주식회사 미래에셋세이지제3호위탁관리부동산투자회사",
+  "applicant": "미래에셋자산운용(주)",
+  "status": "보완요청",
+  "project_name": "SIFC",
+  "biz_type": "",
+  "founding_capital": 300000000,
+  "public_duty": "",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "8508": {
+  "id": 8508,
+  "reit_id": 1094,
+  "date": "2022-07-14",
+  "req_type": "영업인가",
+  "name": "주식회사 미래에셋세이지제2호위탁관리부동산투자회사",
+  "applicant": "미래에셋자산운용(주)",
+  "status": "보완요청",
+  "project_name": "SIFC",
+  "biz_type": "",
+  "founding_capital": 300000000,
+  "public_duty": "",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "8507": {
+  "id": 8507,
+  "reit_id": 1093,
+  "date": "2022-07-14",
+  "req_type": "영업인가",
+  "name": "주식회사 미래에셋세이지제1호위탁관리부동산투자회사",
+  "applicant": "미래에셋자산운용(주)",
+  "status": "보완요청",
+  "project_name": "SIFC",
+  "biz_type": "",
+  "founding_capital": 300000000,
+  "public_duty": "",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "8522": {
+  "id": 8522,
+  "reit_id": 1092,
+  "date": "2022-07-14",
+  "req_type": "영업인가",
+  "name": "주식회사 미래에셋세이지위탁관리부동산투자회사",
+  "applicant": "미래에셋자산운용(주)",
+  "status": "보완요청",
+  "project_name": "SIFC",
+  "biz_type": "",
+  "founding_capital": 300000000,
+  "public_duty": "",
+  "first_seen": "2026-11-21",
+  "last_seen": "2026-11-21",
+  "status_history": [
+   [
+    "2026-11-21",
+    "보완요청"
+   ]
+  ],
+  "gone_on": null
+ }
+}
