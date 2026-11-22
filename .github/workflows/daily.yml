@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 1 * * 1-5"   # 01:00 UTC Mon-Fri = 10:00 KST Mon-Fri
   workflow_dispatch:
+    inputs:
+      deploy_only:
+        description: "Rebuild and deploy from committed data without contacting the source site"
+        type: boolean
+        default: false
 permissions:
   contents: write
   pages: write
@@ -20,12 +25,15 @@ jobs:
         with:
           python-version: "3.12"
       - name: Collect
+        if: ${{ !inputs.deploy_only }}
         run: python collect.py
       - name: Check calculator engine
         run: python tests/calc_check.py
       - name: Build
         run: python build.py
       - name: Verify
+        env:
+          VERIFY_OFFLINE: ${{ inputs.deploy_only && '1' || '' }}
         run: python verify.py
       - name: Commit data
         run: |

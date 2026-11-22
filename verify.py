@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import json
+import os
 import random
 import re
 import sys
@@ -39,6 +40,9 @@ def main() -> int:
     def ask(path: str, data: dict):
         """원문 재조회. 접속이 안 되면 실패로 세지 않고 건너뛴 것으로 적는다(숫자가 어긋난 것과 구분)."""
         nonlocal skipped
+        if os.environ.get("VERIFY_OFFLINE"):  # 화면만 다시 올릴 때는 원문에 접속하지 않는다
+            skipped += 1
+            return None
         try:
             return reits_api.post(path, data)
         except Exception as e:
@@ -153,7 +157,7 @@ def main() -> int:
     check('"mberPhone"' not in blob and '"mberNm"' not in blob, "담당자 항목 이름 없음")
 
     print("결과:", ("모두 통과" if bad == 0 else f"실패 {bad}건")
-          + (f", 접속 실패로 건너뛴 재조회 {skipped}건" if skipped else ""))
+          + (f", 건너뛴 원문 재조회 {skipped}건" if skipped else ""))
     return 1 if bad else 0
 
 
