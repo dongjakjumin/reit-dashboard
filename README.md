@@ -12,7 +12,7 @@ python build.py     # 화면 생성: site/index.html
 python verify.py    # 배포 전 점검: 합계, 원문 건수, 상세 화면 대조, 개인정보
 ```
 
-`run_daily.bat`은 위 세 가지를 차례로 실행하고 결과를 `logs/run.log`에 남깁니다. 이 PC의 작업 스케줄러에 `reit-dashboard-daily`라는 이름으로 평일(월~금) 10:00에 등록해 두었습니다(PC가 꺼져 있었으면 켠 뒤에 실행).
+`run_daily.bat`은 위 세 가지를 차례로 실행하고 결과를 `logs/run.log`에 남깁니다. 내 PC에서 직접 돌려 볼 때 씁니다. 정기 수집은 GitHub Actions가 맡습니다(아래 배포 참조).
 
 ## 파일
 
