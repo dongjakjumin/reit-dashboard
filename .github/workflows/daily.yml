@@ -1,4 +1,6 @@
-# Collects once per weekday (10:00 KST), rebuilds the page, and publishes it to GitHub Pages.
+# Collects once per weekday (10:00 KST), rebuilds the pages, and publishes them to GitHub Pages.
+# The collected data is committed right after collection, so a failed check blocks the deploy
+# but never loses that day's data.
 name: daily
 on:
   schedule:
@@ -21,12 +23,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main          # always the branch tip, also for runs that waited in the queue
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Collect
         if: ${{ !inputs.deploy_only }}
         run: python collect.py
+      - name: Commit data
+        if: ${{ !inputs.deploy_only }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "no data change"
+            exit 0
+          fi
+          git commit -m "data: $(date -u +%F)"
+          # Someone may have pushed while this run was collecting: replay the data commit on top and retry.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+          done
+          echo "push failed after 3 attempts" >&2
+          exit 1
       - name: Check calculator engine
         run: python tests/calc_check.py
       - name: Build
@@ -35,13 +57,6 @@ jobs:
         env:
           VERIFY_OFFLINE: ${{ inputs.deploy_only && '1' || '' }}
         run: python verify.py
-      - name: Commit data
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data
-          git diff --cached --quiet || git commit -m "data: $(date -u +%F)"
-          git push
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

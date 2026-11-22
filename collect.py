@@ -17,13 +17,17 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import reits_api
+from textutil import mask_person
 
 KST = timezone(timedelta(hours=9))
+# 전화번호 모양: 02-123-4567, 010-1234-5678, 01012345678 등. 금액 같은 긴 숫자의 일부는 잡지 않는다.
+PHONE_RE = r"(?<![\d.,])(?:0\d{1,2}[-.\s]\d{3,4}[-.\s]\d{4}|01[016789]\d{7,8})(?![\d,])"
 DATA = Path(__file__).parent / "data"
 SNAP = DATA / "snapshots"
 
@@ -53,7 +57,7 @@ LISTED_KEEP = {
 
 
 def _num(v):
-    """'10,300,000,000' 같은 문자열을 숫자로. 빈 값은 None."""
+    """'10,300,000,000' 같은 문자열을 숫자로. 빈 값이나 숫자가 아닌 값은 None."""
     if v is None:
         return None
     s = str(v).replace(",", "").strip()
@@ -62,6 +66,8 @@ def _num(v):
     try:
         f = float(s)
     except ValueError:
+        return None
+    if f != f or f in (float("inf"), float("-inf")):
         return None
     return int(f) if f == int(f) else f
 
@@ -95,6 +101,9 @@ def collect() -> dict:
         row["wale_years"] = wale.get(row["name"])
     if len(reits) < 300:
         raise RuntimeError(f"리츠 목록이 {len(reits)}건뿐임. 수집 이상으로 보고 저장하지 않음")
+    if not filings or not listed:
+        # 접수 목록이 빈 채로 저장되면 진행 중인 신청이 모두 '처리 끝남'으로 기록된다
+        raise RuntimeError(f"접수 {len(filings)}건, 상장 {len(listed)}건. 빈 목록은 수집 이상으로 보고 저장하지 않음")
     return {
         "collected_at": now.strftime("%Y-%m-%d %H:%M KST"),
         "date": now.strftime("%Y-%m-%d"),
@@ -178,9 +187,18 @@ def update_prices(snap: dict):
                 v = _num(p.get("nowPc"))
                 if p.get("stockDt") and v:
                     hist[str(p["stockDt"])[:10]] = v
-        as_of = (row.get("as_of") or "")[:10]
-        if as_of and row.get("price"):
+        stamp = row.get("as_of") or ""
+        as_of, as_of_time = stamp[:10], stamp[11:16]
+        # 장이 끝난 뒤(15:40 이후)의 시세만 그날 종가로 쌓는다. 장중 시세를 종가로 남기지 않기 위해서다.
+        if as_of and row.get("price") and as_of_time >= "15:40":
             hist[as_of] = row["price"]
+        # 며칠 치가 비었으면(장중 시세만 받은 날, 수집이 빠진 날) 그 종목의 일별 종가를 다시 받아 메운다
+        newest = max(hist) if hist else ""
+        if as_of and (not newest or (datetime.strptime(as_of, "%Y-%m-%d") - datetime.strptime(newest, "%Y-%m-%d")).days > 3):
+            for p in reits_api.price_history(code, d_from, d_to):
+                v = _num(p.get("nowPc"))
+                if p.get("stockDt") and v:
+                    hist[str(p["stockDt"])[:10]] = v
         prices[code] = dict(sorted(hist.items()))
     _save(path, prices)
 
@@ -225,7 +243,7 @@ def update_financials(snap: dict):
             "fiscal_end": row.get("fiscal_end"),
             "assets": _num(b.get("totAssets")), "debt": _num(b.get("cmpnyDebt")),
             "equity": _num(b.get("cmpnyCaplSm")), "capital": _num(b.get("cmpnyCapl")),
-            "top_shareholder": (b.get("shrholdrNm") or "").strip() or None,
+            "top_shareholder": mask_person(" ".join((b.get("shrholdrNm") or "").split())) or None,
             "base_year": b.get("baseYear"), "period": b.get("psacntNo"),
             "series": series,
         }
@@ -247,6 +265,7 @@ def update_disclosures(snap: dict):
             continue
         code = x.get("matterCode")
         text = "" if code in DISCLOSURE_NO_TEXT else " ".join(str(x.get("changeCn") or "").split())[:300]
+        text = re.sub(PHONE_RE, "(번호 생략)", text)
         log[str(int(no))] = {
             "date": x.get("pblntfDe"), "company": (x.get("cmpnyNm") or "").strip(),
             "company_type": x.get("cmpnySeNm"), "matter_code": code,

@@ -111,7 +111,7 @@
     <ul style="margin:0;padding-left:18px">
       <li><b>인가</b>: 부동산투자회사가 국토교통부 장관의 영업인가를 받은 경우입니다.</li>
       <li><b>등록</b>: 법에서 정한 요건을 갖춘 리츠가 인가 대신 등록으로 영업을 시작한 경우입니다.</li>
-      <li><b>신고</b>: 프로젝트리츠 설립신고입니다. 개발 단계에서는 설립신고만으로 사업을 시작하고, 사용승인이나 준공검사를 받은 날부터 18개월 안에 영업인가를 받거나 등록합니다(부동산투자회사법 26조의4, 시행령 30조의2). 이 화면에서는 구분이 신고인 리츠를 프로젝트리츠로 셌습니다.</li>
+      <li><b>신고</b>: 프로젝트리츠 설립신고입니다. 개발 단계에서는 설립신고만으로 사업을 시작하고, 사용승인이나 준공검사를 받은 날부터 18개월 안에 영업인가를 받거나 등록합니다(부동산투자회사법 26조의4, 시행령 30조의2). 이 화면에서는 구분이 신고이거나 리츠정보시스템에 프로젝트리츠로 표시된 리츠를 프로젝트리츠로 셌습니다.</li>
       <li><b>접수현황</b>: 리츠정보시스템이 현재 처리 중인 신청만 보여 줍니다. 이 화면은 영업일마다 목록을 저장해, 목록에서 빠진 신청과 그 뒤에 나온 인가 결과를 이어서 기록합니다.</li>
       <li><b>경과일</b>: 접수일부터 최종 수집일까지의 달력 날짜 수입니다. 보완 요청으로 멈춘 기간도 포함합니다. 접수일이 몇 년 전인 건은 리츠정보시스템 목록에 남아 있는 그대로 옮긴 것입니다.</li>
       <li><b>리츠 수와 자산총계</b>: 리츠조회 목록에 지금 올라 있는 리츠를 센 값입니다. 리츠정보시스템 첫 화면의 통계(전월 말 기준)와는 기준 시점이 달라 숫자가 조금 다를 수 있습니다.</li>
@@ -202,7 +202,7 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
     const t = D.done.filter(x => x.days_to_result != null);
     const avg = t.length ? Math.round(t.reduce((s, x) => s + x.days_to_result, 0) / t.length) : null;
     box.innerHTML = `<details open><summary>처리가 끝난 신청 ${D.done.length}건 (${D.first_log} 이후 기록)</summary><p class="note">${avg != null ? `접수에서 인가, 등록, 신고까지 평균 ${avg}일(${t.length}건 기준). ` : ''}목록에서 빠진 날은 수집 시점에 처음 확인한 날입니다.</p><div class="tw"><table><thead><tr><th>접수일</th><th>목록에서 빠진 날</th><th>신청유형</th><th>리츠</th><th>신청회사</th><th>결과</th><th class="num">걸린 기간</th></tr></thead><tbody>` +
-      D.done.map(x => `<tr><td class="nw">${x.date}</td><td class="nw">${x.gone_on}</td><td class="nw">${esc(x.req_type)}</td><td>${esc(x.name_s)}</td><td>${esc(x.applicant)}</td><td class="nw">${x.result_kind ? esc(x.result_kind) + ' ' + x.result_date : '확인 전'}</td><td class="num">${x.days_to_result != null ? x.days_to_result + '일' : ''}</td></tr>`).join('') + '</tbody></table></div></details>';
+      D.done.map(x => `<tr><td class="nw">${x.date}</td><td class="nw">${x.gone_on}</td><td class="nw">${esc(x.req_type)}</td><td>${esc(x.name_s)}</td><td>${esc(x.applicant)}</td><td class="nw">${x.result_kind ? esc(x.result_kind) + ' ' + esc(x.result_date) : x.is_change ? '변경 처리(목록에서 빠짐)' : '확인 전'}</td><td class="num">${x.days_to_result != null ? x.days_to_result + '일' : ''}</td></tr>`).join('') + '</tbody></table></div></details>';
   }
 })();
 
@@ -259,7 +259,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 (function(){
   const rows = D.reits.filter(r => r.project === 'Y');
   const bySec = {}; rows.forEach(r => bySec[r.sector] = (bySec[r.sector] || 0) + 1);
-  $('#proj-sub').textContent = `구분이 신고인 리츠 ${rows.length}건입니다. 투자대상은 ${Object.entries(bySec).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v + '건').join(', ')}입니다. 자산총계가 0인 건은 아직 투자보고서가 반영되지 않은 리츠입니다.`;
+  $('#proj-sub').textContent = `프로젝트리츠 ${rows.length}건입니다. 설립신고 건과, 설립신고 뒤 인가나 등록을 받은 건을 함께 셌습니다. 투자대상은 ${Object.entries(bySec).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v + '건').join(', ')}입니다. 자산총계가 0인 건은 아직 투자보고서가 반영되지 않은 리츠입니다.`;
   $('#proj-table').innerHTML = `<thead><tr><th>신고일</th><th>리츠</th><th>투자대상</th><th>자산관리회사</th><th class="num">자산총계</th></tr></thead><tbody>` +
     rows.map(r => `<tr><td class="nw">${r.date}</td><td>${esc(r.name_s)}</td><td class="nw"><i class="dot" style="background:${SECTOR_COLOR[r.sector]}"></i>${esc(r.sector)}</td><td>${esc(r.amc_s)}</td><td class="num">${r.assets_eok ? eok(r.assets_eok) : '–'}</td></tr>`).join('') + '</tbody>';
   $('#proj-csv').onclick = () => csv('프로젝트리츠_목록', ['신고일','리츠','투자대상','자산관리회사','자산총계(억원)'], rows.map(r => [r.date, r.name_s, r.sector, r.amc_s, r.assets_eok]));

@@ -5,16 +5,18 @@
  * 화면(calc.html)과 검산(tests/calc_check.py)이 이 파일 하나를 같이 쓴다.
  */
 
-/* 월별 현금흐름(cfs[m] = m개월째)의 월 내부수익률. 부호가 한쪽뿐이면 null. */
+/* 월별 현금흐름(cfs[m] = m개월째)의 월 내부수익률. 부호가 한쪽뿐이면 null.
+ * 현재가치 대신 마지막 달 기준 미래가치의 부호로 구간을 좁힌다. 기간이 길어도 나눗셈에서 값이 넘치지 않는다. */
 function irrMonthly(cfs) {
   let neg = false, pos = false;
   for (const v of cfs) { if (v < 0) neg = true; if (v > 0) pos = true; }
   if (!neg || !pos) return null;
-  const npv = r => { let s = 0; for (let i = 0; i < cfs.length; i++) if (cfs[i]) s += cfs[i] / Math.pow(1 + r, i); return s; };
-  let lo = -0.9, hi = 1.0, flo = npv(lo), fhi = npv(hi);
-  if (flo * fhi > 0) return null;
+  const n = cfs.length - 1;
+  const fv = r => { let s = 0; for (let i = 0; i <= n; i++) if (cfs[i]) s += cfs[i] * Math.pow(1 + r, n - i); return s; };
+  let lo = -0.9, hi = 1.0, flo = fv(lo), fhi = fv(hi);
+  if (!isFinite(flo) || !isFinite(fhi) || flo * fhi > 0) return null;
   for (let k = 0; k < 200; k++) {
-    const mid = (lo + hi) / 2, fm = npv(mid);
+    const mid = (lo + hi) / 2, fm = fv(mid);
     if (flo * fm <= 0) { hi = mid; fhi = fm; } else { lo = mid; flo = fm; }
   }
   return (lo + hi) / 2;
@@ -38,6 +40,7 @@ function reitCalc(p) {
   const Ts = Tc + p.lease_m;                          // 임대 안정화 시점
   const rDev = p.dev_rate / 100 / 12;
   const baseCost = p.land + acq + hard + soft;
+  const share = p.equity_pct / 100;
 
   // 월별 사업비: 토지와 부대비용은 첫 달, 기타 사업비는 준공까지 균등, 공사비는 공사기간에 균등
   const cost = new Array(Tc + 1).fill(0);
@@ -48,7 +51,7 @@ function reitCalc(p) {
   // 개발 단계 조달: 자기자본을 먼저 쓰고 나머지는 차입. 이자는 차입 원금에 더한다(준공까지의 이자 = 금융비).
   function devRun(E) {
     let debt = 0, eq = 0, fin = 0;
-    const eqDraw = new Array(Tc + 1).fill(0), debtBal = new Array(Tc + 1).fill(0);
+    const eqDraw = new Array(Tc + 1).fill(0), debtBal = new Array(Ts + 1).fill(0);
     for (let m = 1; m <= Tc; m++) {
       const interest = debt * rDev;
       fin += interest;
@@ -59,26 +62,31 @@ function reitCalc(p) {
     }
     return { debt, fin, eqDraw, debtBal, tpc: baseCost + fin };
   }
-  // 자기자본 = 총사업비 × 자기자본 비율. 총사업비에 금융비가 들어가므로 반복해서 맞춘다.
-  let E = baseCost * p.equity_pct / 100, run = devRun(E);
+  // 자기자본 = 총사업비 × 자기자본 비율. 자기자본이 늘면 이자가 줄어 총사업비가 줄어드므로
+  // (비율 × 총사업비 − 자기자본)은 자기자본에 대해 단조 감소한다. 이분법으로 0이 되는 값을 찾는다.
+  let eLo = 0, eHi = share * devRun(0).tpc;
   for (let i = 0; i < 200; i++) {
-    const En = run.tpc * p.equity_pct / 100;
-    const done = Math.abs(En - E) < 1e-11;
-    E = En; run = devRun(E);
-    if (done) break;
+    const mid = (eLo + eHi) / 2;
+    if (share * devRun(mid).tpc - mid > 0) eLo = mid; else eHi = mid;
   }
+  const E = (eLo + eHi) / 2, run = devRun(E);
   const tpc = run.tpc, devDebt = run.debt;
 
-  // 임대 안정화: 입주율이 매달 같은 폭으로 올라간다. 이자와 리츠 운영비용에서 임대 순수익을 뺀 만큼 차입이 늘거나 준다.
+  // 임대 안정화: 입주율이 매달 같은 폭으로 올라간다. 임대 순수익으로 이자와 리츠 운영비용을 내고,
+  // 모자라면 차입이 늘고 남으면 차입을 갚는다. 차입을 다 갚고도 남는 돈은 이자 없이 쌓아 두었다가 안정화 시점에 받는다.
   const noiMonthFull = p.gfa_py * p.rent * MAN * (1 - p.vacancy / 100) * (1 - p.opex / 100);
   const reitMonth = tpc * p.reit_cost / 100 / 12;
-  let debt = devDebt, leaseInterest = 0, leaseNoi = 0;
+  let debt = devDebt, cash = 0, leaseInterest = 0, leaseNoi = 0, peak = devDebt;
   for (let k = 1; k <= p.lease_m; k++) {
     const interest = debt * rDev, noi = noiMonthFull * k / p.lease_m;
-    debt += interest + reitMonth - noi;
+    const net = noi - interest - reitMonth;           // 양수면 남는 돈
+    if (net >= 0) { const pay = Math.min(debt, net); debt -= pay; cash += net - pay; }
+    else debt -= net;
     leaseInterest += interest; leaseNoi += noi;
+    run.debtBal[Tc + k] = debt;
+    if (debt > peak) peak = debt;
   }
-  const debtAtStab = debt;
+  const debtAtStab = debt, cashAtStab = cash;
   const noi1 = noiMonthFull * 12;                     // 안정화 첫해 순영업수익(NOI)
   const cap = p.exit_cap / 100, g = p.growth / 100, saleCost = p.sale_cost / 100;
   const value = noi1 / cap;                           // 안정화 시점 가치
@@ -86,13 +94,13 @@ function reitCalc(p) {
   // A안: 안정화 시점에 매각
   const cfA = new Array(Ts + 1).fill(0);
   for (let m = 1; m <= Tc; m++) cfA[m] -= run.eqDraw[m];
-  const netA = value * (1 - saleCost) - debtAtStab;
+  const netA = value * (1 - saleCost) - debtAtStab + cashAtStab;
   cfA[Ts] += netA;
   const flowsA = [-E, netA];
 
   // B안: 안정화 시점에 담보대출로 바꾸고 hold_y년 운영한 뒤 매각(대출은 이자만 내고 만기에 일시 상환)
   const loan = value * p.perm_ltv / 100;
-  const refi = loan - debtAtStab;                     // 양수면 자기자본 회수, 음수면 추가 출자
+  const refi = loan - debtAtStab + cashAtStab;        // 양수면 자기자본 회수, 음수면 추가 출자
   const Tend = Ts + 12 * p.hold_y;
   const cfB = new Array(Tend + 1).fill(0);
   for (let m = 1; m <= Tc; m++) cfB[m] -= run.eqDraw[m];
@@ -113,9 +121,10 @@ function reitCalc(p) {
 
   return {
     land: p.land, acq, hard, soft, fin: run.fin, tpc, equity: E,
-    dev_debt: devDebt, ltc: tpc > 0 ? devDebt / tpc : null, debt_to_equity: E > 0 ? devDebt / E : null,
+    dev_debt: devDebt, dev_debt_peak: peak, ltc: tpc > 0 ? devDebt / tpc : null,
+    debt_to_equity: E > 0 ? peak / E : null,
     Tc, Ts, Tend,
-    lease_interest: leaseInterest, lease_noi: leaseNoi, debt_at_stab: debtAtStab,
+    lease_interest: leaseInterest, lease_noi: leaseNoi, debt_at_stab: debtAtStab, cash_at_stab: cashAtStab,
     noi1, value, yield_on_cost: tpc > 0 ? noi1 / tpc : null, dev_margin: tpc > 0 ? (value - tpc) / tpc : null,
     a: { sale: value, net: netA, irr: annualize(irrMonthly(cfA)), multiple: multiple(flowsA), profit: cfA.reduce((s, v) => s + v, 0) },
     b: { loan, refi, loan_to_equity: E > 0 ? loan / E : null, sale: saleB, net: netB, years,

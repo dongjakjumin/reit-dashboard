@@ -7,28 +7,34 @@ calc_engine.js와 같은 계산 규칙을 따로 구현한 것이다. 화면이 
 1. 공사비 = 연면적(평) × 평당 공사비(만원). 기타 사업비 = 공사비 × 비율. 취득 부대비용 = 토지비 × 비율.
 2. 토지비와 부대비용은 첫 달, 기타 사업비는 준공까지 매달 균등, 공사비는 공사기간에 매달 균등하게 나간다.
 3. 매달 필요한 돈(사업비 + 차입 이자)은 자기자본에서 먼저 쓰고, 다 쓰면 차입한다. 이자는 원금에 더한다.
-4. 총사업비 = 사업비 합계 + 준공까지의 이자. 자기자본 = 총사업비 × 자기자본 비율(반복 계산으로 맞춤).
-5. 임대 안정화 기간에는 입주율이 매달 같은 폭으로 오른다. (이자 + 리츠 운영비용 - 임대 순수익)만큼 차입이 변한다.
+4. 총사업비 = 사업비 합계 + 준공까지의 이자. 자기자본 = 총사업비 × 자기자본 비율이 되는 값을 찾는다.
+5. 임대 안정화 기간에는 입주율이 매달 같은 폭으로 오른다. 임대 순수익으로 이자와 리츠 운영비용을 내고,
+   모자라면 차입이 늘고 남으면 차입을 갚는다. 차입이 0이 된 뒤 남는 돈은 이자 없이 모아 안정화 시점에 받는다.
 6. 안정화 가치 = 안정화 첫해 NOI ÷ Cap Rate.
-7. A안: 안정화 시점에 매각. 회수 = 매각가 × (1 - 매각비용) - 차입 잔액.
+7. A안: 안정화 시점에 매각. 회수 = 매각가 × (1 - 매각비용) - 차입 잔액 + 모아 둔 돈.
 8. B안: 안정화 시점에 가치 × LTV만큼 담보대출을 받아 개발 차입을 갚고, 해마다 NOI - 이자 - 리츠 운영비용을 받는다.
    보유 기간 끝에 다음 해 NOI ÷ Cap Rate로 매각하고 대출을 갚는다.
 9. IRR은 월별 자기자본 현금흐름의 월 내부수익률을 연율로 바꾼 값이다.
 10. 회수 배수 = 받은 돈 합계 ÷ 넣은 돈 합계. 같은 달에 넣고 받은 돈도 상계하지 않는다.
+11. 개발 단계 차입 배수 = (준공부터 안정화까지의 최고 차입 잔액) ÷ 자기자본.
 """
 from __future__ import annotations
 
+import math
+
 
 def month_irr(flows: dict[int, float]) -> float | None:
+    """월 내부수익률. 마지막 달로 끌고 간 값(미래가치)의 부호가 바뀌는 지점을 이분법으로 찾는다."""
     if not any(v < 0 for v in flows.values()) or not any(v > 0 for v in flows.values()):
         return None
+    last = max(flows)
 
     def f(r: float) -> float:
-        return sum(v / (1.0 + r) ** t for t, v in flows.items() if v)
+        return math.fsum(v * (1.0 + r) ** (last - t) for t, v in flows.items() if v)
 
     a, b = -0.9, 1.0
     fa, fb = f(a), f(b)
-    if fa * fb > 0:
+    if not (math.isfinite(fa) and math.isfinite(fb)) or fa * fb > 0:
         return None
     for _ in range(200):
         c = (a + b) / 2.0
@@ -78,31 +84,43 @@ def develop(p: dict, equity: float) -> dict:
             "hard": hard, "soft": soft, "extra": extra, "base": base, "done": done}
 
 
-def calc(p: dict) -> dict:
+def solve_equity(p: dict) -> float:
+    """자기자본 = 비율 × 총사업비가 되는 자기자본. 차이가 자기자본에 대해 단조 감소하므로 구간을 반씩 줄인다."""
     share = p["equity_pct"] / 100.0
-    first = develop(p, 0.0)
-    equity = first["base"] * share
-    dev = develop(p, equity)
+    low, high = 0.0, share * develop(p, 0.0)["total"]
     for _ in range(200):
-        target = dev["total"] * share
-        close = abs(target - equity) < 1e-11
-        equity = target
-        dev = develop(p, equity)
-        if close:
-            break
+        mid = (low + high) / 2.0
+        if share * develop(p, mid)["total"] > mid:
+            low = mid
+        else:
+            high = mid
+    return (low + high) / 2.0
+
+
+def calc(p: dict) -> dict:
+    equity = solve_equity(p)
+    dev = develop(p, equity)
     total, done = dev["total"], dev["done"]
     stab = done + p["lease_m"]
 
     full_month = p["gfa_py"] * p["rent"] / 10000.0 * (1 - p["vacancy"] / 100.0) * (1 - p["opex"] / 100.0)
     reit_month = total * p["reit_cost"] / 1200.0
     loan = dev["loan"]
-    lease_int = lease_noi = 0.0
+    saved = lease_int = lease_noi = 0.0
+    highest = loan
     for k in range(1, p["lease_m"] + 1):
         i = loan * p["dev_rate"] / 1200.0
         n = full_month * k / p["lease_m"]
-        loan = loan + i + reit_month - n
+        left = n - i - reit_month
+        if left < 0:
+            loan += -left
+        else:
+            repay = min(loan, left)
+            loan -= repay
+            saved += left - repay
         lease_int += i
         lease_noi += n
+        highest = max(highest, loan)
 
     noi1 = full_month * 12.0
     cap = p["exit_cap"] / 100.0
@@ -110,12 +128,13 @@ def calc(p: dict) -> dict:
     cost_rate = p["sale_cost"] / 100.0
 
     flow_a = {m: -v for m, v in dev["draws"].items()}
-    net_a = value * (1 - cost_rate) - loan
+    net_a = value * (1 - cost_rate) - loan + saved
     flow_a[stab] = flow_a.get(stab, 0.0) + net_a
 
     perm = value * p["perm_ltv"] / 100.0
+    switch = perm - loan + saved
     flow_b = {m: -v for m, v in dev["draws"].items()}
-    flow_b[stab] = flow_b.get(stab, 0.0) + (perm - loan)
+    flow_b[stab] = flow_b.get(stab, 0.0) + switch
     yearly_int = perm * p["perm_rate"] / 100.0
     yearly_reit = total * p["reit_cost"] / 100.0
     rows = []
@@ -132,16 +151,18 @@ def calc(p: dict) -> dict:
 
     return {
         "acq": dev["extra"], "hard": dev["hard"], "soft": dev["soft"], "fin": dev["interest"], "tpc": total,
-        "equity": equity, "dev_debt": dev["loan"], "ltc": dev["loan"] / total if total > 0 else None,
-        "debt_to_equity": dev["loan"] / equity if equity > 0 else None,
+        "equity": equity, "dev_debt": dev["loan"], "dev_debt_peak": highest,
+        "ltc": dev["loan"] / total if total > 0 else None,
+        "debt_to_equity": highest / equity if equity > 0 else None,
         "Tc": done, "Ts": stab, "Tend": end,
-        "lease_interest": lease_int, "lease_noi": lease_noi, "debt_at_stab": loan,
+        "lease_interest": lease_int, "lease_noi": lease_noi, "debt_at_stab": loan, "cash_at_stab": saved,
         "noi1": noi1, "value": value, "yield_on_cost": noi1 / total if total > 0 else None,
         "dev_margin": (value - total) / total if total > 0 else None,
         "a.sale": value, "a.net": net_a, "a.irr": yearly(month_irr(flow_a)), "a.multiple": moic(equity, [net_a]),
         "a.profit": sum(flow_a.values()),
-        "b.loan": perm, "b.refi": perm - loan, "b.loan_to_equity": perm / equity if equity > 0 else None,
-        "b.sale": sale_b, "b.net": net_b, "b.irr": yearly(month_irr(flow_b)), "b.multiple": moic(equity, [perm - loan] + [r["cf"] for r in rows] + [net_b]),
+        "b.loan": perm, "b.refi": switch, "b.loan_to_equity": perm / equity if equity > 0 else None,
+        "b.sale": sale_b, "b.net": net_b, "b.irr": yearly(month_irr(flow_b)),
+        "b.multiple": moic(equity, [switch] + [r["cf"] for r in rows] + [net_b]),
         "b.profit": sum(flow_b.values()),
         "b.dscr_min": min(r["dscr"] for r in rows) if rows and yearly_int > 0 else None,
         "b.years.noi": [r["noi"] for r in rows], "b.years.cf": [r["cf"] for r in rows],

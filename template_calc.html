@@ -101,12 +101,12 @@ table.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:
     <ul style="margin:0;padding-left:18px">
       <li><b>사업비 집행</b>: 토지비와 취득 부대비용은 첫 달에, 기타 사업비는 준공까지 매달 같은 금액으로, 공사비는 공사기간에 매달 같은 금액으로 나간다고 가정합니다.</li>
       <li><b>개발 단계 조달</b>: 자기자본을 먼저 쓰고 나머지를 차입합니다. 이자는 차입 원금에 더하고, 준공까지의 이자를 금융비로 총사업비에 넣습니다. 대출 수수료는 금리에 포함된 것으로 봅니다.</li>
-      <li><b>임대 안정화</b>: 준공 뒤 입주율이 매달 같은 폭으로 올라 안정화 기간 끝에 목표 입주율에 이릅니다. 이 기간의 이자와 리츠 운영비용이 임대 순수익보다 많으면 차입이 늘어납니다.</li>
+      <li><b>임대 안정화</b>: 준공 뒤 입주율이 매달 같은 폭으로 올라 안정화 기간 끝에 목표 입주율에 이릅니다. 이 기간의 이자와 리츠 운영비용이 임대 순수익보다 많으면 차입이 늘어나고, 적으면 차입을 갚습니다. 차입을 다 갚고 남는 돈은 이자 없이 두었다가 안정화 시점에 받습니다.</li>
       <li><b>가치와 매각가</b>: 다음 12개월의 순영업수익(NOI)을 Cap Rate로 나눕니다. A안과 B안의 매각, 담보대출 한도 산정에 같은 Cap Rate를 씁니다.</li>
       <li><b>B안 담보대출</b>: 안정화 시점 가치에 LTV를 곱한 금액을 빌리고, 이자만 내다가 매각할 때 한꺼번에 갚습니다. DSCR은 NOI ÷ 연 이자입니다.</li>
       <li><b>IRR과 회수 배수</b>: 자기자본을 넣고 받는 월별 현금흐름으로 구한 내부수익률(연율)과, 받은 돈 합계 ÷ 넣은 돈 합계입니다.</li>
-      <li><b>넣지 않은 것</b>: 법인세와 배당 소득공제, 부가가치세, 분양 수입, 보증금, 대출 중도상환과 분할상환, 물가에 따른 공사비 증액, 주주별 우선순위 배분은 계산하지 않습니다.</li>
-      <li><b>차입 한도 판정</b>: 법의 한도는 차입금과 사채의 합계를 자기자본과 견주는 것입니다. 이 화면은 준공 시 차입 잔액과 담보대출 금액을 처음 넣은 자기자본으로 나눠 판정하므로, 증자나 이익잉여금으로 자기자본이 달라지면 결과도 달라집니다.</li>
+      <li><b>넣지 않은 것</b>: 개발기간의 리츠 운영비용, 법인세와 배당 소득공제, 부가가치세, 분양 수입, 보증금, 대출 중도상환과 분할상환, 물가에 따른 공사비 증액, 주주별 우선순위 배분은 계산하지 않습니다.</li>
+      <li><b>차입 한도 판정</b>: 법의 한도는 차입금과 사채의 합계를 자기자본과 견주는 것입니다. 이 화면은 준공부터 임대 안정화까지의 최고 차입 잔액과 담보대출 금액을 처음 넣은 자기자본으로 나눠 판정하므로, 증자나 이익잉여금으로 자기자본이 달라지면 결과도 달라집니다.</li>
       <li><b>검산</b>: 계산 엔진은 손으로 답을 아는 경우와, 같은 규칙을 파이썬으로 따로 구현한 결과에 무작위 가정 200가지를 대조해 확인합니다. 확인한 것은 계산의 일치이고, 가정이 맞는지는 별개입니다.</li>
     </ul>
   </div>
@@ -237,14 +237,14 @@ function render(){
   const spread = (r.yield_on_cost - p.exit_cap / 100) * 100;
   $('#tiles').innerHTML = [
     {lab: '총사업비', val: eok(r.tpc), unit: '원', det: `자기자본 <b>${eok(r.equity)}원</b>, 준공 시 차입 <b>${eok(r.dev_debt)}원</b>(LTC ${pct(r.ltc, 0)})`},
-    {lab: '안정화 가치', val: eok(r.value), unit: '원', det: `NOI <b>${eok(r.noi1)}원</b>. 총사업비 대비 수익률 <b>${pct(r.yield_on_cost)}</b>, Cap Rate보다 ${spread >= 0 ? '' : '−'}${Math.abs(spread).toFixed(1)}%p ${spread >= 0 ? '높음' : '낮음'}`},
+    {lab: '안정화 가치', val: eok(r.value), unit: '원', det: `NOI <b>${eok(r.noi1)}원</b>. 총사업비 대비 수익률 <b>${pct(r.yield_on_cost)}</b>, Cap Rate보다 ${Math.abs(spread).toFixed(1)}%p ${spread >= 0 ? '높음' : '낮음'}`},
     {lab: 'A안: 안정화 시점 매각', val: r.a.irr == null ? '–' : (r.a.irr * 100).toFixed(1), unit: r.a.irr == null ? '' : '%', det: `자기자본 IRR. 회수 배수 <b>${mult(r.a.multiple)}</b>, 누적 이익 <b>${eok(r.a.profit)}원</b>`},
     {lab: `B안: ${p.hold_y}년 운영 뒤 매각`, val: r.b.irr == null ? '–' : (r.b.irr * 100).toFixed(1), unit: r.b.irr == null ? '' : '%', det: `자기자본 IRR. 회수 배수 <b>${mult(r.b.multiple)}</b>, 최저 DSCR <b>${r.b.dscr_min == null ? '–' : r.b.dscr_min.toFixed(2) + '배'}</b>`},
   ].map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
 
   stack($('#cost-bar'), $('#cost-legend'), [{n: '토지비', v: r.land, c: 'var(--s1)'}, {n: '취득 부대비용', v: r.acq, c: 'var(--s2)'}, {n: '공사비', v: r.hard, c: 'var(--s3)'}, {n: '기타 사업비', v: r.soft, c: 'var(--s4)'}, {n: '금융비', v: r.fin, c: 'var(--s5)'}]);
   stack($('#fund-bar'), $('#fund-legend'), [{n: '자기자본', v: r.equity, c: 'var(--s1)'}, {n: '차입(준공 시 잔액)', v: r.dev_debt, c: 'var(--s2)'}]);
-  $('#cost-note').textContent = `연면적 ${n0(p.gfa_py)}평(약 ${n0(p.gfa_py * 3.3058)}㎡), 평당 총사업비 ${n0(r.tpc / p.gfa_py * 1e4)}만원. 개발이익률(안정화 가치 ÷ 총사업비 − 1)은 ${pct(r.dev_margin)}입니다. 임대 안정화 기간에 차입이 ${eok(r.debt_at_stab - r.dev_debt)}원 ${r.debt_at_stab >= r.dev_debt ? '늘어' : '줄어'} 안정화 시점 잔액은 ${eok(r.debt_at_stab)}원입니다.`;
+  $('#cost-note').textContent = `연면적 ${n0(p.gfa_py)}평(약 ${n0(p.gfa_py * 3.3058)}㎡), 평당 총사업비 ${n0(r.tpc / p.gfa_py * 1e4)}만원. 개발이익률(안정화 가치 ÷ 총사업비 − 1)은 ${pct(r.dev_margin)}입니다. 임대 안정화 기간에 차입이 ${eok(Math.abs(r.debt_at_stab - r.dev_debt))}원 ${r.debt_at_stab >= r.dev_debt ? '늘어' : '줄어'} 안정화 시점 잔액은 ${eok(r.debt_at_stab)}원입니다.` + (r.cash_at_stab > 0.5 ? ` 차입을 다 갚고 남은 ${eok(r.cash_at_stab)}원은 안정화 시점에 받습니다.` : '');
 
   const row = (lab, a, b) => `<tr><td>${lab}</td><td class="num">${a}</td><td class="num">${b}</td></tr>`;
   $('#cmp').innerHTML = `<thead><tr><th></th><th class="num">A안: 안정화 시점 매각</th><th class="num">B안: ${p.hold_y}년 운영 뒤 매각</th></tr></thead><tbody>` +
@@ -264,7 +264,7 @@ function render(){
     drow('총사업비', x => eok(x.tpc) + '원') + drow('안정화 가치', x => eok(x.value) + '원') + drow('개발이익률', x => pct(x.dev_margin)) +
     drow('A안 자기자본 IRR', x => pct(x.a.irr, 2)) + drow('A안 누적 이익', x => eok(x.a.profit) + '원') +
     drow('B안 자기자본 IRR', x => pct(x.b.irr, 2)) + drow('B안 최저 DSCR', x => x.b.dscr_min == null ? '–' : x.b.dscr_min.toFixed(2) + '배') +
-    drow('B안 전환 때 회수(추가 출자)', x => eok(x.b.refi) + '원') + '</tbody>';
+    drow('B안 전환 때 회수(추가 출자)', x => eok(x.b.refi) + '원') + drow('최고 차입 잔액 ÷ 자기자본', x => x.debt_to_equity == null ? '–' : x.debt_to_equity.toFixed(2) + '배') + '</tbody>';
 
   drawSens(p);
 
@@ -273,7 +273,7 @@ function render(){
   const pubDue = r.Tc + 60, licDue = r.Tc + 18;
   $('#reg').innerHTML = `<thead><tr><th>항목</th><th>판정</th><th>이 가정에서는</th><th>기준</th><th>근거</th></tr></thead><tbody>` + [
     ['설립신고 자본금', '50억원 이상. 설립등기일부터 6개월 안에 신고', '법 26조의4 ①, ②', `자기자본 ${eok(r.equity)}원`, r.equity >= 50 ? st('ok', '충족') : st('no', '부족')],
-    ['개발 단계 차입', '차입과 사채의 합계가 자기자본의 2배, 주주총회 특별결의 시 10배까지. 설립신고만으로 차입 가능', '법 29조 ②, 26조의4 ⑥', `준공 시 차입 ÷ 자기자본 ${r.debt_to_equity == null ? '–' : r.debt_to_equity.toFixed(2) + '배'}`, lev(r.debt_to_equity)],
+    ['개발 단계 차입', '차입과 사채의 합계가 자기자본의 2배, 주주총회 특별결의 시 10배까지. 설립신고만으로 차입 가능', '법 29조 ②, 26조의4 ⑥', `준공부터 안정화까지 최고 차입 잔액 ${eok(r.dev_debt_peak)}원 ÷ 자기자본 = ${r.debt_to_equity == null ? '–' : r.debt_to_equity.toFixed(2) + '배'}`, lev(r.debt_to_equity)],
     ['운영 단계 차입', '같은 한도', '법 29조 ②', `담보대출 ÷ 자기자본 ${r.b.loan_to_equity == null ? '–' : r.b.loan_to_equity.toFixed(2) + '배'}`, lev(r.b.loan_to_equity)],
     ['영업인가 또는 등록', '사용승인이나 준공검사일부터 18개월 안. 국토교통부장관이 6개월 안에서 연장 가능', '법 26조의4 ④, 영 30조의2 ②', `준공 ${ym(start, r.Tc)}, 기한 ${ym(start, licDue)}`, st('', '일정 확인')],
     ['공모', '준공일부터 5년 안에 발행주식의 30% 이상을 일반 청약에 제공. 연기금 등이 50% 이상 인수하거나 임대주택이 총자산의 70% 이상이면 예외', '법 14조의8 ②, ③', `기한 ${ym(start, pubDue)}, B안 매각 ${ym(start, r.Tend)}`, r.Tend > pubDue ? st('warn', '보유 중 공모 기한 도래') : st('ok', '기한 전 매각')],
@@ -302,9 +302,9 @@ $('#reset').onclick = () => { setInputs(D.base, thisMonth); render(); };
 $('#share').onclick = async () => { try { await navigator.clipboard.writeText(location.href); $('#share').textContent = '복사했습니다'; } catch (e) { prompt('아래 주소를 복사하세요', location.href); } setTimeout(() => $('#share').textContent = '가정 주소 복사', 1500); };
 $('#sens-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#sens-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); sensMode = b.dataset.v; if (last) drawSens(last.p); });
 $('#csv').onclick = () => { if (!last) return; const {r, start} = last, rows = [];
-  for (let m = 1; m <= r.Tend; m++) rows.push([m, ym(start, m), m <= r.Tc ? (r.eq_draw[m] || 0).toFixed(4) : 0, m <= r.Tc ? (r.debt_bal[m] || 0).toFixed(4) : '', m < r.cf_a.length ? (r.cf_a[m] || 0).toFixed(4) : '', (r.cf_b[m] || 0).toFixed(4)]);
+  for (let m = 1; m <= r.Tend; m++) rows.push([m, ym(start, m), m <= r.Tc ? (r.eq_draw[m] || 0).toFixed(4) : 0, m <= r.Ts ? (r.debt_bal[m] || 0).toFixed(4) : '', m < r.cf_a.length ? (r.cf_a[m] || 0).toFixed(4) : '', (r.cf_b[m] || 0).toFixed(4)]);
   const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  const text = '﻿' + [['개월째', '연월', '자기자본 투입(억원)', '개발 차입 잔액(억원)', 'A안 자기자본 현금흐름(억원)', 'B안 자기자본 현금흐름(억원)'], ...rows].map(x => x.map(q).join(',')).join('\r\n');
+  const text = '﻿' + [['개월째', '연월', '자기자본 투입(억원)', '개발 차입 잔액(억원, 안정화 시점까지)', 'A안 자기자본 현금흐름(억원)', 'B안 자기자본 현금흐름(억원)'], ...rows].map(x => x.map(q).join(',')).join('\r\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv;charset=utf-8'})); a.download = '프로젝트리츠_사업성_월별현금흐름.csv'; document.body.appendChild(a); a.click(); a.remove(); };
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (last) drawCf(last.r); }, 120); });
 </script>

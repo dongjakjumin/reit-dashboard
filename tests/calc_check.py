@@ -1,7 +1,8 @@
 """사업성 계산 엔진 검산.
 
 1) 손으로 답을 알 수 있는 경우 4가지(금리 0, 전액 자기자본 등)를 계산해 맞는지 본다.
-2) 기본 예시와 무작위 가정 200가지를 자바스크립트 엔진(calc_engine.js)과 파이썬 참조 구현(calc_ref.py)에
+2) 경계에 가까운 가정(보유 30년, 개발기간 20년, 전액 자기자본, 낮은 임대료)에서 값이 말이 되는지 본다.
+3) 기본 예시와 무작위 가정 400가지를 자바스크립트 엔진(calc_engine.js)과 파이썬 참조 구현(calc_ref.py)에
    똑같이 넣고 결과가 같은지 대조한다.
 
 node가 필요하다. 하나라도 어긋나면 종료 코드 1.
@@ -30,6 +31,7 @@ process.stdin.on('end', () => {
     const r = reitCalc(p);
     return {
       acq: r.acq, hard: r.hard, soft: r.soft, fin: r.fin, tpc: r.tpc, equity: r.equity, dev_debt: r.dev_debt,
+      dev_debt_peak: r.dev_debt_peak, cash_at_stab: r.cash_at_stab,
       ltc: r.ltc, debt_to_equity: r.debt_to_equity, Tc: r.Tc, Ts: r.Ts, Tend: r.Tend,
       lease_interest: r.lease_interest, lease_noi: r.lease_noi, debt_at_stab: r.debt_at_stab,
       noi1: r.noi1, value: r.value, yield_on_cost: r.yield_on_cost, dev_margin: r.dev_margin,
@@ -64,11 +66,11 @@ def random_case(rng: random.Random) -> dict:
     return {
         "land": rng.uniform(100, 5000), "acq_pct": rng.uniform(0, 6),
         "gfa_py": rng.uniform(2000, 40000), "cost_per_py": rng.uniform(400, 1600), "soft_pct": rng.uniform(5, 25),
-        "pre_m": rng.randint(1, 24), "con_m": rng.randint(12, 48), "lease_m": rng.randint(0, 24),
-        "hold_y": rng.randint(1, 10), "equity_pct": rng.uniform(10, 100),
-        "dev_rate": rng.uniform(0, 12), "rent": rng.uniform(3, 40), "vacancy": rng.uniform(0, 20),
-        "opex": rng.uniform(5, 35), "growth": rng.uniform(-1, 4), "reit_cost": rng.uniform(0, 0.8),
-        "perm_ltv": rng.uniform(0, 70), "perm_rate": rng.uniform(0, 8),
+        "pre_m": rng.randint(0, 36), "con_m": rng.randint(6, 72), "lease_m": rng.randint(0, 36),
+        "hold_y": rng.randint(1, 30), "equity_pct": rng.uniform(5, 100),
+        "dev_rate": rng.uniform(0, 15), "rent": rng.uniform(3, 40), "vacancy": rng.uniform(0, 20),
+        "opex": rng.uniform(5, 35), "growth": rng.uniform(-2, 4), "reit_cost": rng.uniform(0, 0.8),
+        "perm_ltv": rng.uniform(0, 80), "perm_rate": rng.uniform(0, 12),
         "exit_cap": rng.uniform(3.5, 8), "sale_cost": rng.uniform(0, 3),
     }
 
@@ -108,9 +110,32 @@ def main() -> int:
     check(same(r4["value"], 1100, 1e-6) and same(r4["a.irr"], (1.1) ** (12 / 11) - 1, 1e-6),
           "1,000억을 1개월째 넣고 12개월째 1,100억 회수: 월 기준 11개월 → 연 IRR 일치")
 
-    print("[2] 자바스크립트 엔진과 파이썬 참조 구현 대조")
+    print("[2] 경계에 가까운 가정")
+    # (마) 보유 30년에 대출 금리가 높아 수익이 거의 없는 경우: IRR이 터무니없는 값이 되지 않아야 한다
+    long_case = dict(BASE, perm_rate=9, growth=0, hold_y=30)
+    r5 = run_js([long_case])[0]
+    ref5 = calc_ref.calc(long_case)
+    check(r5["b.irr"] is not None and -0.05 < r5["b.irr"] < 0.05 and same(r5["b.irr"], ref5["b.irr"]),
+          f"보유 30년, 대출 금리 9%, 임대료 상승 0%: B안 IRR {r5['b.irr'] * 100:.3f}% (참조 구현과 일치)")
+    # (바) 개발기간이 아주 길어도 자기자본 = 총사업비 × 비율이 맞아야 한다
+    slow = dict(BASE, pre_m=120, con_m=120, equity_pct=40)
+    r6 = run_js([slow])[0]
+    check(same(r6["equity"] / r6["tpc"], 0.40, 1e-9), f"개발기간 20년, 자기자본 비율 40%: 자기자본 ÷ 총사업비 = {r6['equity'] / r6['tpc']:.6f}")
+    steep = dict(BASE, pre_m=120, con_m=120, equity_pct=50, dev_rate=30)
+    r7 = run_js([steep])[0]
+    check(same(r7["equity"] / r7["tpc"], 0.50, 1e-9), f"같은 기간에 금리 30%, 비율 50%: 자기자본 ÷ 총사업비 = {r7['equity'] / r7['tpc']:.6f}")
+    # (사) 전액 자기자본이면 차입 잔액은 음수가 될 수 없고, 안정화 기간에 남은 돈은 따로 쌓인다
+    r8 = run_js([dict(BASE, equity_pct=100)])[0]
+    check(same(r8["dev_debt"], 0) and same(r8["debt_at_stab"], 0) and r8["cash_at_stab"] > 0,
+          f"전액 자기자본: 차입 0, 안정화 기간에 쌓인 돈 {r8['cash_at_stab']:.1f}억")
+    # (아) 임대 순수익이 이자보다 작으면 안정화 기간에 차입이 늘고, 최고 잔액은 안정화 시점 잔액이다
+    r9 = run_js([dict(BASE, rent=5)])[0]
+    check(r9["debt_at_stab"] > r9["dev_debt"] and same(r9["dev_debt_peak"], r9["debt_at_stab"]),
+          "임대료가 낮은 경우: 안정화 기간에 차입 증가, 최고 잔액 = 안정화 시점 잔액")
+
+    print("[3] 자바스크립트 엔진과 파이썬 참조 구현 대조")
     rng = random.Random(20261122)
-    cases = [BASE] + [random_case(rng) for _ in range(200)]
+    cases = [BASE] + [random_case(rng) for _ in range(400)]
     js = run_js(cases)
     mismatch = []
     for i, (p, j) in enumerate(zip(cases, js)):
@@ -118,7 +143,7 @@ def main() -> int:
         for k, v in ref.items():
             if not same(j.get(k), v):
                 mismatch.append((i, k, j.get(k), v))
-    check(not mismatch, f"기본 예시 + 무작위 가정 200가지, 항목 {len(calc_ref.calc(BASE))}개씩 대조"
+    check(not mismatch, f"기본 예시 + 무작위 가정 400가지(보유 30년, 개발기간 9년까지), 항목 {len(calc_ref.calc(BASE))}개씩 대조"
           + (f" (불일치 {len(mismatch)}건, 첫 건 {mismatch[0]})" if mismatch else ""))
     b = js[0]
     print(f"  기본 예시: 총사업비 {b['tpc']:,.0f}억, 자기자본 {b['equity']:,.0f}억, 안정화 NOI {b['noi1']:,.1f}억, "

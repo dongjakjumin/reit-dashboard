@@ -20,7 +20,9 @@ import urllib.request
 from pathlib import Path
 
 import build
+import collect
 import reits_api
+from textutil import mask_person
 
 DATA = Path(__file__).parent / "data"
 
@@ -65,16 +67,22 @@ def main() -> int:
     check(sum(x["n"] for x in d["sector"]) == s["n_reits"], "투자대상별 리츠 수 합 = 전체")
     check(sum(s["new12_by_kind"].values()) == s["new12"], "최근 12개월 구분별 합 = 최근 12개월 전체")
     check(sum(s["filings_by_type"].values()) == s["filings_n"], "접수 유형별 합 = 접수 전체")
-    check(sum(1 for r in reits if r["kind"] == "신고") == s["proj_n"], "구분이 신고인 건수 = 프로젝트리츠 건수")
+    check(sum(1 for r in reits if r["kind"] == "신고" or r.get("project") == "Y") == s["proj_n"],
+          "신고 구분이거나 프로젝트리츠 표시가 있는 건수 = 프로젝트리츠 건수")
+    check(sum(1 for e in d["events"] if e["what"] == "접수") == len(snap["filings"]),
+          "최근 변동에 접수 중인 신청이 빠짐없이 들어 있음")
+    check(all(x["result_date"] is None for x in d["done"] if x["is_change"]),
+          "변경 신청에는 인가일을 결과로 붙이지 않음")
     check(len({r["id"] for r in reits}) == len(reits), "리츠 번호 중복 없음")
 
     print("[2] 원문 건수 재조회")
     live = ask("/reits/prmpc/searchPrmpcOper", dict(reits_api.OPER_EMPTY, pageSize=10, pageNum=1))
-    if live:
-        check(int(live["total"]) == len(reits), f"리츠조회 전체 {int(live['total'])}건 = 저장 {len(reits)}건")
+    if live:  # 수집과 점검 사이에 원문이 바뀔 수 있어 3건까지는 차이를 허용한다
+        check(abs(int(live["total"]) - len(reits)) <= 3, f"리츠조회 전체 {int(live['total'])}건, 저장 {len(reits)}건(차이 3건 이내)")
     live_f = ask("/reits/prmpc/searchPrmpcInvtCnfm", {"reitsNm": "", "cmpnyMberNm": "", "pageSize": 10, "pageNum": 1})
     if live_f:
-        check(int(live_f["total"]) == len(snap["filings"]), f"접수현황 전체 {int(live_f['total'])}건 = 저장 {len(snap['filings'])}건")
+        check(abs(int(live_f["total"]) - len(snap["filings"])) <= 3,
+              f"접수현황 전체 {int(live_f['total'])}건, 저장 {len(snap['filings'])}건(차이 3건 이내)")
 
     print("[3] 상세 화면 대조(자산총계가 있는 리츠 5건 + 강조 회사)")
     pool = [r for r in reits if r["assets_eok"]]
@@ -93,8 +101,11 @@ def main() -> int:
         if m:
             raw = float(m.group(1).replace(",", ""))
             got = round(raw / 1e8) if raw > 1e7 else round(raw)
-        ok = name_ok and (got is None or abs(got - r["assets_eok"]) <= 1)
-        check(ok, f"{r['name']} | 목록 {r['assets_eok']:,}억 | 상세 {got if got is not None else '값 없음'}")
+        if got is None:  # 상세 화면에서 값을 찾지 못하면 통과로 치지 않고 건너뛴 것으로 적는다
+            skipped += 1
+            print(f"  건너뜀  {r['name']}: 상세 화면에서 자산총계를 찾지 못함")
+            continue
+        check(name_ok and abs(got - r["assets_eok"]) <= 1, f"{r['name']} | 목록 {r['assets_eok']:,}억 | 상세 {got}")
 
     print("[4] 상장리츠")
     ld = build.build_listed_data()
@@ -108,14 +119,23 @@ def main() -> int:
     check(sum(x["n"] for x in ld["sectors"]) == ls["n"], "투자대상별 종목 수 합 = 전체 종목 수")
     check(all(r["pnav"] is None or abs(r["mktcap_eok"] / r["nav_eok"] - r["pnav"]) < 0.006 for r in ld["rows"]),
           "P/NAV = 시가총액 / NAV 재계산 일치")
-    check(all(prices[str(r["code"])][max(prices[str(r["code"])])] == r["price"] for r in listed),
-          "주가 이력의 마지막 종가 = 상장리츠 현황의 현재가")
+    # 수익률을 가격 이력에서 따로 계산해 화면 값과 견준다(기준가가 바뀐 종목은 제외)
+    from datetime import date as _date, timedelta as _td
+    for row in [x for x in ld["rows"] if x["ret_1y"] is not None][:3]:
+        hist = prices[str(row["code"])]
+        days = sorted(hist)
+        base_day = [x for x in days if x <= (_date.fromisoformat(days[-1]) - _td(days=365)).isoformat()][-1]
+        mine = round((hist[days[-1]] / hist[base_day] - 1) * 100, 1)
+        check(abs(mine - row["ret_1y"]) < 0.11, f"{row['name']} 1년 수익률 재계산 {mine}% = 화면 {row['ret_1y']}%")
+    check(all(r["price"] == prices[str(r["code"])][r["price_date"]] for r in ld["rows"]),
+          "화면의 현재가 = 가격 이력의 마지막 종가")
     check(abs(ld["index"]["values"][0] - 100) < 0.001, "주가 지수 첫날 = 100")
     nav_rows = ask("/main/searchMainStock", {"stockTab": "3"})
     ffo_rows = ask("/main/searchMainStock", {"stockTab": "4"})
     nav_main = {str(x.get("stockNm")).strip(): x.get("navThstrm") for x in (nav_rows or [])}
     ffo_main = {str(x.get("stockNm")).strip(): x.get("ffoThstrm") for x in (ffo_rows or [])}
-    for r in (random.sample(listed, 5) if nav_rows and ffo_rows else []):
+    with_metrics = [r for r in listed if r.get("nav_mil") is not None and r.get("ffo_mil") is not None]
+    for r in (random.sample(with_metrics, min(5, len(with_metrics))) if nav_rows and ffo_rows else []):
         ok = nav_main.get(r["name"]) == r["nav_mil"] and ffo_main.get(r["name"]) == r["ffo_mil"]
         check(ok, f"{r['name']} | NAV {r['nav_mil']:,}백만원, FFO {r['ffo_mil']:,}백만원 | "
                   f"첫 화면 NAV {nav_main.get(r['name'])}, FFO {ffo_main.get(r['name'])}")
@@ -124,13 +144,19 @@ def main() -> int:
     fin = json.loads((DATA / "financials.json").read_text(encoding="utf-8"))
     dis = json.loads((DATA / "disclosures.json").read_text(encoding="utf-8"))
     fd = build.build_finance_data()
-    check(len(fd["rows"]) == len(listed), f"재무 자료 {len(fd['rows'])}개 = 상장리츠 {len(listed)}개")
-    check(all(abs(v["assets"] - v["debt"] - v["equity"]) <= 1e8 for v in fin.values()),
+    missing = len(listed) - len(fd["rows"])  # 새로 상장해 재무 자료가 아직 없는 종목은 2개까지 허용
+    check(0 <= missing <= 2, f"재무 자료 {len(fd['rows'])}개, 상장리츠 {len(listed)}개(없는 종목 2개까지 허용)")
+    usable = [v for v in fin.values() if None not in (v.get("assets"), v.get("debt"), v.get("equity"))]
+    check(all(abs(v["assets"] - v["debt"] - v["equity"]) <= 1e8 for v in usable),
           "자산총계 = 부채총계 + 자본총계(1억원 이내)")
     check(all(abs(r["debt_eok"] / r["assets_eok"] * 100 - r["debt_to_assets"]) < 0.2 for r in fd["rows"]),
           "부채 ÷ 자산 재계산 일치")
     check(sum(g["n"] for g in fd["groups"]) == fd["summary"]["dis_major"], "공시 유형별 건수 합 = 주요 공시 건수")
-    for r in random.sample(listed, 3):
+    # 재무 자료는 주 1회만 받으므로, 오늘 받은 종목만 원문과 견준다(받은 지 며칠 된 값은 원문이 바뀌었을 수 있다)
+    fresh = [r for r in listed if fin.get(str(r.get("reit_id")), {}).get("fetched") == snap["date"]]
+    if not fresh:
+        print("  건너뜀  오늘 새로 받은 재무 자료가 없어 상세 화면 재조회를 하지 않음")
+    for r in random.sample(fresh, min(3, len(fresh))):
         b1 = ask("/reits/prmpc/searchPrmpcOperTab01_01", {"reitsNo": r["reit_id"], "no": r["reit_id"]})
         if b1 is None:
             continue
@@ -153,8 +179,14 @@ def main() -> int:
     blob = "".join(p.read_text(encoding="utf-8") for p in DATA.rglob("*.json"))
     for site in (Path(__file__).parent / "site").glob("*.html"):
         blob += site.read_text(encoding="utf-8")
-    check(not re.search(r"(?<![\d.])01[016789]-?\d{3,4}-?\d{4}(?!\d)", blob), "저장 파일과 화면에 휴대전화 번호 모양 문자열 없음")
-    check('"mberPhone"' not in blob and '"mberNm"' not in blob, "담당자 항목 이름 없음")
+    check(not re.search(collect.PHONE_RE, blob), "저장 파일과 화면에 전화번호 모양 문자열 없음")
+    allowed = set(collect.FILING_KEEP.values())
+    flog = json.loads((DATA / "filings_log.json").read_text(encoding="utf-8"))
+    extra_keys = {"first_seen", "last_seen", "status_history", "gone_on"}
+    check(all(set(f) <= allowed for f in snap["filings"]) and all(set(v) <= allowed | extra_keys for v in flog.values()),
+          "접수 자료에 허용한 항목만 저장됨(담당자 이름, 연락처 항목 없음)")
+    check(all(mask_person(v.get("top_shareholder")) == v.get("top_shareholder") for v in fin.values()),
+          "최대주주 칸에 개인 이름 모양 값 없음")
 
     print("결과:", ("모두 통과" if bad == 0 else f"실패 {bad}건")
           + (f", 건너뛴 원문 재조회 {skipped}건" if skipped else ""))
