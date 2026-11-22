@@ -114,3 +114,5 @@ a.ext{color:inherit;text-decoration:underline;text-decoration-color:var(--axis);
 @media (max-width:600px){
   #events .finance-divider{background:var(--wash)}
 }
+#loan-table td:nth-child(3), #loan-table td:nth-child(6), #loan-table td:nth-child(7) { white-space: nowrap; }
+#loan-table td:nth-child(6), #loan-table td:nth-child(7), #loan-table th:nth-child(6), #loan-table th:nth-child(7) { text-align: right; }

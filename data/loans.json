@@ -1,0 +1,3946 @@
+{
+  "395400": {
+    "name": "SK리츠",
+    "rcept_no": "20260908000397",
+    "basis": "CFS",
+    "doc": "20260908000397_00761.xml",
+    "unit": "천원",
+    "end": "2026-06-30",
+    "tables": [
+      88,
+      90
+    ],
+    "loans": [
+      {
+        "kind": "공모회사채",
+        "lender": "㈜한국투자증권",
+        "maturity": "2026-10-02",
+        "rate_text": "3.43",
+        "rate": 3.43,
+        "rate_type": "고정",
+        "amount": 85000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜NH투자증권",
+        "maturity": "2026-10-02",
+        "rate_text": "3.43",
+        "rate": 3.43,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜삼성증권",
+        "maturity": "2027-10-01",
+        "rate_text": "3.51",
+        "rate": 3.51,
+        "rate_type": "고정",
+        "amount": 14000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜신한투자증권",
+        "maturity": "2027-10-01",
+        "rate_text": "3.51",
+        "rate": 3.51,
+        "rate_type": "고정",
+        "amount": 18000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜에스케이증권",
+        "maturity": "2027-10-01",
+        "rate_text": "3.51",
+        "rate": 3.51,
+        "rate_type": "고정",
+        "amount": 18000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜대신증권",
+        "maturity": "2027-10-01",
+        "rate_text": "3.51",
+        "rate": 3.51,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜KB증권",
+        "maturity": "2027-10-01",
+        "rate_text": "3.51",
+        "rate": 3.51,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜한국투자증권",
+        "maturity": "2027-02-19",
+        "rate_text": "3.32",
+        "rate": 3.32,
+        "rate_type": "고정",
+        "amount": 97500000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜NH투자증권",
+        "maturity": "2027-02-19",
+        "rate_text": "3.32",
+        "rate": 3.32,
+        "rate_type": "고정",
+        "amount": 32500000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜신한투자증권",
+        "maturity": "2028-02-18",
+        "rate_text": "3.37",
+        "rate": 3.37,
+        "rate_type": "고정",
+        "amount": 60000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜에스케이증권",
+        "maturity": "2028-02-18",
+        "rate_text": "3.37",
+        "rate": 3.37,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜삼성증권",
+        "maturity": "2028-02-18",
+        "rate_text": "3.37",
+        "rate": 3.37,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜한국투자증권",
+        "maturity": "2027-05-20",
+        "rate_text": "2.99",
+        "rate": 2.99,
+        "rate_type": "고정",
+        "amount": 90000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜NH투자증권",
+        "maturity": "2027-05-20",
+        "rate_text": "2.99",
+        "rate": 2.99,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜에스케이증권",
+        "maturity": "2028-05-19",
+        "rate_text": "3.06",
+        "rate": 3.06,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜신한투자증권",
+        "maturity": "2028-05-19",
+        "rate_text": "3.06",
+        "rate": 3.06,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "공모회사채",
+        "lender": "㈜삼성증권",
+        "maturity": "2028-05-19",
+        "rate_text": "3.06",
+        "rate": 3.06,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "사모회사채",
+        "lender": "㈜삼성증권",
+        "maturity": "2027-02-28",
+        "rate_text": "4.33",
+        "rate": 4.33,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜한국투자증권",
+        "maturity": "2026-08-21",
+        "rate_text": "3.41",
+        "rate": 3.41,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜에스케이증권",
+        "maturity": "2026-08-21",
+        "rate_text": "3.41",
+        "rate": 3.41,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜삼성증권",
+        "maturity": "2026-08-21",
+        "rate_text": "3.41",
+        "rate": 3.41,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜NH투자증권",
+        "maturity": "2026-08-21",
+        "rate_text": "3.41",
+        "rate": 3.41,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜KB증권",
+        "maturity": "2026-08-21",
+        "rate_text": "3.41",
+        "rate": 3.41,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜에스케이증권",
+        "maturity": "2026-07-03",
+        "rate_text": "3.40",
+        "rate": 3.4,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜NH투자증권",
+        "maturity": "2026-07-03",
+        "rate_text": "3.40",
+        "rate": 3.4,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜한국투자증권",
+        "maturity": "2026-09-08",
+        "rate_text": "3.56",
+        "rate": 3.56,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜에스케이증권",
+        "maturity": "2026-09-08",
+        "rate_text": "3.56",
+        "rate": 3.56,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜삼성증권",
+        "maturity": "2026-09-08",
+        "rate_text": "3.56",
+        "rate": 3.56,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜NH투자증권",
+        "maturity": "2026-09-08",
+        "rate_text": "3.56",
+        "rate": 3.56,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "전자단기사채",
+        "lender": "㈜KB증권",
+        "maturity": "2026-09-08",
+        "rate_text": "3.56",
+        "rate": 3.56,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜한국스탠다드차타드은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 76800000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "에스케이오피스원큐제이차(유)",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "에스프로젝트모리츠㈜",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 60000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜국민은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 115000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미쓰이스미토모은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 85000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미즈호은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 60000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜한국스탠다드차타드은행",
+        "maturity": "2028-06-30",
+        "rate_text": "3.72",
+        "rate": 3.72,
+        "rate_type": "고정",
+        "amount": 32000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜국민은행",
+        "maturity": "2028-06-30",
+        "rate_text": "3.72",
+        "rate": 3.72,
+        "rate_type": "고정",
+        "amount": 34000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미쓰이스미토모은행",
+        "maturity": "2028-06-30",
+        "rate_text": "3.72",
+        "rate": 3.72,
+        "rate_type": "고정",
+        "amount": 44000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미즈호은행",
+        "maturity": "2028-06-30",
+        "rate_text": "3.72",
+        "rate": 3.72,
+        "rate_type": "고정",
+        "amount": 44000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜한국스탠다드차타드은행",
+        "maturity": "2028-11-28",
+        "rate_text": "3.74",
+        "rate": 3.74,
+        "rate_type": "고정",
+        "amount": 73200000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미쓰이스미토모은행",
+        "maturity": "2028-11-28",
+        "rate_text": "3.74",
+        "rate": 3.74,
+        "rate_type": "고정",
+        "amount": 73200000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜국민은행",
+        "maturity": "2028-11-28",
+        "rate_text": "3.74",
+        "rate": 3.74,
+        "rate_type": "고정",
+        "amount": 70000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜한국스탠다드차타드은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 125530996000
+      },
+      {
+        "kind": "차입금",
+        "lender": "클린에너지원큐제이차(유)",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 50506253000
+      },
+      {
+        "kind": "차입금",
+        "lender": "에스프로젝트자리츠㈜",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 32140343000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜국민은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 114786939000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미쓰이스미토모은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 18365910000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미즈호은행",
+        "maturity": "2027-07-05",
+        "rate_text": "3.57",
+        "rate": 3.57,
+        "rate_type": "고정",
+        "amount": 59689208000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미쓰이스미토모은행",
+        "maturity": "2028-10-13",
+        "rate_text": "3.67",
+        "rate": 3.67,
+        "rate_type": "고정",
+        "amount": 83000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜한국스탠다드차타드은행",
+        "maturity": "2028-10-13",
+        "rate_text": "3.67",
+        "rate": 3.67,
+        "rate_type": "고정",
+        "amount": 80800000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "중국은행㈜",
+        "maturity": "2028-10-13",
+        "rate_text": "3.67",
+        "rate": 3.67,
+        "rate_type": "고정",
+        "amount": 65000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜중국공상은행",
+        "maturity": "2028-10-13",
+        "rate_text": "3.67",
+        "rate": 3.67,
+        "rate_type": "고정",
+        "amount": 16000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜중소기업은행",
+        "maturity": "2026-09-23",
+        "rate_text": "5.49",
+        "rate": 5.49,
+        "rate_type": "고정",
+        "amount": 150000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜국민은행",
+        "maturity": "2026-09-23",
+        "rate_text": "5.49",
+        "rate": 5.49,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "워터스트림제일차㈜",
+        "maturity": "2026-09-23",
+        "rate_text": "5.49",
+        "rate": 5.49,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "한화생명보험㈜",
+        "maturity": "2026-09-23",
+        "rate_text": "5.49",
+        "rate": 5.49,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "교보생명보험㈜",
+        "maturity": "2026-09-23",
+        "rate_text": "5.49",
+        "rate": 5.49,
+        "rate_type": "고정",
+        "amount": 25000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "흥국SK하이닉스㈜",
+        "maturity": "2026-09-23",
+        "rate_text": "5.49",
+        "rate": 5.49,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜한국스탠다드차타드은행",
+        "maturity": "2026-09-23",
+        "rate_text": "4.32",
+        "rate": 4.32,
+        "rate_type": "고정",
+        "amount": 100300000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜미쓰이스미토모은행",
+        "maturity": "2026-09-23",
+        "rate_text": "4.32",
+        "rate": 4.32,
+        "rate_type": "고정",
+        "amount": 100000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "에스타이거클린㈜",
+        "maturity": "2026-09-23",
+        "rate_text": "4.32",
+        "rate": 4.32,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜우리은행",
+        "maturity": "2026-09-23",
+        "rate_text": "4.32",
+        "rate": 4.32,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "중국건설은행㈜",
+        "maturity": "2026-09-23",
+        "rate_text": "4.32",
+        "rate": 4.32,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "㈜수협은행",
+        "maturity": "2026-09-23",
+        "rate_text": "4.32",
+        "rate": 4.32,
+        "rate_type": "고정",
+        "amount": 10000000000
+      }
+    ],
+    "nominal": 3113319649000,
+    "adjustments": -10237481000,
+    "reclassifications": -1364248103000,
+    "bs_total": 3103082168653,
+    "diff": -653,
+    "match": "일치",
+    "fixed_share": 1.0,
+    "avg_rate": 3.810079106634643,
+    "skipped": [],
+    "warn": []
+  },
+  "330590": {
+    "name": "롯데리츠",
+    "rcept_no": "20260921000222",
+    "basis": "OFS",
+    "doc": "20260921000222_00760.xml",
+    "unit": "천원",
+    "end": "2026-06-30",
+    "tables": [
+      45
+    ],
+    "loans": [
+      {
+        "kind": "유동성장기부채(주1,2)",
+        "lender": "SC제일은행",
+        "maturity": "2026-09-30",
+        "rate_text": "3.75",
+        "rate": 3.75,
+        "rate_type": "고정",
+        "amount": 165000000000
+      },
+      {
+        "kind": "유동성장기부채(주1,2)",
+        "lender": "국민은행 등",
+        "maturity": "2027-04-17",
+        "rate_text": "CD+0.87%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 160000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "",
+        "maturity": "2026-07-21",
+        "rate_text": "4.05",
+        "rate": 4.05,
+        "rate_type": "고정",
+        "amount": 107000000000
+      },
+      {
+        "kind": "제6-2회 사채(주1,2)",
+        "lender": "",
+        "maturity": "2026-08-06",
+        "rate_text": "3.45",
+        "rate": 3.45,
+        "rate_type": "고정",
+        "amount": 160000000000
+      },
+      {
+        "kind": "제6-3회 사채(주1,3)",
+        "lender": "",
+        "maturity": "2026-08-06",
+        "rate_text": "2.89",
+        "rate": 2.89,
+        "rate_type": "고정",
+        "amount": 80000000000
+      },
+      {
+        "kind": "제7-2회 사채(주1,2)",
+        "lender": "",
+        "maturity": "2026-10-07",
+        "rate_text": "3.48",
+        "rate": 3.48,
+        "rate_type": "고정",
+        "amount": 75000000000
+      },
+      {
+        "kind": "제7-3회 사채(주1,3)",
+        "lender": "",
+        "maturity": "2026-10-02",
+        "rate_text": "3.10",
+        "rate": 3.1,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "제8회 사채(주1,3)",
+        "lender": "",
+        "maturity": "2027-04-16",
+        "rate_text": "3.26",
+        "rate": 3.26,
+        "rate_type": "고정",
+        "amount": 160000000000
+      },
+      {
+        "kind": "장기차입금(주1,2)",
+        "lender": "미즈호은행 등",
+        "maturity": "2027-09-19",
+        "rate_text": "CD+1.00%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 258000000000
+      },
+      {
+        "kind": "장기차입금(주1,4)",
+        "lender": "국민은행 등",
+        "maturity": "2028-10-24",
+        "rate_text": "CD+0.95%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 130000000000
+      },
+      {
+        "kind": "장기차입금(주1,4)",
+        "lender": "SC제일은행 등",
+        "maturity": "2029-01-21",
+        "rate_text": "CD+1.05%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 159000000000
+      },
+      {
+        "kind": "장기차입금(주1,4)",
+        "lender": "SC제일은행",
+        "maturity": "2028-03-16",
+        "rate_text": "CD+1.05%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 75000000000
+      }
+    ],
+    "nominal": 1579000000000,
+    "adjustments": -4733042000,
+    "reclassifications": 0,
+    "bs_total": 1574266957563,
+    "diff": 437,
+    "match": "일치",
+    "fixed_share": 0.5047498416719443,
+    "avg_rate": 3.479171894604768,
+    "skipped": [],
+    "warn": []
+  },
+  "451800": {
+    "name": "한화리츠",
+    "rcept_no": "20260713000432",
+    "basis": "OFS",
+    "doc": "20260713000432_00760.xml",
+    "unit": "천원",
+    "end": "2026-04-30",
+    "tables": [
+      54,
+      55
+    ],
+    "loans": [
+      {
+        "kind": "단기사채",
+        "lender": "NH투자증권㈜, 한국투자증권㈜",
+        "maturity": "2026-06-05",
+        "rate_text": "3.460%",
+        "rate": 3.46,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "장기사채",
+        "lender": "한국투자증권㈜,NH투자증권㈜, 키움증권㈜",
+        "maturity": "2027-07-09",
+        "rate_text": "2.946%",
+        "rate": 2.946,
+        "rate_type": "고정",
+        "amount": 60000000000
+      },
+      {
+        "kind": "장기사채",
+        "lender": "대신증권㈜, 신한투자증권㈜, 삼성증권㈜, 한화투자증권㈜, 하나증권㈜",
+        "maturity": "2028-07-07",
+        "rate_text": "3.001%",
+        "rate": 3.001,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "선순위 차입금 3년물변동금리",
+        "lender": "㈜SC은행",
+        "maturity": "2028-08-11",
+        "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 80500000000
+      },
+      {
+        "kind": "선순위 차입금 3년물변동금리",
+        "lender": "리치게이트에이치㈜",
+        "maturity": "2028-08-11",
+        "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 36000000000
+      },
+      {
+        "kind": "선순위 차입금 3년물변동금리",
+        "lender": "㈜하나은행",
+        "maturity": "2028-08-11",
+        "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 70000000000
+      },
+      {
+        "kind": "선순위 차입금 3년물변동금리",
+        "lender": "㈜국민은행",
+        "maturity": "2028-08-11",
+        "rate_text": "91일 CD금리(10일 산술평균) + 0.95%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 50000000000
+      },
+      {
+        "kind": "선순위 차입금 2년물변동금리",
+        "lender": "농협은행㈜",
+        "maturity": "2027-09-25",
+        "rate_text": "91일 CD금리(10일 산술평균) + 0.75%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 40000000000
+      },
+      {
+        "kind": "선순위 차입금 2년물변동금리",
+        "lender": "리치게이트에이치제이차㈜",
+        "maturity": "2027-09-25",
+        "rate_text": "91일 CD금리 + 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 50000000000
+      },
+      {
+        "kind": "선순위 차입금 2년물변동금리",
+        "lender": "㈜SC은행",
+        "maturity": "2027-09-25",
+        "rate_text": "91일 CD금리(10일 산술평균) + 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 161600000000
+      },
+      {
+        "kind": "선순위 차입금 2년물변동금리",
+        "lender": "수협은행",
+        "maturity": "2027-09-25",
+        "rate_text": "91일 CD금리(10일 산술평균) + 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 50000000000
+      },
+      {
+        "kind": "선순위 차입금 2년물변동금리",
+        "lender": "㈜국민은행",
+        "maturity": "2027-09-25",
+        "rate_text": "91일 CD금리(10일 산술평균) + 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 20000000000
+      },
+      {
+        "kind": "선순위 차입금 2년물고정금리",
+        "lender": "농협은행㈜",
+        "maturity": "2027-09-25",
+        "rate_text": "3.40%",
+        "rate": 3.4,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "선순위 차입금 2년물고정금리",
+        "lender": "㈜SC은행",
+        "maturity": "2027-09-25",
+        "rate_text": "3.90%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "선순위 차입금 2년물고정금리",
+        "lender": "㈜국민은행",
+        "maturity": "2027-09-25",
+        "rate_text": "3.90%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 40000000000
+      }
+    ],
+    "nominal": 808100000000,
+    "adjustments": -4680221000,
+    "reclassifications": 0,
+    "bs_total": 803419778907,
+    "diff": 93,
+    "match": "일치",
+    "fixed_share": 0.3093676525182527,
+    "avg_rate": 3.36084,
+    "skipped": [],
+    "warn": []
+  },
+  "365550": {
+    "name": "ESR켄달스퀘어리츠",
+    "rcept_no": "20260814004149",
+    "basis": "CFS",
+    "doc": "20260814004149_00761.xml",
+    "unit": "천원",
+    "end": "2026-05-31",
+    "tables": [
+      44,
+      46
+    ],
+    "loans": [
+      {
+        "kind": "단기일반대출",
+        "lender": "BNK경남은행",
+        "maturity": "2026-10-01",
+        "rate_text": "4.09(*2)",
+        "rate": 4.09,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "일반자금 대출",
+        "lender": "BNK부산은행",
+        "maturity": "2027-05-11",
+        "rate_text": "4.12(*3)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 20000000000
+      },
+      {
+        "kind": "기업운전일반자금대출",
+        "lender": "수협은행",
+        "maturity": "2027-05-11",
+        "rate_text": "4.61(*4)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 10000000000
+      },
+      {
+        "kind": "Tranche A(*1)(*3)",
+        "lender": "산업은행",
+        "maturity": "2026-12-14",
+        "rate_text": "3.63",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 100000000000
+      },
+      {
+        "kind": "Tranche A(*1)(*3)",
+        "lender": "농협은행",
+        "maturity": "2026-12-14",
+        "rate_text": "3.63",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 60000000000
+      },
+      {
+        "kind": "Tranche A(*1)(*3)",
+        "lender": "농협생명보험",
+        "maturity": "2026-12-14",
+        "rate_text": "3.63",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 40000000000
+      },
+      {
+        "kind": "Tranche A(*1)(*3)",
+        "lender": "IBK기업은행",
+        "maturity": "2026-12-14",
+        "rate_text": "3.98",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 77000000000
+      },
+      {
+        "kind": "Tranche A(*1)(*3)",
+        "lender": "신한은행",
+        "maturity": "2026-12-14",
+        "rate_text": "4.28",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 45000000000
+      },
+      {
+        "kind": "Tranche A(*1)(*3)",
+        "lender": "중국은행",
+        "maturity": "2026-12-14",
+        "rate_text": "4.28",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 40000000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "케이비국민은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 48800000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "부산은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 3300000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "아이엠뱅크",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 8300000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "케이비손해보험",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 48800000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "수협은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 8300000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "신협",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 22200000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "수산업협동조합",
+        "maturity": "2028-05-29",
+        "rate_text": "4.19",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 22200000000
+      },
+      {
+        "kind": "Tranche A1-1(*1)(*4)",
+        "lender": "새마을금고",
+        "maturity": "2028-05-29",
+        "rate_text": "4.17",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 33200000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "케이비국민은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 19500000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "부산은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 1300000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "아이엠뱅크",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 3300000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "케이비손해보험",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 19500000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "수협은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 3300000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "신협",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 8800000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "수산업협동조합",
+        "maturity": "2028-05-29",
+        "rate_text": "4.19",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 8800000000
+      },
+      {
+        "kind": "Tranche A1-2(*1)(*4)",
+        "lender": "새마을금고",
+        "maturity": "2028-05-29",
+        "rate_text": "4.17",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 13300000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "케이비국민은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 8600000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "부산은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 600000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "아이엠뱅크",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 1500000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "케이비손해보험",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 8600000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "수협은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 1500000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "신협",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 3900000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "수산업협동조합",
+        "maturity": "2028-05-29",
+        "rate_text": "4.19",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 3900000000
+      },
+      {
+        "kind": "Tranche A1-3(*1)(*4)",
+        "lender": "새마을금고",
+        "maturity": "2028-05-29",
+        "rate_text": "4.17",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 6000000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "케이비국민은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 11100000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "부산은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 800000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "아이엠뱅크",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 1900000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "케이비손해보험",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 11100000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "수협은행",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 1900000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "신협",
+        "maturity": "2028-05-29",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 5100000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "수산업협동조합",
+        "maturity": "2028-05-29",
+        "rate_text": "4.19",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 5100000000
+      },
+      {
+        "kind": "Tranche A1-4(*1)(*4)",
+        "lender": "새마을금고",
+        "maturity": "2028-05-29",
+        "rate_text": "4.17",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 7500000000
+      },
+      {
+        "kind": "Tranche C-2(*1)",
+        "lender": "케이비국민은행",
+        "maturity": "2026-12-20",
+        "rate_text": "2.70",
+        "rate": 2.7,
+        "rate_type": "고정",
+        "amount": 114500000000
+      },
+      {
+        "kind": "시설자금대출(*6)",
+        "lender": "농협은행",
+        "maturity": "2026-09-22",
+        "rate_text": "4.03",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 10000000000
+      },
+      {
+        "kind": "일반자금대출(*7)",
+        "lender": "신한은행",
+        "maturity": "2027-01-15",
+        "rate_text": "4.30",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 20000000000
+      },
+      {
+        "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
+        "lender": "광주은행",
+        "maturity": "2027-05-10",
+        "rate_text": "4.32",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 3900000000
+      },
+      {
+        "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
+        "lender": "아이엠뱅크",
+        "maturity": "2027-05-10",
+        "rate_text": "4.32",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 7900000000
+      },
+      {
+        "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
+        "lender": "부산은행",
+        "maturity": "2027-05-10",
+        "rate_text": "4.32",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 3900000000
+      },
+      {
+        "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
+        "lender": "농협은행",
+        "maturity": "2027-05-10",
+        "rate_text": "4.32",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 21200000000
+      },
+      {
+        "kind": "동이천 브릭 물류센터 담보대출(*1)(*2)",
+        "lender": "신한은행",
+        "maturity": "2027-05-10",
+        "rate_text": "4.32",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 20100000000
+      },
+      {
+        "kind": "이천물류센터8 담보대출(*1)(*5)",
+        "lender": "신용협동조합",
+        "maturity": "2027-10-24",
+        "rate_text": "3.98",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "이천물류센터8 담보대출(*1)(*5)",
+        "lender": "수협은행",
+        "maturity": "2027-10-24",
+        "rate_text": "3.98",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 15400000000
+      },
+      {
+        "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
+        "lender": "IBK기업은행",
+        "maturity": "2029-05-28",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 174000000000
+      },
+      {
+        "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
+        "lender": "농협생명보험",
+        "maturity": "2029-05-28",
+        "rate_text": "3.93",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 100000000000
+      },
+      {
+        "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
+        "lender": "부산은행",
+        "maturity": "2029-05-28",
+        "rate_text": "4.23",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 26000000000
+      },
+      {
+        "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
+        "lender": "신한은행",
+        "maturity": "2029-05-28",
+        "rate_text": "4.23",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 60000000000
+      },
+      {
+        "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
+        "lender": "수협은행",
+        "maturity": "2029-05-28",
+        "rate_text": "3.92",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 10000000000
+      },
+      {
+        "kind": "고양, 안성, 이천10 담보대출(*1)(*8)",
+        "lender": "수산업협동조합",
+        "maturity": "2029-05-28",
+        "rate_text": "4.42",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 87000000000
+      },
+      {
+        "kind": "천안물류센터1(*1)(*9)",
+        "lender": "농협은행, 하나은행, 수협은행",
+        "maturity": "2029-04-15",
+        "rate_text": "4.02",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 46500000000
+      },
+      {
+        "kind": "이천물류센터9(*1)(*10)",
+        "lender": "내촌하나제이차 유한회사",
+        "maturity": "2029-04-16",
+        "rate_text": "4.51",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 49000000000
+      }
+    ],
+    "nominal": 1563400000000,
+    "adjustments": -12522249000,
+    "reclassifications": -561558369000,
+    "bs_total": 1550877751138,
+    "diff": -138,
+    "match": "일치",
+    "fixed_share": 0.0860304464628374,
+    "avg_rate": 2.9066914498141263,
+    "skipped": [
+      "표 45: 다른 표 조합을 채택"
+    ],
+    "warn": []
+  },
+  "293940": {
+    "name": "신한알파리츠",
+    "rcept_no": "20260528000669",
+    "basis": "CFS",
+    "doc": "20260528000669_00761.xml",
+    "unit": "천원",
+    "end": "2026-03-31",
+    "tables": [
+      84,
+      86,
+      88
+    ],
+    "loans": [
+      {
+        "kind": "그레이츠 강남담보대출(후순위)",
+        "lender": "신한캐피탈㈜",
+        "maturity": "2026-06-25",
+        "rate_text": "5.5%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 27000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(후순위)",
+        "lender": "㈜아이비케이캐피탈",
+        "maturity": "2026-06-25",
+        "rate_text": "5.5%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(후순위)",
+        "lender": "㈜디비저축은행",
+        "maturity": "2026-06-25",
+        "rate_text": "5.5%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(후순위)",
+        "lender": "㈜에스비아이저축은행",
+        "maturity": "2026-06-25",
+        "rate_text": "5.5%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(후순위)",
+        "lender": "㈜대신저축은행",
+        "maturity": "2026-06-25",
+        "rate_text": "5.5%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(후순위)",
+        "lender": "엔에이치저축은행㈜",
+        "maturity": "2026-06-25",
+        "rate_text": "5.5%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "그레이츠 판교담보대출(선순위)",
+        "lender": "한화생명보험㈜",
+        "maturity": "2026-04-29",
+        "rate_text": "2.7%",
+        "rate": 2.7,
+        "rate_type": "고정",
+        "amount": 190000000000
+      },
+      {
+        "kind": "그레이츠 판교담보대출(선순위)",
+        "lender": "㈜KB손해보험",
+        "maturity": "2026-04-29",
+        "rate_text": "2.7%",
+        "rate": 2.7,
+        "rate_type": "고정",
+        "amount": 100000000000
+      },
+      {
+        "kind": "그레이츠 판교담보대출(선순위)",
+        "lender": "신한라이프생명보험㈜",
+        "maturity": "2026-04-29",
+        "rate_text": "2.7%",
+        "rate": 2.7,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "그레이츠 판교담보대출(선순위)",
+        "lender": "현대해상화재보험㈜",
+        "maturity": "2026-04-29",
+        "rate_text": "2.7%",
+        "rate": 2.7,
+        "rate_type": "고정",
+        "amount": 100000000000
+      },
+      {
+        "kind": "그레이츠 판교담보대출(선순위)",
+        "lender": "농협생명보험㈜",
+        "maturity": "2026-04-29",
+        "rate_text": "2.7%",
+        "rate": 2.7,
+        "rate_type": "고정",
+        "amount": 65000000000
+      },
+      {
+        "kind": "그레이츠 판교담보대출(선순위)",
+        "lender": "한화손해보험㈜",
+        "maturity": "2026-04-29",
+        "rate_text": "2.7%",
+        "rate": 2.7,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
+        "lender": "㈜신한은행",
+        "maturity": "2028-12-01",
+        "rate_text": "CD 91일물+연 1.8%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 70000000000
+      },
+      {
+        "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
+        "lender": "수협은행",
+        "maturity": "2028-12-01",
+        "rate_text": "CD 91일물+연 1.8%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 33300000000
+      },
+      {
+        "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
+        "lender": "광주은행",
+        "maturity": "2028-12-01",
+        "rate_text": "CD 91일물+연 1.8%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
+        "lender": "제주은행",
+        "maturity": "2028-12-01",
+        "rate_text": "CD 91일물+연 1.8%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 9500000000
+      },
+      {
+        "kind": "그레이츠 청계 및 HSBC빌딩담보대출(선순위)",
+        "lender": "㈜하나은행",
+        "maturity": "2028-12-01",
+        "rate_text": "CD 91일물+연 1.8%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 57200000000
+      },
+      {
+        "kind": "신한L타워담보대출(선순위)",
+        "lender": "농협생명보험㈜",
+        "maturity": "2027-09-25",
+        "rate_text": "3.9%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 80000000000
+      },
+      {
+        "kind": "신한L타워담보대출(선순위)",
+        "lender": "㈜국민은행",
+        "maturity": "2027-09-25",
+        "rate_text": "3.9%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 38500000000
+      },
+      {
+        "kind": "신한L타워담보대출(선순위)",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2027-09-25",
+        "rate_text": "3.9%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "신한L타워담보대출(선순위)",
+        "lender": "㈜하나은행",
+        "maturity": "2027-09-25",
+        "rate_text": "3.9%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "트윈시티 남산담보대출(선순위)",
+        "lender": "NH투자증권㈜ (삼성SRA국내담보대출일반사모부동산투자신탁제4호의 신탁업자 지위에서)",
+        "maturity": "2028-08-28",
+        "rate_text": "4.0%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 69200000000
+      },
+      {
+        "kind": "트윈시티 남산담보대출(선순위)",
+        "lender": "케이비증권㈜ (삼성SRA국내담보대출일반사모부동산투자신탁제2호의 신탁업자 지위에서)",
+        "maturity": "2028-08-28",
+        "rate_text": "4.0%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 5800000000
+      },
+      {
+        "kind": "트윈시티 남산담보대출(선순위)",
+        "lender": "㈜국민은행",
+        "maturity": "2028-08-28",
+        "rate_text": "4.0%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "트윈시티 남산담보대출(선순위)",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2028-08-28",
+        "rate_text": "4.0%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "삼성화재 역삼빌딩담보대출(선순위)",
+        "lender": "리치게이트와이에스㈜",
+        "maturity": "2027-03-11",
+        "rate_text": "CD 91일물+연 1.75%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 45000000000
+      },
+      {
+        "kind": "삼성화재 역삼빌딩담보대출(선순위)",
+        "lender": "신한캐피탈㈜",
+        "maturity": "2027-03-11",
+        "rate_text": "CD 91일물+연 1.75%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 25000000000
+      },
+      {
+        "kind": "삼성화재 역삼빌딩담보대출(선순위)",
+        "lender": "㈜아이비케이캐피탈",
+        "maturity": "2027-03-11",
+        "rate_text": "CD 91일물+연 1.75%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 32500000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "광주우리신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "광주충장신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 600000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "군산해성신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "군산월명신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 1300000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "군산제일신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "김제신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 2000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "꿀벌신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 1600000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "남광주신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 1600000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "동양생명보험㈜",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 69000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "북광주신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "북동신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 500000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "삼례신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "삼애신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 900000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "새마을금고중앙회",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 100000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "샘신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 1200000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "양동행복신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 1500000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "옥서신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 200000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "우리신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "이리주현신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "입하신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 700000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "전주복지신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 1000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "전주상진신협",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 2000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(선순위)",
+        "lender": "한화손해보험㈜",
+        "maturity": "2026-09-15",
+        "rate_text": "2.8%",
+        "rate": 2.8,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(중순위)",
+        "lender": "동양생명보험㈜",
+        "maturity": "2026-09-15",
+        "rate_text": "4.3%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 15000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(중순위)",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2026-09-15",
+        "rate_text": "4.3%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "그레이츠 숭례담보대출(중순위)",
+        "lender": "한화손해보험㈜",
+        "maturity": "2026-09-15",
+        "rate_text": "4.3%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "GS건설 서초타워담보대출(선순위)",
+        "lender": "㈜신한은행",
+        "maturity": "2027-06-27",
+        "rate_text": "CD 91일물+연 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 41000000000
+      },
+      {
+        "kind": "GS건설 서초타워담보대출(선순위)",
+        "lender": "수협은행",
+        "maturity": "2027-06-27",
+        "rate_text": "CD 91일물+연 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "GS건설 서초타워담보대출(선순위)",
+        "lender": "농협은행㈜",
+        "maturity": "2027-06-27",
+        "rate_text": "CD 91일물+연 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "GS건설 서초타워담보대출(선순위)",
+        "lender": "㈜국민은행",
+        "maturity": "2027-06-27",
+        "rate_text": "CD 91일물+연 1.25%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "씨티스퀘어담보대출(선순위)",
+        "lender": "㈜국민은행",
+        "maturity": "2027-07-31",
+        "rate_text": "4.5%",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "씨티스퀘어담보대출(선순위)",
+        "lender": "㈜삼성화재해상보험",
+        "maturity": "2027-07-31",
+        "rate_text": "4.5%",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "씨티스퀘어담보대출(선순위)",
+        "lender": "중소기업은행",
+        "maturity": "2027-07-31",
+        "rate_text": "4.5%",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "씨티스퀘어담보대출(선순위)",
+        "lender": "농협은행㈜",
+        "maturity": "2027-07-31",
+        "rate_text": "4.5%",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "씨티스퀘어담보대출(선순위)",
+        "lender": "수산업협동조합중앙회",
+        "maturity": "2027-07-31",
+        "rate_text": "4.5%",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "씨티스퀘어담보대출(선순위)",
+        "lender": "수협은행",
+        "maturity": "2027-07-31",
+        "rate_text": "4.5%",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "씨티스퀘어담보대출(선순위)",
+        "lender": "산립조합중앙회",
+        "maturity": "2027-07-31",
+        "rate_text": "4.5%",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "우리강남알파제일차㈜",
+        "maturity": "2027-06-25",
+        "rate_text": "3.6%",
+        "rate": 3.6,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "㈜국민은행",
+        "maturity": "2027-06-25",
+        "rate_text": "3.6%",
+        "rate": 3.6,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2027-06-25",
+        "rate_text": "3.6%",
+        "rate": 3.6,
+        "rate_type": "고정",
+        "amount": 41500000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "농협은행㈜",
+        "maturity": "2027-06-25",
+        "rate_text": "3.6%",
+        "rate": 3.6,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "중소기업은행",
+        "maturity": "2027-06-25",
+        "rate_text": "3.6%",
+        "rate": 3.6,
+        "rate_type": "고정",
+        "amount": 41500000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "농협은행생명보험㈜",
+        "maturity": "2027-06-25",
+        "rate_text": "3.9%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "㈜부산은행",
+        "maturity": "2027-06-25",
+        "rate_text": "3.9%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "그레이츠 강남담보대출(선순위)",
+        "lender": "㈜하나은행",
+        "maturity": "2027-06-25",
+        "rate_text": "3.9%",
+        "rate": 3.9,
+        "rate_type": "고정",
+        "amount": 25000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "한국투자증권㈜",
+        "maturity": "2026-04-30",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 58000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "메리츠증권㈜",
+        "maturity": "2026-09-23",
+        "rate_text": "4.10%",
+        "rate": 4.1,
+        "rate_type": "고정",
+        "amount": 25000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "수협은행",
+        "maturity": "2026-09-23",
+        "rate_text": "4.10%",
+        "rate": 4.1,
+        "rate_type": "고정",
+        "amount": 15000000000
+      }
+    ],
+    "nominal": 2234000000000,
+    "adjustments": -2370498000,
+    "reclassifications": -841240667000,
+    "bs_total": 2231629501839,
+    "diff": 161,
+    "match": "일치",
+    "fixed_share": 0.8149059982094897,
+    "avg_rate": 3.60233452348256,
+    "skipped": [
+      "표 121: 원화 단위 없음"
+    ],
+    "warn": []
+  },
+  "448730": {
+    "name": "삼성FN리츠",
+    "rcept_no": "20261007000407",
+    "basis": "OFS",
+    "doc": "20261007000407_00760.xml",
+    "unit": "천원",
+    "end": "2026-07-31",
+    "tables": [
+      61,
+      63
+    ],
+    "loans": [
+      {
+        "kind": "차입금",
+        "lender": "IBK기업은행",
+        "maturity": "2026-09-24",
+        "rate_text": "91일 CD금리+1.1",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 70000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "삼성화재해상보험",
+        "maturity": "2026-09-24",
+        "rate_text": "91일 CD금리+1.1",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 110000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "삼성생명㈜",
+        "maturity": "2026-09-24",
+        "rate_text": "91일 CD금리+1.1",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 250000000000
+      },
+      {
+        "kind": "제1-1회 무보증사채",
+        "lender": "",
+        "maturity": "2027-09-13",
+        "rate_text": "3.971",
+        "rate": 3.971,
+        "rate_type": "고정",
+        "amount": 90000000000
+      },
+      {
+        "kind": "제1-2회 무보증사채",
+        "lender": "",
+        "maturity": "2028-03-16",
+        "rate_text": "4.239",
+        "rate": 4.239,
+        "rate_type": "고정",
+        "amount": 110000000000
+      }
+    ],
+    "nominal": 630000000000,
+    "adjustments": -673947000,
+    "reclassifications": 0,
+    "bs_total": 629326052562,
+    "diff": 438,
+    "match": "일치",
+    "fixed_share": 0.31746031746031744,
+    "avg_rate": 4.1184,
+    "skipped": [
+      "표 91: 당기말 잔액 열 없음"
+    ],
+    "warn": []
+  },
+  "357120": {
+    "name": "코람코라이프인프라리츠",
+    "rcept_no": "20260814004147",
+    "basis": "CFS",
+    "doc": "20260814004147_00761.xml",
+    "unit": "천원",
+    "end": "2026-05-31",
+    "tables": [
+      68,
+      69,
+      70,
+      71,
+      73,
+      75
+    ],
+    "loans": [
+      {
+        "kind": "단기차입금",
+        "lender": "㈜하나은행",
+        "maturity": "2026-08-14",
+        "rate_text": "5.30(*)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 21030000000
+      },
+      {
+        "kind": "죽전물류센터",
+        "lender": "㈜신한은행",
+        "maturity": "2027-03-31",
+        "rate_text": "4.26(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 12000000000
+      },
+      {
+        "kind": "주차전용건물",
+        "lender": "수협은행",
+        "maturity": "2028-02-24",
+        "rate_text": "4.03(*1)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 5300000000
+      },
+      {
+        "kind": "주유소",
+        "lender": "㈜하나은행",
+        "maturity": "2027-06-02",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 242056676000
+      },
+      {
+        "kind": "주유소",
+        "lender": "한국산업은행",
+        "maturity": "2027-06-02",
+        "rate_text": "3.60",
+        "rate": 3.6,
+        "rate_type": "고정",
+        "amount": 116187812000
+      },
+      {
+        "kind": "주유소",
+        "lender": "중국은행㈜",
+        "maturity": "2027-06-02",
+        "rate_text": "4.31(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 39502945000
+      },
+      {
+        "kind": "주유소",
+        "lender": "하나캐피탈㈜",
+        "maturity": "2027-06-02",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 29046194000
+      },
+      {
+        "kind": "주유소",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2027-06-02",
+        "rate_text": "4.00",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 17331969000
+      },
+      {
+        "kind": "주유소",
+        "lender": "수협은행",
+        "maturity": "2027-06-02",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 2904316000
+      },
+      {
+        "kind": "주유소",
+        "lender": "중국은행㈜",
+        "maturity": "2027-06-02",
+        "rate_text": "4.41(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 8908390000
+      },
+      {
+        "kind": "주유소",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2027-06-02",
+        "rate_text": "4.00",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 6873699000
+      },
+      {
+        "kind": "주유소",
+        "lender": "㈜경남은행",
+        "maturity": "2027-06-02",
+        "rate_text": "5.00",
+        "rate": 5.0,
+        "rate_type": "고정",
+        "amount": 10794233000
+      },
+      {
+        "kind": "남청라물류센터",
+        "lender": "㈜신한은행",
+        "maturity": "2027-08-25",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "남청라물류센터",
+        "lender": "중국은행㈜",
+        "maturity": "2027-08-25",
+        "rate_text": "4.49(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 50000000000
+      },
+      {
+        "kind": "남청라물류센터",
+        "lender": "㈜하나은행",
+        "maturity": "2027-08-25",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "남청라물류센터",
+        "lender": "㈜아이비케이캐피탈",
+        "maturity": "2027-08-25",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "남청라물류센터",
+        "lender": "㈜제주은행",
+        "maturity": "2027-08-25",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "숙박시설",
+        "lender": "㈜우리은행",
+        "maturity": "2028-10-23",
+        "rate_text": "4.62(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 23700000000
+      },
+      {
+        "kind": "숙박시설",
+        "lender": "㈜우리은행",
+        "maturity": "2028-10-23",
+        "rate_text": "4.62(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 10300000000
+      },
+      {
+        "kind": "서비스센터 및 판매사옥 등",
+        "lender": "한국산업은행",
+        "maturity": "2029-05-14",
+        "rate_text": "3.98(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 150000000000
+      },
+      {
+        "kind": "서비스센터 및 판매사옥 등",
+        "lender": "㈜하나은행",
+        "maturity": "2029-05-14",
+        "rate_text": "4.00(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 114000000000
+      },
+      {
+        "kind": "서비스센터 및 판매사옥 등",
+        "lender": "중국은행㈜",
+        "maturity": "2029-05-14",
+        "rate_text": "3.70(*2)",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 50000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "",
+        "maturity": "2027-05-18",
+        "rate_text": "5.00",
+        "rate": 5.0,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "",
+        "maturity": "2026-07-15",
+        "rate_text": "4.40",
+        "rate": 4.4,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "",
+        "maturity": "2026-07-13",
+        "rate_text": "4.50",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 105000000000
+      },
+      {
+        "kind": "사채",
+        "lender": "",
+        "maturity": "2028-05-18",
+        "rate_text": "5.20",
+        "rate": 5.2,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "제1회 전환사채",
+        "lender": "",
+        "maturity": "2027-02-06",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "제3회 전환사채",
+        "lender": "",
+        "maturity": "2029-03-06",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "제4회 전환사채",
+        "lender": "",
+        "maturity": "2029-03-06",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 12000000000
+      }
+    ],
+    "nominal": 1191936234000,
+    "adjustments": -13152168000,
+    "reclassifications": -17074150000,
+    "bs_total": 1178784066202,
+    "diff": -202,
+    "match": "일치",
+    "fixed_share": 0.5933160506638311,
+    "avg_rate": 4.153593508032359,
+    "skipped": [
+      "표 72: 만기일과 이자율을 함께 기재한 잔액 표 없음",
+      "표 74: 만기일과 이자율을 함께 기재한 잔액 표 없음",
+      "표 76: 만기일과 이자율을 함께 기재한 잔액 표 없음"
+    ],
+    "warn": []
+  },
+  "348950": {
+    "name": "제이알글로벌리츠",
+    "rcept_no": "20260930000867",
+    "basis": "CFS",
+    "doc": "20260930000867.xml",
+    "unit": "원",
+    "end": "2026-06-30",
+    "tables": [
+      274,
+      281,
+      300
+    ],
+    "loans": [
+      {
+        "kind": "장기 차입금 1",
+        "lender": "미즈호은행",
+        "maturity": "2027-04-27",
+        "rate_text": "CD수익률 + 3.500%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 55000000000
+      },
+      {
+        "kind": "장기 차입금 2",
+        "lender": "제이알투자운용",
+        "maturity": "2027-11-01",
+        "rate_text": "0.0660",
+        "rate": 6.6,
+        "rate_type": "고정",
+        "amount": 450000000
+      },
+      {
+        "kind": "Finance Tower Complex 매입 자금",
+        "lender": "Allianz 계열사 외 4개사",
+        "maturity": "2027-12-13",
+        "rate_text": "0.044",
+        "rate": 4.4,
+        "rate_type": "고정",
+        "amount": 988577063691
+      },
+      {
+        "kind": "제 3-1회 무보증 공모사채",
+        "lender": "",
+        "maturity": "2026-04-30",
+        "rate_text": "0.0640",
+        "rate": 6.4,
+        "rate_type": "고정",
+        "amount": 60000000000
+      },
+      {
+        "kind": "제 3-2회 무보증 공모사채",
+        "lender": "",
+        "maturity": "2026-10-30",
+        "rate_text": "0.0660",
+        "rate": 6.6,
+        "rate_type": "고정",
+        "amount": 80000000000
+      },
+      {
+        "kind": "제 4회 무보증 공모사채",
+        "lender": "",
+        "maturity": "2027-02-26",
+        "rate_text": "0.0650",
+        "rate": 6.5,
+        "rate_type": "고정",
+        "amount": 120000000000
+      },
+      {
+        "kind": "제 6회 무보증 공모사채",
+        "lender": "",
+        "maturity": "2027-07-30",
+        "rate_text": "0.0630",
+        "rate": 6.3,
+        "rate_type": "고정",
+        "amount": 60000000000
+      },
+      {
+        "kind": "제 8회 무보증 사모사채",
+        "lender": "",
+        "maturity": "2027-08-13",
+        "rate_text": "0.0600",
+        "rate": 6.0,
+        "rate_type": "고정",
+        "amount": 16000000000
+      }
+    ],
+    "nominal": 1380027063691,
+    "adjustments": -7540906370,
+    "reclassifications": 0,
+    "bs_total": 1415486157321,
+    "diff": -43000000000,
+    "match": "근사",
+    "fixed_share": 0.9601457091334877,
+    "avg_rate": 4.919679951352738,
+    "skipped": [
+      "표 277: 전기 표",
+      "표 284: 전기 표",
+      "표 294: 만기일과 이자율을 함께 기재한 잔액 표 없음",
+      "표 303: 전기 표"
+    ],
+    "warn": [
+      "제 3-1회 무보증 공모사채  만기일(2026-04-30)이 기준일보다 앞섭니다."
+    ]
+  },
+  "0030R0": {
+    "name": "대신밸류리츠",
+    "rcept_no": "20261110000451",
+    "basis": "CFS",
+    "doc": "20261110000451_00761.xml",
+    "unit": "천원",
+    "end": "2026-08-31",
+    "tables": [
+      79
+    ],
+    "loans": [
+      {
+        "kind": "차입금",
+        "lender": "새마을금고중앙회",
+        "maturity": "2027-03-27",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 150000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "새마을단위금고(37개)",
+        "maturity": "2027-03-27",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "현대해상화재보험(주)",
+        "maturity": "2027-03-27",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 60000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "(주)케이비손해보험",
+        "maturity": "2027-03-27",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "차입금",
+        "lender": "케이비밸류제일차(유)",
+        "maturity": "2027-03-27",
+        "rate_text": "3.50",
+        "rate": 3.5,
+        "rate_type": "고정",
+        "amount": 96600000000
+      }
+    ],
+    "nominal": 406600000000,
+    "adjustments": -2294883000,
+    "reclassifications": 0,
+    "bs_total": 404305116919,
+    "diff": 81,
+    "match": "일치",
+    "fixed_share": 1.0,
+    "avg_rate": 3.5,
+    "skipped": [],
+    "warn": []
+  },
+  "404990": {
+    "name": "신한서부티엔디리츠",
+    "rcept_no": "20260831001328",
+    "basis": "CFS",
+    "doc": "20260831001328_00761.xml",
+    "unit": "원",
+    "end": "2026-06-30",
+    "tables": [
+      51
+    ],
+    "loans": [
+      {
+        "kind": "선순위대출(*1)(*4)(*6)",
+        "lender": "한국산업은행",
+        "maturity": "2026-11-27",
+        "rate_text": "4.31",
+        "rate": 4.31,
+        "rate_type": "고정",
+        "amount": 73000000000
+      },
+      {
+        "kind": "선순위대출(*1)(*4)(*6)",
+        "lender": "(주)신한은행",
+        "maturity": "2026-11-27",
+        "rate_text": "4.31",
+        "rate": 4.31,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "선순위대출(*1)(*4)(*6)",
+        "lender": "(주)하나은행",
+        "maturity": "2026-11-27",
+        "rate_text": "4.31",
+        "rate": 4.31,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "선순위대출(*1)(*4)(*6)",
+        "lender": "(주)국민은행",
+        "maturity": "2026-11-27",
+        "rate_text": "4.31",
+        "rate": 4.31,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "선순위대출(*1)(*4)(*6)",
+        "lender": "농협은행(주)",
+        "maturity": "2026-11-27",
+        "rate_text": "4.31",
+        "rate": 4.31,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "선순위대출(*2)(*5)(*6)",
+        "lender": "그랜드원큐제이차(유)",
+        "maturity": "2027-06-02",
+        "rate_text": "4.90",
+        "rate": 4.9,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "선순위대출(*2)(*5)(*6)",
+        "lender": "(주)신한은행",
+        "maturity": "2027-06-02",
+        "rate_text": "4.90",
+        "rate": 4.9,
+        "rate_type": "고정",
+        "amount": 32000000000
+      },
+      {
+        "kind": "선순위대출(*2)(*5)(*6)",
+        "lender": "농협은행(주)",
+        "maturity": "2027-06-02",
+        "rate_text": "4.90",
+        "rate": 4.9,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "선순위대출(*3)(*4)(*6)",
+        "lender": "농협은행(주)",
+        "maturity": "2028-03-23",
+        "rate_text": "3.70",
+        "rate": 3.7,
+        "rate_type": "고정",
+        "amount": 61000000000
+      },
+      {
+        "kind": "선순위대출(*3)(*4)(*6)",
+        "lender": "BNK경남은행",
+        "maturity": "2028-03-23",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "선순위대출(*3)(*4)(*6)",
+        "lender": "중국은행",
+        "maturity": "2028-03-23",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "선순위대출(*3)(*4)(*6)",
+        "lender": "(주)국민은행",
+        "maturity": "2028-03-23",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 61000000000
+      },
+      {
+        "kind": "선순위대출(*3)(*4)(*6)",
+        "lender": "수협은행",
+        "maturity": "2028-03-23",
+        "rate_text": "4.20",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "중순위대출(*3)(*4)(*6)",
+        "lender": "신한은행",
+        "maturity": "2027-05-29",
+        "rate_text": "4.50",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 57000000000
+      },
+      {
+        "kind": "중순위대출(*3)(*4)(*6)",
+        "lender": "국민은행",
+        "maturity": "2027-05-29",
+        "rate_text": "4.30",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "중순위대출(*3)(*4)(*6)",
+        "lender": "현대캐피탈",
+        "maturity": "2027-05-29",
+        "rate_text": "5.90",
+        "rate": 5.9,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "중순위대출(*3)(*4)(*6)",
+        "lender": "신한캐피탈(주)",
+        "maturity": "2027-05-29",
+        "rate_text": "5.90",
+        "rate": 5.9,
+        "rate_type": "고정",
+        "amount": 4000000000
+      }
+    ],
+    "nominal": 588000000000,
+    "adjustments": -853763081,
+    "reclassifications": -385681537466,
+    "bs_total": 622820937860,
+    "diff": -35674700941,
+    "match": "불일치",
+    "fixed_share": 1.0,
+    "avg_rate": 4.368418367346939,
+    "skipped": [
+      "표 55: 만기일과 이자율을 함께 기재한 잔액 표 없음"
+    ],
+    "warn": []
+  },
+  "334890": {
+    "name": "이지스밸류플러스리츠",
+    "rcept_no": "20261119000420",
+    "basis": "CFS",
+    "doc": "20261119000420_00761.xml",
+    "unit": "천원",
+    "end": "2026-08-31",
+    "tables": [
+      81,
+      83,
+      85
+    ],
+    "loans": [
+      {
+        "kind": "단기차입금",
+        "lender": "(주)삼성증권",
+        "maturity": "2027-05-26",
+        "rate_text": "5.50",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 55000000000
+      },
+      {
+        "kind": "단기차입금",
+        "lender": "(주)삼성증권",
+        "maturity": "2027-07-15",
+        "rate_text": "5.80",
+        "rate": 5.8,
+        "rate_type": "고정",
+        "amount": 35000000000
+      },
+      {
+        "kind": "단기차입금",
+        "lender": "우리투자증권",
+        "maturity": "2027-07-15",
+        "rate_text": "5.80",
+        "rate": 5.8,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "단기차입금",
+        "lender": "유안타저축은행",
+        "maturity": "2027-07-15",
+        "rate_text": "5.80",
+        "rate": 5.8,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "단기차입금",
+        "lender": "SBI저축은행",
+        "maturity": "2027-07-15",
+        "rate_text": "5.80",
+        "rate": 5.8,
+        "rate_type": "고정",
+        "amount": 6000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "(주)신한은행",
+        "maturity": "2026-10-23",
+        "rate_text": "CD(3개월)+1.60",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 36000000000
+      },
+      {
+        "kind": "7회차 전자단기사채",
+        "lender": "",
+        "maturity": "2027-02-25",
+        "rate_text": "4.60",
+        "rate": 4.6,
+        "rate_type": "고정",
+        "amount": 40000000000
+      }
+    ],
+    "nominal": 197000000000,
+    "adjustments": -892274000,
+    "reclassifications": -36000000000,
+    "bs_total": 196107726030,
+    "diff": -30,
+    "match": "일치",
+    "fixed_share": 0.817258883248731,
+    "avg_rate": 5.399378881987578,
+    "skipped": [],
+    "warn": []
+  },
+  "088260": {
+    "name": "이리츠코크렙",
+    "rcept_no": "20260908000319",
+    "basis": "CFS",
+    "doc": "20260908000319_00761.xml",
+    "unit": "원",
+    "end": "2026-06-30",
+    "tables": [
+      97
+    ],
+    "loans": [
+      {
+        "kind": "장기차입금",
+        "lender": "㈜우리은행",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 55000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜국민은행",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 50000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜아이엠뱅크",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜신한은행",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜경남은행",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 20000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜광주은행",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 20000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜전북은행",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "중국건설은행",
+        "maturity": "2027-05-07",
+        "rate_text": "CD 91일물+ 1.70%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 45000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜국민은행",
+        "maturity": "2027-04-02",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜신한은행",
+        "maturity": "2027-04-02",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 45000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "㈜광주은행",
+        "maturity": "2027-04-02",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 15000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "신한캐피탈(주)",
+        "maturity": "2027-04-02",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 25000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "(주)아이비케이캐피탈",
+        "maturity": "2027-04-02",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 20000000000
+      }
+    ],
+    "nominal": 430000000000,
+    "adjustments": -1729082531,
+    "reclassifications": -428270917469,
+    "bs_total": 428270917469,
+    "diff": 0,
+    "match": "일치",
+    "fixed_share": 0.3488372093023256,
+    "avg_rate": 5.5,
+    "skipped": [],
+    "warn": []
+  },
+  "432320": {
+    "name": "KB스타리츠",
+    "rcept_no": "20261022000450",
+    "basis": "CFS",
+    "doc": "20261022000450_00761.xml",
+    "unit": "원",
+    "end": "2026-07-31",
+    "tables": [
+      61,
+      62,
+      63
+    ],
+    "loans": [
+      {
+        "kind": "차입금",
+        "lender": "Standard Chartered Bank",
+        "maturity": "2027-05-04",
+        "rate_text": "EURIBOR+1.20%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 475984918123
+      },
+      {
+        "kind": "차입금",
+        "lender": "Standard Chartered Bank",
+        "maturity": "2027-05-04",
+        "rate_text": "EURIBOR+1.20%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 61732573877
+      },
+      {
+        "kind": "장기사채",
+        "lender": "",
+        "maturity": "2028-05-19",
+        "rate_text": "5.40",
+        "rate": 5.4,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "장기사채",
+        "lender": "",
+        "maturity": "2029-01-26",
+        "rate_text": "5.90",
+        "rate": 5.9,
+        "rate_type": "고정",
+        "amount": 35000000000
+      },
+      {
+        "kind": "단기차입금",
+        "lender": "",
+        "maturity": "2026-11-25",
+        "rate_text": "4.50",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 40000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "",
+        "maturity": "2027-11-17",
+        "rate_text": "4.50",
+        "rate": 4.5,
+        "rate_type": "고정",
+        "amount": 80000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "",
+        "maturity": "2028-04-20",
+        "rate_text": "5.40",
+        "rate": 5.4,
+        "rate_type": "고정",
+        "amount": 15000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "",
+        "maturity": "2028-04-20",
+        "rate_text": "5.40",
+        "rate": 5.4,
+        "rate_type": "고정",
+        "amount": 5000000000
+      }
+    ],
+    "nominal": 742717492000,
+    "adjustments": -3776172863,
+    "reclassifications": 0,
+    "bs_total": 738941319137,
+    "diff": 0,
+    "match": "일치",
+    "fixed_share": 0.27601342665025047,
+    "avg_rate": 4.958536585365854,
+    "skipped": [],
+    "warn": []
+  },
+  "377190": {
+    "name": "디앤디플랫폼리츠",
+    "rcept_no": "20260602000529",
+    "basis": "CFS",
+    "doc": "20260602000529_00761.xml",
+    "unit": "천원",
+    "end": "2026-03-31",
+    "tables": [
+      93,
+      95
+    ],
+    "loans": [
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "KEB하나은행",
+        "maturity": "2027-05-20",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 100000000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "농협생명보험",
+        "maturity": "2027-05-20",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 70000000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "새마을금고중앙회",
+        "maturity": "2027-05-20",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "신용협동조합중앙회",
+        "maturity": "2027-05-20",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 39700000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "한국스탠다드차타드은행",
+        "maturity": "2027-05-20",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 35000000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "롯데캐피탈",
+        "maturity": "2027-05-20",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "중소기업은행",
+        "maturity": "2027-05-20",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "신한은행",
+        "maturity": "2026-09-04",
+        "rate_text": "4.87%",
+        "rate": 4.87,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "우리은행",
+        "maturity": "2026-09-04",
+        "rate_text": "4.87%",
+        "rate": 4.87,
+        "rate_type": "고정",
+        "amount": 31700000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "삼성생명",
+        "maturity": "2026-04-24",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 61800000000
+      },
+      {
+        "kind": "장기차입금(주1)",
+        "lender": "삼성화재해상보험",
+        "maturity": "2026-12-12",
+        "rate_text": "4.40%",
+        "rate": 4.4,
+        "rate_type": "고정",
+        "amount": 96100000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "",
+        "maturity": "2026-05-27",
+        "rate_text": "4.30%",
+        "rate": 4.3,
+        "rate_type": "고정",
+        "amount": 78000000000
+      },
+      {
+        "kind": "단기사채",
+        "lender": "",
+        "maturity": "2026-06-30",
+        "rate_text": "4.80%",
+        "rate": 4.8,
+        "rate_type": "고정",
+        "amount": 22000000000
+      }
+    ],
+    "nominal": 674300000000,
+    "adjustments": -1385969000,
+    "reclassifications": -219538361000,
+    "bs_total": 672914031030,
+    "diff": -30,
+    "match": "일치",
+    "fixed_share": 1.0,
+    "avg_rate": 4.492702061397004,
+    "skipped": [],
+    "warn": []
+  },
+  "400760": {
+    "name": "NH올원리츠",
+    "rcept_no": "20260911000433",
+    "basis": "CFS",
+    "doc": "20260911000433_00761.xml",
+    "unit": "천원",
+    "end": "2026-06-30",
+    "tables": [
+      51,
+      52,
+      53
+    ],
+    "loans": [
+      {
+        "kind": "선순위 담보대출",
+        "lender": "한국산업은행",
+        "maturity": "2026-11-24",
+        "rate_text": "3.30%",
+        "rate": 3.3,
+        "rate_type": "고정",
+        "amount": 30000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "신한은행",
+        "maturity": "2026-11-24",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 20200000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "아이엠뱅크",
+        "maturity": "2026-11-24",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "전북은행",
+        "maturity": "2026-11-24",
+        "rate_text": "4.70%",
+        "rate": 4.7,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "농협은행㈜",
+        "maturity": "2028-04-03",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 65000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "케이비증권(주)(주1)",
+        "maturity": "2028-04-03",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 75000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "케이비증권(주)(주2)",
+        "maturity": "2028-04-03",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 37000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "엔에이치투자증권(주)(주3)",
+        "maturity": "2027-04-28",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 68000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "농협은행",
+        "maturity": "2027-04-28",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "영등포농업협동조합",
+        "maturity": "2027-04-28",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "(주)우리은행",
+        "maturity": "2027-08-19",
+        "rate_text": "4.81%",
+        "rate": 4.81,
+        "rate_type": "고정",
+        "amount": 27900000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "농협은행(주)",
+        "maturity": "2027-05-14",
+        "rate_text": "3.40%",
+        "rate": 3.4,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "(주)국민은행",
+        "maturity": "2027-05-14",
+        "rate_text": "4.20%",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "수협은행",
+        "maturity": "2027-05-14",
+        "rate_text": "4.20%",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 26000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "농협손해보험(주)",
+        "maturity": "2027-05-14",
+        "rate_text": "4.20%",
+        "rate": 4.2,
+        "rate_type": "고정",
+        "amount": 25000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "여수 수산업협동조합",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "영광군 수산업협동조합",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "완도금일수산업협동조합",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 5000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "굴수하식수산업협동조합",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 3000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "신안군 수산업협동조합",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 3000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "수산업협동조합중앙회",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 3000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "수협은행",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "농협손해보험(주)",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 24500000000
+      },
+      {
+        "kind": "선순위 담보대출",
+        "lender": "(주)광주은행",
+        "maturity": "2027-04-25",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 10000000000
+      },
+      {
+        "kind": "중순위담보대출",
+        "lender": "엔에이치농협캐피탈(주)",
+        "maturity": "2027-05-14",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "주식담보대출",
+        "lender": "에프엔에이원㈜",
+        "maturity": "2028-05-13",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 65000000000
+      },
+      {
+        "kind": "주식담보대출",
+        "lender": "㈜신한은행(주4)",
+        "maturity": "2028-05-13",
+        "rate_text": "5.50%",
+        "rate": 5.5,
+        "rate_type": "고정",
+        "amount": 20000000000
+      },
+      {
+        "kind": "전환사채",
+        "lender": "㈜신한은행 등",
+        "maturity": "2026-08-17",
+        "rate_text": "4.00%",
+        "rate": 4.0,
+        "rate_type": "고정",
+        "amount": 2000000000
+      }
+    ],
+    "nominal": 684600000000,
+    "adjustments": -5279497000,
+    "reclassifications": -331106196000,
+    "bs_total": 679320503700,
+    "diff": -700,
+    "match": "일치",
+    "fixed_share": 1.0,
+    "avg_rate": 4.223194566170026,
+    "skipped": [
+      "표 54: 만기일과 이자율을 함께 기재한 잔액 표 없음"
+    ],
+    "warn": []
+  },
+  "350520": {
+    "name": "이지스레지던스리츠",
+    "rcept_no": "20260911000326",
+    "basis": "CFS",
+    "doc": "20260911000326.xml",
+    "unit": "원",
+    "end": "2026-06-30",
+    "tables": [
+      170
+    ],
+    "loans": [
+      {
+        "kind": "단기차입금",
+        "lender": "(주)삼성증권",
+        "maturity": "2027-04-03",
+        "rate_text": "0.0520",
+        "rate": 5.2,
+        "rate_type": "고정",
+        "amount": 50000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "에프엔아이알제일차 주식회사",
+        "maturity": "2028-06-15",
+        "rate_text": "0.0580",
+        "rate": 5.8,
+        "rate_type": "고정",
+        "amount": 82000000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "유안타저축은행",
+        "maturity": "2028-06-15",
+        "rate_text": "0.0580",
+        "rate": 5.8,
+        "rate_type": "고정",
+        "amount": 8000000000
+      }
+    ],
+    "nominal": 140000000000,
+    "adjustments": -554186500,
+    "reclassifications": 0,
+    "bs_total": 139445813500,
+    "diff": 0,
+    "match": "일치",
+    "fixed_share": 1.0,
+    "avg_rate": 5.585714285714285,
+    "skipped": [
+      "표 62: 당기말 잔액 열 없음",
+      "표 175: 전기 표"
+    ],
+    "warn": []
+  },
+  "417310": {
+    "name": "코람코더원리츠",
+    "rcept_no": "20261029000393",
+    "basis": "OFS",
+    "doc": "20261029000393_00760.xml",
+    "unit": null,
+    "end": "2026-08-31",
+    "tables": [],
+    "loans": [],
+    "nominal": 0,
+    "adjustments": 0,
+    "reclassifications": 0,
+    "bs_total": 0,
+    "diff": 0,
+    "match": "차입 없음",
+    "fixed_share": null,
+    "avg_rate": null,
+    "skipped": [],
+    "warn": []
+  },
+  "338100": {
+    "name": "NH프라임리츠",
+    "rcept_no": "20260812000759",
+    "basis": "OFS",
+    "doc": "20260812000759.xml",
+    "unit": null,
+    "end": "2026-05-31",
+    "tables": [],
+    "loans": [],
+    "nominal": 0,
+    "adjustments": 0,
+    "reclassifications": 0,
+    "bs_total": 0,
+    "diff": 0,
+    "match": "차입 없음",
+    "fixed_share": null,
+    "avg_rate": null,
+    "skipped": [],
+    "warn": []
+  },
+  "145270": {
+    "name": "케이탑리츠",
+    "rcept_no": "20260312001183",
+    "basis": "CFS",
+    "doc": "20260312001183_00761.xml",
+    "unit": null,
+    "end": "2025-12-31",
+    "tables": [],
+    "loans": [],
+    "nominal": 0,
+    "adjustments": 0,
+    "reclassifications": 0,
+    "bs_total": 82263000000,
+    "diff": -82263000000,
+    "match": "불일치",
+    "fixed_share": null,
+    "avg_rate": null,
+    "skipped": [
+      "만기일과 이자율이 함께 있는 차입 잔액 표 없음"
+    ],
+    "warn": []
+  },
+  "357250": {
+    "name": "미래에셋맵스리츠",
+    "rcept_no": "20260819000222",
+    "basis": "OFS",
+    "doc": "20260819000222_00760.xml",
+    "unit": "천원",
+    "end": "2026-05-31",
+    "tables": [
+      51
+    ],
+    "loans": [
+      {
+        "kind": "담보대출(*1)",
+        "lender": "수협은행",
+        "maturity": "2028-03-24",
+        "rate_text": "CD(91일)수익률 + 1.67%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "담보대출(*1)",
+        "lender": "신용협동조합중앙회 외 9개 조합",
+        "maturity": "2028-03-24",
+        "rate_text": "CD(91일)수익률 + 1.67%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "담보대출(*1)",
+        "lender": "신한은행",
+        "maturity": "2028-03-24",
+        "rate_text": "CD(91일)수익률 + 1.77%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 32000000000
+      },
+      {
+        "kind": "담보대출(*1)",
+        "lender": "중국농업은행 주식유한회사",
+        "maturity": "2028-03-24",
+        "rate_text": "CD(91일)수익률 + 1.77%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 30000000000
+      },
+      {
+        "kind": "담보대출(*1)",
+        "lender": "중국은행 주식회사",
+        "maturity": "2028-03-24",
+        "rate_text": "CD(91일)수익률 + 1.77%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 32000000000
+      }
+    ],
+    "nominal": 154000000000,
+    "adjustments": -174003000,
+    "reclassifications": 0,
+    "bs_total": 153825996609,
+    "diff": 391,
+    "match": "일치",
+    "fixed_share": 0.0,
+    "avg_rate": null,
+    "skipped": [],
+    "warn": []
+  },
+  "481850": {
+    "name": "신한글로벌액티브리츠",
+    "rcept_no": "20261118000327",
+    "basis": "CFS",
+    "doc": "20261118000327_00761.xml",
+    "unit": "천원",
+    "end": "2026-08-31",
+    "tables": [
+      55
+    ],
+    "loans": [
+      {
+        "kind": "장기차입금",
+        "lender": "신한투자증권(주)",
+        "maturity": "2027-04-16",
+        "rate_text": "4.80",
+        "rate": 4.8,
+        "rate_type": "고정",
+        "amount": 12628540000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "신한캐피탈(주)",
+        "maturity": "2027-04-16",
+        "rate_text": "4.80",
+        "rate": 4.8,
+        "rate_type": "고정",
+        "amount": 5602480000
+      }
+    ],
+    "nominal": 18231020000,
+    "adjustments": 0,
+    "reclassifications": 0,
+    "bs_total": 18231020000,
+    "diff": 0,
+    "match": "일치",
+    "fixed_share": 1.0,
+    "avg_rate": 4.8,
+    "skipped": [
+      "표 56: 당기말 잔액 열 없음"
+    ],
+    "warn": []
+  },
+  "396690": {
+    "name": "미래에셋글로벌리츠",
+    "rcept_no": "20260616000171",
+    "basis": "CFS",
+    "doc": "20260616000171_00761.xml",
+    "unit": "천원",
+    "end": "2026-03-31",
+    "tables": [
+      119
+    ],
+    "loans": [
+      {
+        "kind": "장기차입금",
+        "lender": "Kookmin Bank New York Branch(주1)",
+        "maturity": "2026-06-25",
+        "rate_text": "2.13",
+        "rate": 2.13,
+        "rate_type": "고정",
+        "amount": 126580776000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "Standard Chartered Bank (주1,2)",
+        "maturity": "2026-10-28",
+        "rate_text": "LIBOR+1.60%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 85809780000
+      }
+    ],
+    "nominal": 212390556000,
+    "adjustments": -38581000,
+    "reclassifications": -212351975000,
+    "bs_total": 212351974894,
+    "diff": 106,
+    "match": "일치",
+    "fixed_share": 0.595981188542112,
+    "avg_rate": 2.13,
+    "skipped": [],
+    "warn": []
+  },
+  "357430": {
+    "name": "마스턴프리미어리츠",
+    "rcept_no": "20260618000369",
+    "basis": "CFS",
+    "doc": "20260618000369_00761.xml",
+    "unit": "천원",
+    "end": "2026-03-31",
+    "tables": [
+      64,
+      66
+    ],
+    "loans": [
+      {
+        "kind": "단기차입금",
+        "lender": "마스턴투자운용(주)",
+        "maturity": "2026-07-30",
+        "rate_text": "5.39%",
+        "rate": 5.39,
+        "rate_type": "고정",
+        "amount": 4500000000
+      },
+      {
+        "kind": "장기차입금",
+        "lender": "Landesbank Hessen-Thuringen Girozentrale",
+        "maturity": "2027-04-22",
+        "rate_text": "3M EURIBOR+1.1%",
+        "rate": null,
+        "rate_type": "변동",
+        "amount": 40391854000
+      }
+    ],
+    "nominal": 44891854000,
+    "adjustments": 0,
+    "reclassifications": 0,
+    "bs_total": 44891854425,
+    "diff": -425,
+    "match": "일치",
+    "fixed_share": 0.10024090339418817,
+    "avg_rate": 5.39,
+    "skipped": [],
+    "warn": []
+  }
+}

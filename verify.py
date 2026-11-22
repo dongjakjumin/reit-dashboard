@@ -29,6 +29,94 @@ from textutil import PRIVATE_LABEL, mask_person, phone_files
 DATA = Path(__file__).parent / "data"
 
 
+def verify_loans(check, statements, page, listed):
+    notes = build.optional_data("loans.json")
+    visible = page.get("issuers", {})
+    confirmed = set()
+    buckets = {}
+    due = known = fixed = total = priced = weighted = 0
+    check(set(notes) == set(statements), "주석과 재무상태표 종목 목록")
+    listed_codes = {s["code"] for s in listed}
+    missing = []
+    for code,r in notes.items():
+        name = r["name"]
+        src = statements.get(code, {})
+        cur = src.get("current", {})
+        current = (src.get("rcept_no"), src.get("basis"), cur.get("end"), cur.get("total"))
+        stamp = (r["rcept_no"], r["basis"], r["end"], r["bs_total"])
+        check(stamp == current, f"{name} 주석과 재무상태표 접수번호, 기준일, 기준 및 차입 합계")
+        rows = r["loans"]
+        nominal = sum(x["amount"] for x in rows)
+        bs = r["bs_total"]
+        diff = nominal + r["adjustments"] - bs
+        if bs == 0:
+            match = "차입 없음"
+        elif any("XBRL 당기·전기 구분 불명" in s for s in r["skipped"]):
+            match = "불일치"
+        elif abs(diff)*100 <= bs:
+            match = "일치"
+        elif abs(nominal-bs)*100 <= 3*bs:
+            match = "근사"
+        else:
+            match = "불일치"
+        check(nominal == r["nominal"] and diff == r["diff"] and match == r["match"]
+              and (bs != 0 or not rows), f"{name} 주석 명목 합과 조정 후 대조")
+        try:
+            valid = all(date.fromisoformat(x["maturity"]).isoformat() == x["maturity"]
+                        and type(x["amount"]) is int and x["amount"] > 0
+                        and x["rate_type"] in ("고정","변동","모름")
+                        and (x["rate"] is None or x["rate_type"] == "고정") for x in rows)
+        except (TypeError, ValueError):
+            valid = False
+        check(valid, f"{name} 건별 날짜와 금액 및 금리 구분")
+        f = sum(x["amount"] for x in rows if x["rate_type"] == "고정")
+        k = sum(x["amount"] for x in rows if x["rate_type"] != "모름")
+        p = sum(x["amount"] for x in rows if x["rate"] is not None)
+        w = sum(x["amount"]*x["rate"] for x in rows if x["rate"] is not None)
+        check(r["fixed_share"] == (f/k if k else None) and r["avg_rate"] == (w/p if p else None),
+              f"{name} 금리 구분을 확인한 금액과 고정금리 가중 평균")
+        if code not in listed_codes or current != stamp or match not in ("일치","근사"):
+            continue
+        confirmed.add(code)
+        shown = visible.get(code,{})
+        detail = [{k:v for k,v in row.items() if k != "months"} for row in shown.get("loans",[])]
+        check(detail == sorted(rows,key=lambda x:x["maturity"]) and all(shown.get(k) == r[k] for k in
+              ("end","nominal","adjustments","bs_total","diff","match","rcept_no","name")), f"{name} 화면 건별 원문과 합계")
+        total += nominal
+        fixed += f
+        known += k
+        priced += p
+        weighted += w
+        for x in rows:
+            if not valid:
+                continue
+            day = date.fromisoformat(x["maturity"])
+            start = date.fromisoformat(r["end"])
+            try:
+                anniversary = start.replace(year=start.year+1)
+            except ValueError:
+                anniversary = start.replace(year=start.year+1,day=28)
+            if start <= day <= anniversary:
+                due += x["amount"]
+            label = f"{day.year}년 {'하' if day.month > 6 else '상'}반기"
+            buckets.setdefault(label,dict.fromkeys(("고정","변동","모름"),0))[x["rate_type"]] += x["amount"]
+    borrowers = 0
+    for s in listed:
+        bs = statements.get(s["code"],{}).get("current",{}).get("total")
+        borrowers += int(bool(bs))
+        if bs != 0 and s["code"] not in confirmed:
+            missing.append(s["name"])
+    check(set(visible) == confirmed and missing == page.get("missing") and page.get("borrowers") == borrowers,
+          "화면 확인 종목과 미확인 종목 분리")
+    check(page.get("buckets") == buckets and page.get("nominal") == total == sum(sum(v.values()) for v in buckets.values()),
+          "화면 반기별 금리 유형별 만기 합과 명목 합")
+    expected = weighted/priced if priced else None
+    avg = page.get("avg_rate")
+    check(page.get("fixed_share") == (fixed/known if known else None)
+          and (avg == expected or avg is not None and expected is not None and abs(avg-expected)<1e-10)
+          and page.get("due") == due, "화면 고정 비중과 가중 평균 금리 및 12개월 내 만기 금액")
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -368,7 +456,8 @@ def main() -> int:
     expected_median = round(median(expected_yields), 2) if expected_yields else None
     check(yield_summary.get("yield_n") == len(expected_yields) and matches(yield_summary.get("yield_median"), expected_median),
           "시가배당률 값이 있는 종목 수와 중앙값 재계산")
-    raw = dart_path.read_bytes() if dart_path.exists() else b""
+    verify_loans(check, dart_data, finance_payload.get("loans", {}), listed)
+    raw = b"\n".join(p.read_bytes() for p in (dart_path, DATA / "loans.json") if p.exists())
     check(not re.search(rb"[0-9a-fA-F]{40}", raw), "DART 자료 40자리 인증정보 문자열 점검")
     secret = os.environ.get("DART_API_KEY")
     if secret:

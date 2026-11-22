@@ -331,6 +331,49 @@ def rate_summary():
     return result
 
 
+def loan_schedule(stocks):
+    from dart_notes import ratio
+
+    notes = optional_data("loans.json")
+    statements = optional_data("dart.json")
+    issuers, missing, buckets = {}, [], {}
+    all_loans = []
+    borrowers = due = 0
+    for stock in stocks:
+        code = stock["code"]
+        source = statements.get(code, {})
+        balance = source.get("current", {})
+        if balance.get("total") == 0:
+            continue
+        borrowers += int(bool(balance.get("total")))
+        r = notes.get(code, {})
+        if (r.get("match") not in ("일치", "근사") or r.get("rcept_no") != source.get("rcept_no")
+                or r["end"] != balance.get("end") or r["bs_total"] != balance.get("total")
+                or r["basis"] != source.get("basis")):
+            missing.append(stock["name"])
+            continue
+        issuer = {k: r[k] for k in ("name", "end", "rcept_no", "nominal", "adjustments", "bs_total", "diff", "match")}
+        issuers[code] = issuer
+        issuer["loans"] = []
+        end = d(r["end"])
+        cutoff = end.replace(year=end.year+1, day=min(end.day, monthrange(end.year+1, end.month)[1]))
+        for x in sorted(r["loans"], key=lambda v: v["maturity"]):
+            day = d(x["maturity"])
+            months = (day.year-end.year)*12 + day.month-end.month
+            if day.day < min(end.day, monthrange(day.year, day.month)[1]):
+                months -= 1
+            issuer["loans"].append(dict(x, months=months))
+            label = f"{day.year}년 {'상' if day.month <= 6 else '하'}반기"
+            bucket = buckets.setdefault(label, {"고정": 0, "변동": 0, "모름": 0})
+            bucket[x["rate_type"]] += x["amount"]
+            if end <= day <= cutoff:
+                due += x["amount"]
+            all_loans.append(x)
+    fixed, avg = ratio(all_loans)
+    return dict(issuers=issuers, missing=missing, borrowers=borrowers, buckets=dict(sorted(buckets.items())),
+                nominal=sum(x["amount"] for x in all_loans), due=due, fixed_share=fixed, avg_rate=avg)
+
+
 def maturity_rows(stocks, corporate_rate=None):
     source = optional_data("dart.json")
     rows = []
@@ -600,6 +643,7 @@ def build_finance_data() -> dict:
         "rows": rows, "groups": [{"name": g, "n": counts[g]} for g in GROUP_ORDER if counts[g]],
         "disclosures": items,
         "rates": rates,
+        "loans": loan_schedule(snap["listed"]),
         "maturity": maturity_rows(snap["listed"], rates.get("corp_aa", {}).get("value")),
         "timelines": timelines,
         "dis_start": min((day for x in dis.values() if (day := safe_date(x.get("date")))), default=None),
