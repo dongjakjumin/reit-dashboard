@@ -70,7 +70,7 @@
 </section>
 
 <section aria-labelledby="h-amc">
-  <h2 id="h-amc">자산관리회사별 현황</h2>
+  <h2 id="h-amc">관리주체별 현황</h2>
   <p class="sub" id="amc-sub"></p>
   <div class="row">
     <div class="seg" id="amc-seg" role="group" aria-label="정렬">
@@ -92,7 +92,7 @@
 
 <section aria-labelledby="h-all">
   <h2 id="h-all">운영 중 리츠 전체 목록</h2>
-  <p class="sub">검색어는 리츠 이름과 자산관리회사 이름에서 찾습니다.</p>
+  <p class="sub">검색어는 리츠 이름과 관리주체 이름에서 찾습니다. 원문은 무배당과 자료 없음에 모두 0을 씁니다. 두 경우 모두 표에는 ‘–’로 표시하고 CSV에는 빈칸으로 둡니다.</p>
   <div class="row">
     <input type="search" id="all-q" placeholder="리츠, 자산관리회사 검색" aria-label="검색">
     <select id="all-kind" aria-label="구분"></select>
@@ -112,7 +112,7 @@
       <li><b>인가</b>: 부동산투자회사가 국토교통부 장관의 영업인가를 받은 경우입니다.</li>
       <li><b>등록</b>: 법에서 정한 요건을 갖춘 리츠가 인가 대신 등록으로 영업을 시작한 경우입니다.</li>
       <li><b>신고</b>: 프로젝트리츠 설립신고입니다. 개발 단계에서는 설립신고만으로 사업을 시작하고, 사용승인이나 준공검사를 받은 날부터 18개월 안에 영업인가를 받거나 등록합니다(부동산투자회사법 26조의4, 시행령 30조의2). 이 화면에서는 구분이 신고이거나 리츠정보시스템에 프로젝트리츠로 표시된 리츠를 프로젝트리츠로 셌습니다.</li>
-      <li><b>접수현황</b>: 리츠정보시스템이 현재 처리 중인 신청만 보여 줍니다. 이 화면은 영업일마다 목록을 저장해, 목록에서 빠진 신청과 그 뒤에 나온 인가 결과를 이어서 기록합니다.</li>
+      <li><b>접수현황</b>: 리츠정보시스템이 현재 처리 중인 신청만 보여 줍니다. 이 화면은 영업일마다 목록을 저장해, 신청이 목록에서 빠진 날 운영 목록에서 확인한 인가, 등록, 신고 결과를 기록합니다.</li>
       <li><b>경과일</b>: 접수일부터 최종 수집일까지의 달력 날짜 수입니다. 보완 요청으로 멈춘 기간도 포함합니다. 접수일이 몇 년 전인 건은 리츠정보시스템 목록에 남아 있는 그대로 옮긴 것입니다.</li>
       <li><b>리츠 수와 자산총계</b>: 리츠조회 목록에 지금 올라 있는 리츠를 센 값입니다. 리츠정보시스템 첫 화면의 통계(전월 말 기준)와는 기준 시점이 달라 숫자가 조금 다를 수 있습니다.</li>
       <li><b>자산관리회사별 자산총계</b>: 각 리츠의 자산총계를 단순히 더한 값입니다. 모리츠와 자리츠가 같이 있으면 겹쳐 계산될 수 있습니다.</li>
@@ -170,9 +170,9 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   const diff = S.new12 - S.prev12, arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '–';
   const ft = S.filings_by_type, ftxt = Object.entries(ft).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} <b>${v}</b>`).join(', ');
   const tiles = [
-    {lab: '운영 중 리츠', val: n0(S.n_reits), unit: '개', det: `자산총계 합계 <b>${jo(S.assets_eok)}조원</b>, 자산관리회사 <b>${S.n_amc}곳</b>, 상장 <b>${S.listed_n}개</b>`},
-    {lab: '최근 12개월 신규', val: n0(S.new12), unit: '건', det: `직전 12개월 ${S.prev12}건 대비 ${arrow} ${Math.abs(diff)}건. 인가 <b>${S.new12_by_kind['인가']}</b>, 등록 <b>${S.new12_by_kind['등록']}</b>, 신고 <b>${S.new12_by_kind['신고']}</b>`},
-    {lab: '프로젝트리츠(설립신고)', val: n0(S.proj_n), unit: '건', det: `첫 신고 ${dshort(S.proj_first)}, 자산관리회사 <b>${S.proj_amc_n}곳</b>, 자산총계 합계 <b>${eok(S.proj_assets_eok)}원</b>`},
+    {lab: '운영 중 리츠', val: n0(S.n_reits), unit: '개', det: `자산총계 합계 <b>${jo(S.assets_eok)}조원</b>, 관리주체 <b>${S.n_amc}곳</b>(자기관리 ${S.self_managed}곳 포함), 상장 <b>${S.listed_n}개</b>`},
+    {lab: '최근 12개월 신규', val: n0(S.new12), unit: '건', det: `현재 운영 목록 기준입니다. 직전 12개월 ${S.prev12}건 대비 ${arrow} ${Math.abs(diff)}건. 인가 <b>${S.new12_by_kind['인가']}</b>, 등록 <b>${S.new12_by_kind['등록']}</b>, 신고 <b>${S.new12_by_kind['신고']}</b>`},
+    {lab: '프로젝트리츠(설립신고)', val: n0(S.proj_n), unit: '건', det: `첫 신고 ${dshort(S.proj_first) || '–'}, 자산관리회사 <b>${S.proj_amc_n}곳</b>, 자산총계 합계 <b>${eok(S.proj_assets_eok)}원</b>`},
     {lab: '접수 중인 신청', val: n0(S.filings_n), unit: '건', det: ftxt},
   ];
   $('#tiles').innerHTML = tiles.map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
@@ -197,12 +197,12 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   draw();
   const box = $('#done-box');
   if (!D.done.length){
-    box.innerHTML = `<p class="note">처리가 끝나 목록에서 빠진 신청과 접수에서 인가까지 걸린 기간은 수집 기록이 쌓이면 이 자리에 표시됩니다. 수집 시작일은 ${D.first_log}입니다.</p>`;
+    box.innerHTML = `<p class="note">아직 목록에서 빠진 신청이 없습니다. 평균 처리기간은 결과 날짜를 확인한 신규 신청만으로 계산합니다. 수집 시작일은 ${D.first_log}입니다.</p>`;
   } else {
     const t = D.done.filter(x => x.days_to_result != null);
     const avg = t.length ? Math.round(t.reduce((s, x) => s + x.days_to_result, 0) / t.length) : null;
-    box.innerHTML = `<details open><summary>처리가 끝난 신청 ${D.done.length}건 (${D.first_log} 이후 기록)</summary><p class="note">${avg != null ? `접수에서 인가, 등록, 신고까지 평균 ${avg}일(${t.length}건 기준). ` : ''}목록에서 빠진 날은 수집 시점에 처음 확인한 날입니다.</p><div class="tw"><table><thead><tr><th>접수일</th><th>목록에서 빠진 날</th><th>신청유형</th><th>리츠</th><th>신청회사</th><th>결과</th><th class="num">걸린 기간</th></tr></thead><tbody>` +
-      D.done.map(x => `<tr><td class="nw">${x.date}</td><td class="nw">${x.gone_on}</td><td class="nw">${esc(x.req_type)}</td><td>${esc(x.name_s)}</td><td>${esc(x.applicant)}</td><td class="nw">${x.result_kind ? esc(x.result_kind) + ' ' + esc(x.result_date) : x.is_change ? '변경 처리(목록에서 빠짐)' : '확인 전'}</td><td class="num">${x.days_to_result != null ? x.days_to_result + '일' : ''}</td></tr>`).join('') + '</tbody></table></div></details>';
+    box.innerHTML = `<details open><summary>목록에서 빠진 신청 ${D.done.length}건 (${D.first_log} 이후 기록)</summary><p class="note">${avg != null ? `접수에서 인가, 등록, 신고까지 평균 ${avg}일(${t.length}건 기준). ` : ''}평균은 결과 날짜를 확인한 신규 신청만으로 계산합니다. 목록에서 빠진 날은 수집 시점에 처음 확인한 날입니다.</p><div class="tw"><table><thead><tr><th>접수일</th><th>목록에서 빠진 날</th><th>신청유형</th><th>리츠</th><th>신청회사</th><th>결과</th><th class="num">걸린 기간</th></tr></thead><tbody>` +
+      D.done.map(x => `<tr><td class="nw">${x.date}</td><td class="nw">${x.gone_on}</td><td class="nw">${esc(x.req_type)}</td><td>${esc(x.name_s)}</td><td>${esc(x.applicant)}</td><td class="nw">${x.result_kind ? esc(x.result_kind) + ' ' + esc(x.result_date) : x.is_change ? '목록에서 빠짐(변경 신청은 결과 자료 없음)' : '목록에서 빠짐, 결과 확인 전'}</td><td class="num">${x.days_to_result != null ? x.days_to_result + '일' : ''}</td></tr>`).join('') + '</tbody></table></div></details>';
   }
 })();
 
@@ -267,24 +267,36 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 
 /* 자산관리회사 */
 (function(){
-  let sort = 'assets', all = false;
+  let sort = 'assets', asc = false, all = false;
   const hl = (new URLSearchParams(location.search).get('amc') || D.highlight_amc || '').trim();
   const hlRow = hl ? D.amc.find(a => a.name.includes(hl)) : null;
-  $('#amc-sub').textContent = `운영 중 리츠를 자산관리회사별로 묶었습니다. 자산관리회사는 ${D.amc.length}곳이고, 공공기관(한국토지주택공사, 주택도시보증공사 등)이 자산관리를 맡은 리츠도 포함합니다.` + (hlRow ? ` ${hlRow.name}은 리츠 ${hlRow.n}개, 자산총계 ${eok(hlRow.assets_eok)}원으로 자산총계 기준 ${hlRow.rank_assets}위입니다.` : '');
+  $('#amc-sub').textContent = `운영 중 리츠를 관리주체별로 묶었습니다. 관리주체 ${D.amc.length}곳에는 자기관리리츠와 공공기관도 포함합니다.` + (hlRow ? ` ${hlRow.name}은 리츠 ${hlRow.n}개, 자산총계 ${eok(hlRow.assets_eok)}원으로 자산총계 기준 ${hlRow.rank_assets}위입니다.` : '');
   legend($('#amc-legend'), D.sectors, SECTOR_COLOR);
   const maxA = Math.max(...D.amc.map(a => a.assets_eok));
-  const sorted = () => [...D.amc].sort((a, b) => sort === 'assets' ? b.assets_eok - a.assets_eok || b.n - a.n : sort === 'n' ? b.n - a.n || b.assets_eok - a.assets_eok : b.new12 - a.new12 || b.assets_eok - a.assets_eok);
+  const sorted = () => [...D.amc].sort((a, b) => {
+    const key = sort === 'assets' ? 'assets_eok' : sort;
+    return (asc ? 1 : -1) * (a[key] - b[key]) || b.assets_eok - a.assets_eok || b.n - a.n;
+  });
+  const header = (key, label) => `<th class="num sortable" data-sort="${key}"${sort === key ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}><button type="button">${label}</button></th>`;
   function draw(){
     let rows = sorted(); const total = rows.length;
     if (!all){ const topN = rows.slice(0, 20); if (hlRow && !topN.includes(hlRow)) topN.push(hlRow); rows = topN; }
     const rank = a => sorted().indexOf(a) + 1;
-    $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>자산관리회사</th><th class="num">리츠 수</th><th class="num">자산총계</th><th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th><th class="num">최근 12개월 신규</th><th>최근 인가일</th></tr></thead><tbody>` +
+    $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>관리주체</th>${header('n', '리츠 수')}${header('assets', '자산총계')}<th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th>${header('new12', '최근 12개월 신규')}<th>최근 인가일</th></tr></thead><tbody>` +
       rows.map(a => { const mix = D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
         const mixTip = D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ');
         return `<tr class="${hlRow === a ? 'hl' : ''}"><td class="num">${rank(a)}</td><td>${esc(a.name)}</td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td><span class="bar" style="width:${Math.max(1, a.assets_eok / maxA * 110)}px"></span></td><td title="${esc(mixTip)}"><span class="mix">${mix}</span></td><td class="num">${a.proj_n || '–'}</td><td class="num">${a.new12 || '–'}</td><td class="nw">${a.latest}</td></tr>`; }).join('') + '</tbody>';
+    $('#amc-table').querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
+      const key = th.dataset.sort;
+      asc = sort === key && !asc;
+      sort = key;
+      $('#amc-seg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === key));
+      draw();
+      $('#amc-table').querySelector(`[data-sort="${key}"] button`).focus();
+    });
     $('#amc-more').textContent = all ? '상위 20곳만 보기' : `전체 ${total}곳 보기`;
   }
-  seg($('#amc-seg'), v => { sort = v; draw(); });
+  seg($('#amc-seg'), v => { sort = v; asc = false; draw(); });
   $('#amc-more').onclick = () => { all = !all; draw(); };
   $('#amc-csv').onclick = () => csv('자산관리회사별_리츠현황', ['자산관리회사','리츠 수','자산총계(억원)','프로젝트리츠','최근 12개월 신규','최근 인가일', ...D.sectors], sorted().map(a => [a.name, a.n, a.assets_eok, a.proj_n, a.new12, a.latest, ...D.sectors.map(s => a.sectors[s] || 0)]));
   draw();
@@ -310,7 +322,7 @@ $('#ev-table').innerHTML = `<thead><tr><th>날짜</th><th>구분</th><th>리츠<
   }
   ['input', 'change'].forEach(ev => ['#all-q', '#all-kind', '#all-sector'].forEach(id => $(id).addEventListener(ev, () => { shown = 50; draw(); })));
   $('#all-more').onclick = () => { shown += 50; draw(); };
-  $('#all-csv').onclick = () => csv('운영중_리츠_목록', ['일자','구분','리츠','유형','투자대상','자산관리회사','자산총계(억원)','연환산배당률(%)','공모'], rows().map(x => [x.date, x.kind, x.name_s, x.type, x.sector, x.amc_s, x.assets_eok, x.dividend_pct ?? '', x.public_offering]));
+  $('#all-csv').onclick = () => csv('운영중_리츠_목록', ['일자','구분','리츠','유형','투자대상','자산관리회사','자산총계(억원)','연환산배당률(%)','공모'], rows().map(x => [x.date, x.kind, x.name_s, x.type, x.sector, x.amc_s, x.assets_eok, x.dividend_pct || '', x.public_offering]));
   draw();
 })();
 </script>

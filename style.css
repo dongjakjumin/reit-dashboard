@@ -86,6 +86,8 @@ nav.top a[aria-current=page]{background:var(--ink);color:var(--surface);font-wei
 nav.top a:hover{background:var(--wash)}
 nav.top a[aria-current=page]:hover{background:var(--ink)}
 th.sortable{cursor:pointer;user-select:none}
+th.sortable button{font:inherit;color:inherit;border:0;background:transparent;padding:0;cursor:pointer}
+th.sortable button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 th.sortable:hover{color:var(--ink)}
 th.sortable[aria-sort]::after{content:" ▾";font-size:10px}
 th.sortable[aria-sort=ascending]::after{content:" ▴"}

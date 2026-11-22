@@ -59,7 +59,7 @@ def post(path: str, data: dict, retries: int = 3) -> dict:
     raise RuntimeError(f"{path} 조회 실패: {last_err}")
 
 
-def fetch_all(path: str, params: dict, page_size: int = 200) -> list[dict]:
+def fetch_all(path: str, params: dict, page_size: int = 200, unique_id: str | None = None) -> list[dict]:
     """페이지를 넘기며 목록 전체를 받는다. total과 받은 건수가 다르면 오류."""
     rows: list[dict] = []
     page = 1
@@ -74,6 +74,14 @@ def fetch_all(path: str, params: dict, page_size: int = 200) -> list[dict]:
         page += 1
         if page > 100:
             raise RuntimeError(f"{path}: 페이지가 100을 넘음")
+    if unique_id:
+        unique = {}
+        for row in rows:
+            key = str(row.get(unique_id) or "").strip()
+            if not key.isdecimal():
+                raise RuntimeError(f"{path}: 접수번호 누락 또는 형식 오류")
+            unique.setdefault(int(key), row)
+        rows = list(unique.values())
     if total is not None and len(rows) != total:
         raise RuntimeError(f"{path}: total={total}인데 {len(rows)}건을 받음")
     return rows
@@ -93,7 +101,7 @@ def reits_list() -> list[dict]:
 
 def filings_list() -> list[dict]:
     """접수현황(영업인가, 등록, 프로젝트리츠 설립신고, 변경 신청)."""
-    return fetch_all("/reits/prmpc/searchPrmpcInvtCnfm", {"reitsNm": "", "cmpnyMberNm": ""}, page_size=100)
+    return fetch_all("/reits/prmpc/searchPrmpcInvtCnfm", {"reitsNm": "", "cmpnyMberNm": ""}, page_size=100, unique_id="crrDetailNo")
 
 
 def listed_list() -> list[dict]:
@@ -113,7 +121,7 @@ def listed_wale() -> list[dict]:
 
 def price_history(code: str, date_from: str, date_to: str) -> list[dict]:
     """종목 1개의 일별 종가. 날짜는 YYYYMMDD."""
-    return post("/main/searchStockChart", {"stockCd": code, "fromDt": date_from, "toDt": date_to})
+    return post("/main/searchStockChart", {"stockCd": code, "fromDt": date_from, "toDt": date_to}, retries=1)
 
 
 def reit_basic(reit_id: int) -> dict:

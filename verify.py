@@ -22,7 +22,7 @@ from pathlib import Path
 import build
 import collect
 import reits_api
-from textutil import mask_person
+from textutil import PRIVATE_LABEL, mask_person, phone_files
 
 DATA = Path(__file__).parent / "data"
 
@@ -30,12 +30,15 @@ DATA = Path(__file__).parent / "data"
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    bad = 0
+    bad = passed = 0
 
     def check(ok: bool, msg: str):
-        nonlocal bad
+        nonlocal bad, passed
         print(("  통과  " if ok else "  실패  ") + msg)
-        bad += 0 if ok else 1
+        if ok:
+            passed += 1
+        else:
+            bad += 1
 
     skipped = 0
 
@@ -53,6 +56,19 @@ def main() -> int:
             return None
 
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
+    listed_page = ""
+    for name in ("index", "listed", "finance", "calc"):
+        path = build.SITE / f"{name}.html"
+        html = path.read_text(encoding="utf-8") if path.is_file() else ""
+        check(bool(html.strip()), f"{path.name} 생성 및 내용 확인")
+        if name == "listed":
+            listed_page = html
+    try:
+        page_data, _ = json.JSONDecoder().raw_decode(listed_page.split("const D = ", 1)[1])
+        codes = {row["code"] for row in page_data["rows"]}
+    except (IndexError, ValueError, TypeError, KeyError):
+        codes = None
+    check(codes == {row["code"] for row in snap["listed"]}, "상장 화면과 수집 목록의 종목코드 집합 일치")
     d = build.build_data()
     s = d["summary"]
     reits = snap["reits"]
@@ -87,7 +103,7 @@ def main() -> int:
     print("[3] 상세 화면 대조(자산총계가 있는 리츠 5건 + 강조 회사)")
     pool = [r for r in reits if r["assets_eok"]]
     random.seed(snap["date"])
-    sample = random.sample(pool, 5)
+    sample = random.sample(pool, min(5, len(pool)))
     hl = d.get("highlight_amc")
     sample += [r for r in reits if hl and hl in r["amc"]][:1]
     for r in sample:
@@ -111,7 +127,7 @@ def main() -> int:
     ld = build.build_listed_data()
     ls = ld["summary"]
     listed = snap["listed"]
-    prices = json.loads((DATA / "prices.json").read_text(encoding="utf-8"))
+    prices = build.optional_data("prices.json")
     live_l = ask("/invt/lsted/searchLstedReits", {"pageSize": 10, "pageNum": 1})
     if live_l:
         check(int(live_l["total"]) == len(listed), f"상장리츠 현황 전체 {int(live_l['total'])}건 = 저장 {len(listed)}건")
@@ -127,9 +143,12 @@ def main() -> int:
         base_day = [x for x in days if x <= (_date.fromisoformat(days[-1]) - _td(days=365)).isoformat()][-1]
         mine = round((hist[days[-1]] / hist[base_day] - 1) * 100, 1)
         check(abs(mine - row["ret_1y"]) < 0.11, f"{row['name']} 1년 수익률 재계산 {mine}% = 화면 {row['ret_1y']}%")
-    check(all(r["price"] == prices[str(r["code"])][r["price_date"]] for r in ld["rows"]),
-          "화면의 현재가 = 가격 이력의 마지막 종가")
-    check(abs(ld["index"]["values"][0] - 100) < 0.001, "주가 지수 첫날 = 100")
+    check(all(r["price"] == prices[str(r["code"])][r["price_date"]] for r in ld["rows"] if r["price_date"]),
+          "종가 이력이 있는 종목의 현재가 = 가격 이력의 마지막 종가")
+    if ld["index"]["values"]:
+        check(abs(ld["index"]["values"][0] - 100) < 0.001, "주가 지수 첫날 = 100")
+    else:
+        check(ls["index_ret"] is None, "지수 자료가 없으면 수익률을 비움")
     nav_rows = ask("/main/searchMainStock", {"stockTab": "3"})
     ffo_rows = ask("/main/searchMainStock", {"stockTab": "4"})
     nav_main = {str(x.get("stockNm")).strip(): x.get("navThstrm") for x in (nav_rows or [])}
@@ -141,8 +160,8 @@ def main() -> int:
                   f"첫 화면 NAV {nav_main.get(r['name'])}, FFO {ffo_main.get(r['name'])}")
 
     print("[5] 재무 구조와 수시공시")
-    fin = json.loads((DATA / "financials.json").read_text(encoding="utf-8"))
-    dis = json.loads((DATA / "disclosures.json").read_text(encoding="utf-8"))
+    fin = build.optional_data("financials.json")
+    dis = build.optional_data("disclosures.json")
     fd = build.build_finance_data()
     missing = len(listed) - len(fd["rows"])  # 새로 상장해 재무 자료가 아직 없는 종목은 2개까지 허용
     check(0 <= missing <= 2, f"재무 자료 {len(fd['rows'])}개, 상장리츠 {len(listed)}개(없는 종목 2개까지 허용)")
@@ -176,19 +195,22 @@ def main() -> int:
               f"최근 14일 수시공시 원문 {int(live_d['total'])}건, 저장 {stored}건")
 
     print("[6] 개인정보")
-    blob = "".join(p.read_text(encoding="utf-8") for p in DATA.rglob("*.json"))
-    for site in (Path(__file__).parent / "site").glob("*.html"):
-        blob += site.read_text(encoding="utf-8")
-    check(not re.search(collect.PHONE_RE, blob), "저장 파일과 화면에 전화번호 모양 문자열 없음")
+    leaks = phone_files(DATA.rglob("*.json")) + phone_files(build.SITE.glob("*.html"))
+    check(not leaks, "저장 파일과 화면 전화번호 점검" + " ".join(str(p) for p in leaks))
+    check(all(not v.get("text") for v in dis.values() if "주주" in v["matter"]), "주주 공시 본문 없음")
+    cases = [(name, PRIVATE_LABEL) for name in ("홍길동(개인)", "홍길동 (본인)", "남궁민수", "김솔", "박하늘 외 2인")]
+    cases += [(name, name) for name in ("㈜에스원", "주식회사 케이탑", "롯데쇼핑", "(주)한빛", "한솔 유한회사")]
+    for name, expected in cases:
+        check(mask_person(name) == expected, f"최대주주 가상 입력 {name}")
     allowed = set(collect.FILING_KEEP.values())
     flog = json.loads((DATA / "filings_log.json").read_text(encoding="utf-8"))
-    extra_keys = {"first_seen", "last_seen", "status_history", "gone_on"}
+    extra_keys = {"first_seen", "last_seen", "status_history", "gone_on", "result_kind", "result_date"}
     check(all(set(f) <= allowed for f in snap["filings"]) and all(set(v) <= allowed | extra_keys for v in flog.values()),
           "접수 자료에 허용한 항목만 저장됨(담당자 이름, 연락처 항목 없음)")
     check(all(mask_person(v.get("top_shareholder")) == v.get("top_shareholder") for v in fin.values()),
           "최대주주 칸에 개인 이름 모양 값 없음")
 
-    print("결과:", ("모두 통과" if bad == 0 else f"실패 {bad}건")
+    print("결과:", f"통과 {passed}건, 실패 {bad}건"
           + (f", 건너뛴 원문 재조회 {skipped}건" if skipped else ""))
     return 1 if bad else 0
 

@@ -6,18 +6,37 @@
  */
 
 /* 월별 현금흐름(cfs[m] = m개월째)의 월 내부수익률. 부호가 한쪽뿐이면 null.
- * 현재가치 대신 마지막 달 기준 미래가치의 부호로 구간을 좁힌다. 기간이 길어도 나눗셈에서 값이 넘치지 않는다. */
+ * 양의 금리는 현재가치, 음의 금리는 미래가치로 부호를 비교한다. */
 function irrMonthly(cfs) {
-  let neg = false, pos = false;
-  for (const v of cfs) { if (v < 0) neg = true; if (v > 0) pos = true; }
-  if (!neg || !pos) return null;
-  const n = cfs.length - 1;
-  const fv = r => { let s = 0; for (let i = 0; i <= n; i++) if (cfs[i]) s += cfs[i] * Math.pow(1 + r, n - i); return s; };
-  let lo = -0.9, hi = 1.0, flo = fv(lo), fhi = fv(hi);
-  if (!isFinite(flo) || !isFinite(fhi) || flo * fhi > 0) return null;
+  const first = cfs.findIndex(v => v !== 0);
+  let last = cfs.length - 1, changes = 0, previous = 0;
+  for (const v of cfs) {
+    if (!v) continue;
+    if (previous && Math.sign(v) !== previous) changes++;
+    previous = Math.sign(v);
+  }
+  if (!changes) return null;
+  while (!cfs[last]) last--;
+  const balance = r => {
+    let sum = 0;
+    if (r > 0) {
+      for (let i = last; i >= first; i--) sum = cfs[i] + sum / (1 + r);
+    } else {
+      for (let i = first; i <= last; i++) sum = cfs[i] + sum * (1 + r);
+    }
+    return sum;
+  };
+  let lo = changes === 1 ? -1 : -0.9, hi = 1, flo = balance(lo);
+  while (Math.sign(balance(hi)) === Math.sign(flo) && flo !== 0) {
+    hi *= 2;
+    if (changes !== 1 || !Number.isFinite(hi)) return null;
+  }
   for (let k = 0; k < 200; k++) {
-    const mid = (lo + hi) / 2, fm = fv(mid);
-    if (flo * fm <= 0) { hi = mid; fhi = fm; } else { lo = mid; flo = fm; }
+    const mid = (lo + hi) / 2, fm = balance(mid);
+    if (!fm) return mid;
+    if (mid === lo || mid === hi) break;
+    if (Math.sign(flo) !== Math.sign(fm)) hi = mid;
+    else { lo = mid; flo = fm; }
   }
   return (lo + hi) / 2;
 }
@@ -74,7 +93,8 @@ function reitCalc(p) {
 
   // 임대 안정화: 입주율이 매달 같은 폭으로 올라간다. 임대 순수익으로 이자와 리츠 운영비용을 내고,
   // 모자라면 차입이 늘고 남으면 차입을 갚는다. 차입을 다 갚고도 남는 돈은 이자 없이 쌓아 두었다가 안정화 시점에 받는다.
-  const noiMonthFull = p.gfa_py * p.rent * MAN * (1 - p.vacancy / 100) * (1 - p.opex / 100);
+  const rentArea = p.gfa_py * (p.rent_area_pct ?? 100) / 100;
+  const noiMonthFull = rentArea * p.rent * MAN * (1 - p.vacancy / 100) * (1 - p.opex / 100);
   const reitMonth = tpc * p.reit_cost / 100 / 12;
   let debt = devDebt, cash = 0, leaseInterest = 0, leaseNoi = 0, peak = devDebt;
   for (let k = 1; k <= p.lease_m; k++) {
@@ -99,20 +119,26 @@ function reitCalc(p) {
   const flowsA = [-E, netA];
 
   // B안: 안정화 시점에 담보대출로 바꾸고 hold_y년 운영한 뒤 매각(대출은 이자만 내고 만기에 일시 상환)
-  const loan = value * p.perm_ltv / 100;
+  const reitY = tpc * p.reit_cost / 100, minDscr = p.perm_dscr_min ?? 1.2;
+  const ltvLimit = value * p.perm_ltv / 100;
+  const dscrLimit = minDscr > 0 && p.perm_rate > 0
+    ? Math.max(0, noi1 - reitY) / (p.perm_rate / 100 * minDscr) : Infinity;
+  const loan = Math.min(ltvLimit, dscrLimit);
+  const constraint = ltvLimit === dscrLimit ? 'both' : loan === dscrLimit ? 'dscr' : 'ltv';
   const refi = loan - debtAtStab + cashAtStab;        // 양수면 자기자본 회수, 음수면 추가 출자
+  const paidIn = E + Math.max(0, -refi);
   const Tend = Ts + 12 * p.hold_y;
   const cfB = new Array(Tend + 1).fill(0);
   for (let m = 1; m <= Tc; m++) cfB[m] -= run.eqDraw[m];
   cfB[Ts] += refi;
   const flowsB = [-E, refi];
-  const interestY = loan * p.perm_rate / 100, reitY = tpc * p.reit_cost / 100;
+  const interestY = loan * p.perm_rate / 100;
   const years = [];
   for (let y = 1; y <= p.hold_y; y++) {
     const noi = noi1 * Math.pow(1 + g, y - 1), cf = noi - interestY - reitY;
     cfB[Ts + 12 * y] += cf;
     flowsB.push(cf);
-    years.push({ y, noi, interest: interestY, reit: reitY, cf, dscr: interestY > 0 ? noi / interestY : null, yield_on_equity: E > 0 ? cf / E : null });
+    years.push({ y, noi, interest: interestY, reit: reitY, cf, dscr: interestY > 0 ? (noi - reitY) / interestY : null, yield_on_equity: paidIn > 0 ? cf / paidIn : null });
   }
   const saleB = noi1 * Math.pow(1 + g, p.hold_y) / cap;
   const netB = saleB * (1 - saleCost) - loan;
@@ -127,7 +153,7 @@ function reitCalc(p) {
     lease_interest: leaseInterest, lease_noi: leaseNoi, debt_at_stab: debtAtStab, cash_at_stab: cashAtStab,
     noi1, value, yield_on_cost: tpc > 0 ? noi1 / tpc : null, dev_margin: tpc > 0 ? (value - tpc) / tpc : null,
     a: { sale: value, net: netA, irr: annualize(irrMonthly(cfA)), multiple: multiple(flowsA), profit: cfA.reduce((s, v) => s + v, 0) },
-    b: { loan, refi, loan_to_equity: E > 0 ? loan / E : null, sale: saleB, net: netB, years,
+    b: { loan, refi, constraint, paid_in: paidIn, loan_to_equity: paidIn > 0 ? loan / paidIn : null, sale: saleB, net: netB, years,
          irr: annualize(irrMonthly(cfB)), multiple: multiple(flowsB), profit: cfB.reduce((s, v) => s + v, 0),
          dscr_min: years.length && interestY > 0 ? Math.min(...years.map(x => x.dscr)) : null },
     eq_draw: run.eqDraw, debt_bal: run.debtBal, cf_a: cfA, cf_b: cfB,

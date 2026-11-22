@@ -5,8 +5,8 @@
     "gfa_py": 12000, "cost_per_py": 1100, "soft_pct": 15,
     "pre_m": 12, "con_m": 36, "lease_m": 12, "hold_y": 5,
     "equity_pct": 30, "dev_rate": 6.5,
-    "rent": 27, "vacancy": 5, "opex": 22, "growth": 2, "reit_cost": 0.3,
-    "perm_ltv": 55, "perm_rate": 5.0,
+    "rent_area_pct": 100, "rent": 27, "vacancy": 5, "opex": 22, "growth": 2, "reit_cost": 0.3,
+    "perm_ltv": 55, "perm_rate": 5.0, "perm_dscr_min": 1.2,
     "exit_cap": 4.7, "sale_cost": 1.0
   },
   "downside": {

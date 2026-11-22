@@ -1,6 +1,6 @@
 """사업성 계산 엔진 검산.
 
-1) 손으로 답을 알 수 있는 경우 4가지(금리 0, 전액 자기자본 등)를 계산해 맞는지 본다.
+1) 손으로 답을 알 수 있는 경우(금리 0, 전액 자기자본, 대출 한도 등)를 계산해 맞는지 본다.
 2) 경계에 가까운 가정(보유 30년, 개발기간 20년, 전액 자기자본, 낮은 임대료)에서 값이 말이 되는지 본다.
 3) 기본 예시와 무작위 가정 400가지를 자바스크립트 엔진(calc_engine.js)과 파이썬 참조 구현(calc_ref.py)에
    똑같이 넣고 결과가 같은지 대조한다.
@@ -36,7 +36,8 @@ process.stdin.on('end', () => {
       lease_interest: r.lease_interest, lease_noi: r.lease_noi, debt_at_stab: r.debt_at_stab,
       noi1: r.noi1, value: r.value, yield_on_cost: r.yield_on_cost, dev_margin: r.dev_margin,
       'a.sale': r.a.sale, 'a.net': r.a.net, 'a.irr': r.a.irr, 'a.multiple': r.a.multiple, 'a.profit': r.a.profit,
-      'b.loan': r.b.loan, 'b.refi': r.b.refi, 'b.loan_to_equity': r.b.loan_to_equity, 'b.sale': r.b.sale,
+      'b.loan': r.b.loan, 'b.refi': r.b.refi, 'b.loan_to_equity': r.b.loan_to_equity, 'b.sale': r.b.sale, 'b.constraint': r.b.constraint, 'b.paid_in': r.b.paid_in,
+      'b.years.yield_on_equity': r.b.years.map(x => x.yield_on_equity),
       'b.net': r.b.net, 'b.irr': r.b.irr, 'b.multiple': r.b.multiple, 'b.profit': r.b.profit, 'b.dscr_min': r.b.dscr_min,
       'b.years.noi': r.b.years.map(x => x.noi), 'b.years.cf': r.b.years.map(x => x.cf),
     };
@@ -57,6 +58,8 @@ def run_js(cases: list[dict]) -> list[dict]:
 def same(a, b, tol=1e-7) -> bool:
     if a is None or b is None:
         return a is None and b is None
+    if isinstance(b, str):
+        return a == b
     if isinstance(a, list):
         return len(a) == len(b) and all(same(x, y, tol) for x, y in zip(a, b))
     return math.isclose(a, b, rel_tol=tol, abs_tol=1e-7)
@@ -70,6 +73,7 @@ def random_case(rng: random.Random) -> dict:
         "hold_y": rng.randint(1, 30), "equity_pct": rng.uniform(5, 100),
         "dev_rate": rng.uniform(0, 15), "rent": rng.uniform(3, 40), "vacancy": rng.uniform(0, 20),
         "opex": rng.uniform(5, 35), "growth": rng.uniform(-2, 4), "reit_cost": rng.uniform(0, 0.8),
+        "perm_dscr_min": rng.choice([0, rng.uniform(0.5, 4)]), "rent_area_pct": rng.uniform(0, 100),
         "perm_ltv": rng.uniform(0, 80), "perm_rate": rng.uniform(0, 12),
         "exit_cap": rng.uniform(3.5, 8), "sale_cost": rng.uniform(0, 3),
     }
@@ -78,10 +82,11 @@ def random_case(rng: random.Random) -> dict:
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    bad = 0
+    bad = checks = 0
 
     def check(ok: bool, msg: str):
-        nonlocal bad
+        nonlocal bad, checks
+        checks += 1
         print(("  통과  " if ok else "  실패  ") + msg)
         bad += 0 if ok else 1
 
@@ -110,13 +115,29 @@ def main() -> int:
     check(same(r4["value"], 1100, 1e-6) and same(r4["a.irr"], (1.1) ** (12 / 11) - 1, 1e-6),
           "1,000억을 1개월째 넣고 12개월째 1,100억 회수: 월 기준 11개월 → 연 IRR 일치")
 
+    flows = {1: -100, 2: 300}
+    js_irr = subprocess.check_output(["node", "-e",
+        "console.log(require(process.argv[1]).irrMonthly([0,-100,300]))", str(ROOT / "calc_engine.js")])
+    check(same(float(js_irr), 2) and same(calc_ref.month_irr(flows), 2), "한 달 뒤 100억에서 300억 회수 시 월 IRR 200%")
+    check(same(r3["b.paid_in"], 800) and same(r3["b.loan_to_equity"], 1.5)
+          and same(r3["b.years.yield_on_equity"][0], 0.09), "추가 출자 후 자기자본 800억, 차입 1.5배, 현금수익률 9%")
+    limited, disabled, free, half, empty = run_js([
+        dict(p3, perm_dscr_min=3, reit_cost=1.5), dict(p3, perm_dscr_min=0, reit_cost=1.5),
+        dict(p3, perm_rate=0, equity_pct=100), dict(p3, rent_area_pct=50), dict(p3, rent_area_pct=0)])
+    check(same(limited["b.loan"], 750) and limited["b.constraint"] == "dscr"
+          and same(limited["b.dscr_min"], 3), "운영비 30억 차감 후 DSCR 3배 기준 대출 한도 750억")
+    check(same(disabled["b.loan"], 1200) and disabled["b.constraint"] == "ltv", "최소 DSCR 0이면 LTV 적용")
+    check(same(free["b.paid_in"], 2000) and free["b.refi"] > 0 and free["b.dscr_min"] is None
+          and free["b.constraint"] == "ltv", "무이자 대출 회수 시 처음 자기자본 유지")
+    check(same(half["hard"], 1000) and same(half["noi1"], 60), "임대면적 50%에서 NOI 60억, 공사비 1,000억")
+    check(same(empty["b.loan"], 0) and same(empty["noi1"], 0), "임대면적 0에서 대출과 NOI 모두 0")
     print("[2] 경계에 가까운 가정")
     # (마) 보유 30년에 대출 금리가 높아 수익이 거의 없는 경우: IRR이 터무니없는 값이 되지 않아야 한다
-    long_case = dict(BASE, perm_rate=9, growth=0, hold_y=30)
+    long_case = dict(BASE, perm_rate=9, perm_dscr_min=0, growth=0, hold_y=30)
     r5 = run_js([long_case])[0]
     ref5 = calc_ref.calc(long_case)
     check(r5["b.irr"] is not None and -0.05 < r5["b.irr"] < 0.05 and same(r5["b.irr"], ref5["b.irr"]),
-          f"보유 30년, 대출 금리 9%, 임대료 상승 0%: B안 IRR {r5['b.irr'] * 100:.3f}% (참조 구현과 일치)")
+          f"보유 30년, 대출 금리 9%, 최소 DSCR 미적용, 임대료 상승 0%: B안 IRR {r5['b.irr'] * 100:.3f}% (참조 구현과 일치)")
     # (바) 개발기간이 아주 길어도 자기자본 = 총사업비 × 비율이 맞아야 한다
     slow = dict(BASE, pre_m=120, con_m=120, equity_pct=40)
     r6 = run_js([slow])[0]
@@ -148,7 +169,11 @@ def main() -> int:
     b = js[0]
     print(f"  기본 예시: 총사업비 {b['tpc']:,.0f}억, 자기자본 {b['equity']:,.0f}억, 안정화 NOI {b['noi1']:,.1f}억, "
           f"가치 {b['value']:,.0f}억, A안 IRR {b['a.irr']*100:.2f}%, B안 IRR {b['b.irr']*100:.2f}%")
-    print("결과:", "모두 통과" if bad == 0 else f"실패 {bad}건")
+    expected = [5019, 1506, 288, 6130, 10.54, 9.36]
+    actual = [round(b[k]) for k in ("tpc", "equity", "noi1", "value")]
+    actual += [round(b[k] * 100, 2) for k in ("a.irr", "b.irr")]
+    check(actual == expected, "기본 가정의 금액과 IRR 6개 유지")
+    print(f"결과: {checks}개 중 {checks - bad}개 통과")
     return 1 if bad else 0
 
 

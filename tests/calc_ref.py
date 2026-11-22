@@ -12,7 +12,7 @@ calc_engine.js와 같은 계산 규칙을 따로 구현한 것이다. 화면이 
    모자라면 차입이 늘고 남으면 차입을 갚는다. 차입이 0이 된 뒤 남는 돈은 이자 없이 모아 안정화 시점에 받는다.
 6. 안정화 가치 = 안정화 첫해 NOI ÷ Cap Rate.
 7. A안: 안정화 시점에 매각. 회수 = 매각가 × (1 - 매각비용) - 차입 잔액 + 모아 둔 돈.
-8. B안: 안정화 시점에 가치 × LTV만큼 담보대출을 받아 개발 차입을 갚고, 해마다 NOI - 이자 - 리츠 운영비용을 받는다.
+8. B안: 안정화 시점에 LTV와 이자 기준 DSCR로 담보대출 한도를 정해 개발 차입을 갚고, 해마다 NOI - 이자 - 리츠 운영비용을 받는다.
    보유 기간 끝에 다음 해 NOI ÷ Cap Rate로 매각하고 대출을 갚는다.
 9. IRR은 월별 자기자본 현금흐름의 월 내부수익률을 연율로 바꾼 값이다.
 10. 회수 배수 = 받은 돈 합계 ÷ 넣은 돈 합계. 같은 달에 넣고 받은 돈도 상계하지 않는다.
@@ -24,20 +24,28 @@ import math
 
 
 def month_irr(flows: dict[int, float]) -> float | None:
-    """월 내부수익률. 마지막 달로 끌고 간 값(미래가치)의 부호가 바뀌는 지점을 이분법으로 찾는다."""
+    """월 내부수익률. 현재가치 또는 미래가치의 부호가 바뀌는 지점을 찾는다."""
     if not any(v < 0 for v in flows.values()) or not any(v > 0 for v in flows.values()):
         return None
-    last = max(flows)
+    events = sorted((t, v) for t, v in flows.items() if v)
+    first, last = events[0][0], events[-1][0]
+    single = sum((v > 0) != (w > 0) for (_, v), (_, w) in zip(events, events[1:])) == 1
 
     def f(r: float) -> float:
-        return math.fsum(v * (1.0 + r) ** (last - t) for t, v in flows.items() if v)
+        origin = first if r > 0 else last
+        return math.fsum(v * (1.0 + r) ** (origin - t) for t, v in events)
 
-    a, b = -0.9, 1.0
+    a, b = -1.0 if single else -0.9, 1.0
     fa, fb = f(a), f(b)
-    if not (math.isfinite(fa) and math.isfinite(fb)) or fa * fb > 0:
-        return None
+    while fa * fb > 0:
+        b *= 2
+        if not single or not math.isfinite(b):
+            return None
+        fb = f(b)
     for _ in range(200):
         c = (a + b) / 2.0
+        if c == a or c == b:
+            break
         fc = f(c)
         if fa * fc <= 0:
             b, fb = c, fc
@@ -103,7 +111,8 @@ def calc(p: dict) -> dict:
     total, done = dev["total"], dev["done"]
     stab = done + p["lease_m"]
 
-    full_month = p["gfa_py"] * p["rent"] / 10000.0 * (1 - p["vacancy"] / 100.0) * (1 - p["opex"] / 100.0)
+    rented = p["gfa_py"] * p.get("rent_area_pct", 100) / 100
+    full_month = rented * p["rent"] / 10000.0 * (1 - p["vacancy"] / 100.0) * (1 - p["opex"] / 100.0)
     reit_month = total * p["reit_cost"] / 1200.0
     loan = dev["loan"]
     saved = lease_int = lease_noi = 0.0
@@ -132,18 +141,26 @@ def calc(p: dict) -> dict:
     flow_a[stab] = flow_a.get(stab, 0.0) + net_a
 
     perm = value * p["perm_ltv"] / 100.0
+    threshold = p.get("perm_dscr_min", 1.2)
+    yearly_reit = reit_month * 12
+    constraint = "ltv"
+    if threshold and p["perm_rate"]:
+        affordable = max(noi1 - yearly_reit, 0) * 100 / (threshold * p["perm_rate"])
+        if affordable <= perm:
+            constraint = "both" if affordable == perm else "dscr"
+            perm = affordable
     switch = perm - loan + saved
+    invested = equity - min(0, switch)
     flow_b = {m: -v for m, v in dev["draws"].items()}
     flow_b[stab] = flow_b.get(stab, 0.0) + switch
     yearly_int = perm * p["perm_rate"] / 100.0
-    yearly_reit = total * p["reit_cost"] / 100.0
     rows = []
     for y in range(1, p["hold_y"] + 1):
         noi = noi1 * (1 + p["growth"] / 100.0) ** (y - 1)
         cf = noi - yearly_int - yearly_reit
         t = stab + 12 * y
         flow_b[t] = flow_b.get(t, 0.0) + cf
-        rows.append({"y": y, "noi": noi, "cf": cf, "dscr": noi / yearly_int if yearly_int > 0 else None})
+        rows.append({"y": y, "noi": noi, "cf": cf, "dscr": (noi - yearly_reit) / yearly_int if yearly_int > 0 else None})
     end = stab + 12 * p["hold_y"]
     sale_b = noi1 * (1 + p["growth"] / 100.0) ** p["hold_y"] / cap
     net_b = sale_b * (1 - cost_rate) - perm
@@ -160,10 +177,12 @@ def calc(p: dict) -> dict:
         "dev_margin": (value - total) / total if total > 0 else None,
         "a.sale": value, "a.net": net_a, "a.irr": yearly(month_irr(flow_a)), "a.multiple": moic(equity, [net_a]),
         "a.profit": sum(flow_a.values()),
-        "b.loan": perm, "b.refi": switch, "b.loan_to_equity": perm / equity if equity > 0 else None,
+        "b.loan": perm, "b.refi": switch, "b.constraint": constraint, "b.paid_in": invested,
+        "b.loan_to_equity": perm / invested if invested > 0 else None,
         "b.sale": sale_b, "b.net": net_b, "b.irr": yearly(month_irr(flow_b)),
         "b.multiple": moic(equity, [switch] + [r["cf"] for r in rows] + [net_b]),
         "b.profit": sum(flow_b.values()),
         "b.dscr_min": min(r["dscr"] for r in rows) if rows and yearly_int > 0 else None,
+        "b.years.yield_on_equity": [r["cf"] / invested if invested else None for r in rows],
         "b.years.noi": [r["noi"] for r in rows], "b.years.cf": [r["cf"] for r in rows],
     }

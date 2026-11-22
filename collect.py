@@ -19,17 +19,18 @@ from __future__ import annotations
 import json
 import re
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 import reits_api
-from textutil import mask_person
+from textutil import CHANGE_REQUEST, PHONE_RE, filing_result, mask_person, phone_files, redact_phones
 
 KST = timezone(timedelta(hours=9))
-# 전화번호 모양: 02-123-4567, 010-1234-5678, 01012345678 등. 금액 같은 긴 숫자의 일부는 잡지 않는다.
-PHONE_RE = r"(?<![\d.,])(?:0\d{1,2}[-.\s]\d{3,4}[-.\s]\d{4}|01[016789]\d{7,8})(?![\d,])"
 DATA = Path(__file__).parent / "data"
 SNAP = DATA / "snapshots"
+FILING_RESULT_LOOKUP_DAYS = 90
+MAX_CONSECUTIVE_PRICE_FAILURES = 3
 
 REIT_KEEP = {
     "reitsNo": "id", "reqstNo": "reqst_no", "reitsNm": "name", "mberNm": "amc",
@@ -124,7 +125,14 @@ def _save(path: Path, obj, pretty: bool = False):
     path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(obj, ensure_ascii=False, indent=1 if pretty else None,
                       separators=None if pretty else (",", ":"))
-    path.write_text(text + "\n", encoding="utf-8")
+    tmp = NamedTemporaryFile(mode="w", dir=path.parent, encoding="utf-8", delete=False)
+    pending = Path(tmp.name)
+    try:
+        with tmp:
+            tmp.write(text + "\n")
+        pending.replace(path)
+    finally:
+        pending.unlink(missing_ok=True)
 
 
 def update_logs(snap: dict):
@@ -147,9 +155,18 @@ def update_logs(snap: dict):
             rec.update({k: v for k, v in f.items()})
             rec["last_seen"] = today
             rec["gone_on"] = None
+    reit_by_id = {r["id"]: r for r in snap["reits"]}
+    cutoff = (date.fromisoformat(today) - timedelta(days=FILING_RESULT_LOOKUP_DAYS)).isoformat()
     for key, rec in flog.items():
-        if key not in seen and rec.get("gone_on") is None:
+        if key in seen:
+            continue
+        if rec.get("gone_on") is None:
             rec["gone_on"] = today  # 목록에서 빠진 것을 처음 확인한 날
+            rec.setdefault("result_kind", None)
+            rec.setdefault("result_date", None)
+        if (rec["req_type"] != CHANGE_REQUEST and rec.get("result_date") is None
+                and rec["gone_on"] > cutoff):
+            rec.update(filing_result(rec, reit_by_id.get(rec.get("reit_id"))))
     _save(DATA / "filings_log.json", flog, pretty=True)
 
     # 리츠별 누적 기록(목록에 새로 들어온 날, 빠진 날)
@@ -179,28 +196,39 @@ def update_prices(snap: dict):
     today = datetime.strptime(snap["date"], "%Y-%m-%d")
     d_to = today.strftime("%Y%m%d")
     d_from = (today - timedelta(days=372)).strftime("%Y%m%d")
+    failures = consecutive_failures = skipped = 0
     for row in snap["listed"]:
         code = str(row["code"])
-        hist = prices.setdefault(code, {})
-        if len(hist) < 150:
-            for p in reits_api.price_history(code, d_from, d_to):
-                v = _num(p.get("nowPc"))
-                if p.get("stockDt") and v:
-                    hist[str(p["stockDt"])[:10]] = v
+        hist = prices.get(code, {})
+        if consecutive_failures < MAX_CONSECUTIVE_PRICE_FAILURES:
+            start = d_from if len(hist) < 150 else max(hist).replace("-", "")
+            try:
+                history = reits_api.price_history(code, start, d_to)
+            except Exception as exc:
+                failures += 1
+                consecutive_failures += 1
+                print(f"[수집] 경고 시세 {code}: {exc}")
+            else:
+                consecutive_failures = 0
+                for p in history:
+                    day = str(p.get("stockDt") or "")[:10]
+                    price = _num(p.get("nowPc"))
+                    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", day) and day < snap["date"] and price:
+                        hist[day] = price
+                prices[code] = hist
+        else:
+            skipped += 1
         stamp = row.get("as_of") or ""
-        as_of, as_of_time = stamp[:10], stamp[11:16]
-        # 장이 끝난 뒤(15:40 이후)의 시세만 그날 종가로 쌓는다. 장중 시세를 종가로 남기지 않기 위해서다.
-        if as_of and row.get("price") and as_of_time >= "15:40":
-            hist[as_of] = row["price"]
-        # 며칠 치가 비었으면(장중 시세만 받은 날, 수집이 빠진 날) 그 종목의 일별 종가를 다시 받아 메운다
-        newest = max(hist) if hist else ""
-        if as_of and (not newest or (datetime.strptime(as_of, "%Y-%m-%d") - datetime.strptime(newest, "%Y-%m-%d")).days > 3):
-            for p in reits_api.price_history(code, d_from, d_to):
-                v = _num(p.get("nowPc"))
-                if p.get("stockDt") and v:
-                    hist[str(p["stockDt"])[:10]] = v
-        prices[code] = dict(sorted(hist.items()))
+        if stamp[:10] == snap["date"] and "15:40" <= stamp[11:16] <= "23:59" and row.get("price"):
+            hist[snap["date"]] = row["price"]
+        if hist or code in prices:
+            prices[code] = dict(sorted(hist.items()))
     _save(path, prices)
+    if failures:
+        message = f"시세 이력 조회 실패 {failures}종목"
+        if skipped:
+            message += f", 조회 생략 {skipped}종목"
+        raise RuntimeError(message)
 
 
 FIN_REFRESH_DAYS = 7      # 상장리츠 재무 자료는 일주일에 한 번만 다시 받는다
@@ -264,12 +292,13 @@ def update_disclosures(snap: dict):
         if no is None:
             continue
         code = x.get("matterCode")
-        text = "" if code in DISCLOSURE_NO_TEXT else " ".join(str(x.get("changeCn") or "").split())[:300]
+        matter = " ".join(str(x.get("matterNm") or "").split())
+        text = "" if code in DISCLOSURE_NO_TEXT or "주주" in matter else " ".join(str(x.get("changeCn") or "").split())[:300]
         text = re.sub(PHONE_RE, "(번호 생략)", text)
         log[str(int(no))] = {
             "date": x.get("pblntfDe"), "company": (x.get("cmpnyNm") or "").strip(),
             "company_type": x.get("cmpnySeNm"), "matter_code": code,
-            "matter": " ".join(str(x.get("matterNm") or "").split()), "text": text,
+            "matter": matter, "text": text,
         }
     cutoff = (today - timedelta(days=365)).strftime("%Y-%m-%d")
     log = {k: v for k, v in log.items() if (v.get("date") or "") >= cutoff}
@@ -280,14 +309,18 @@ def update_disclosures(snap: dict):
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    snap = collect()
-    update_prices(snap)
-    n_fin = update_financials(snap)
-    n_dis = update_disclosures(snap)
-    print(f"[수집] 상장리츠 재무 {n_fin}건 갱신, 수시공시 최근 {DISCLOSURE_DAYS}일 {n_dis}건")
+    snap = redact_phones(collect())
     _save(SNAP / f"{snap['date']}.json", snap)
     _save(DATA / "latest.json", snap)
     update_logs(snap)
+    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures)):
+        try:
+            update(snap)
+        except Exception as exc:
+            print(f"[수집] 경고 {group}: {type(exc).__name__} {exc}")
+    leaks = phone_files(DATA.rglob("*.json"))
+    if leaks:
+        raise SystemExit("전화번호 확인 필요: " + ", ".join(str(p.relative_to(DATA)) for p in leaks))
     print(f"[수집] {snap['collected_at']} 리츠 {len(snap['reits'])}건, "
           f"접수 {len(snap['filings'])}건, 상장 {len(snap['listed'])}건")
 

@@ -22,7 +22,7 @@
 
 <section aria-labelledby="h-sum">
   <h2 id="h-sum">요약</h2>
-  <p class="sub">리츠 한 곳의 별도 재무 수치입니다. 자리츠나 펀드를 거쳐 부동산을 보유하는 리츠는 차입이 자리츠 쪽에 있어 부채가 작게 나옵니다. 부채총계에는 차입금과 사채뿐 아니라 임대보증금 같은 그 밖의 부채도 들어 있습니다. 차입금의 만기와 금리는 이 화면에 없고 각 리츠의 투자보고서 원문에 있습니다.</p>
+  <p class="sub">리츠 한 곳의 별도 재무 수치입니다. 자리츠나 펀드를 거쳐 부동산을 보유하는 리츠는 차입이 자리츠 쪽에 있어 부채가 작게 나옵니다. 부채총계에는 차입금, 사채, 임대보증금 등 여러 항목이 들어 있습니다. 차입금의 만기와 금리는 이 화면에 없고 각 리츠의 투자보고서 원문에 있습니다.</p>
   <div class="tiles" id="tiles"></div>
 </section>
 
@@ -63,7 +63,7 @@
     <ul style="margin:0;padding-left:18px">
       <li><b>자산, 부채, 자본</b>: 리츠정보시스템 리츠 상세 화면의 값(직전 분기 투자보고서 기준)입니다. 종목마다 결산월이 달라 기준일이 같지 않으므로 표의 기준일을 함께 보아야 합니다.</li>
       <li><b>별도 기준</b>: 표의 숫자는 상장된 리츠 한 곳의 재무 수치입니다. 모리츠가 자리츠 주식이나 펀드 수익증권을 보유하는 구조에서는 부동산과 차입금이 자리츠 쪽에 있어, 모리츠의 부채가 거의 0으로 나옵니다. 부채 비중이 20% 미만이면 "간접 보유 구조일 수 있음"으로 표시했고, 실제 구조는 투자보고서에서 확인해야 합니다.</li>
-      <li><b>부채 ÷ 자산</b>: 부채총계를 자산총계로 나눈 비율입니다. 담보인정비율(LTV)과 다릅니다. LTV는 차입금을 부동산 감정평가액으로 나눈 값이라 대체로 이 비율보다 낮게 나옵니다.</li>
+      <li><b>부채 ÷ 자산</b>: 부채총계를 자산총계로 나눈 비율입니다. 담보인정비율(LTV)은 담보가치에 대한 담보대출금의 비율입니다. 두 지표는 분자와 분모에 넣는 항목의 범위가 다릅니다.</li>
       <li><b>부채 ÷ 자본</b>: 부채총계를 자본총계로 나눈 배수입니다. 부동산투자회사법은 차입금과 사채의 합계를 자기자본의 2배(주주총회 특별결의 시 10배)까지로 정하는데, 이 한도는 차입금과 사채만 따지므로 표의 배수와 바로 비교할 수 없습니다.</li>
       <li><b>자산 추이</b>: 최근 결산기와 분기 말의 자산총계를 이은 선입니다.</li>
       <li><b>영업수익, 영업이익률</b>: 가장 최근 결산기 한 번의 영업수익과, 같은 기간의 영업이익 ÷ 영업수익입니다. 자산과 부채의 기준일(최근 분기 말)과 다를 수 있어 영업수익 아래에 결산기 말일을 적었습니다.</li>
@@ -104,24 +104,25 @@ function csv(name, head, rows){
   a.download = name + '_' + D.date + '.csv'; document.body.appendChild(a); a.click(); a.remove();
 }
 
-$('#stamp').textContent = `최종 수집 ${D.collected_at} · 공시는 영업일 오전 10시, 재무 자료는 주 1회 갱신(최근 ${D.fin_fetched})`;
+$('#stamp').textContent = `최종 수집 ${D.collected_at} · 공시는 영업일 오전 10시, 재무 자료는 주 1회 갱신(최근 ${D.fin_fetched ?? "자료 없음"})`;
 $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' (' + D.contact + ')' : ''}` : '';
 
 /* 요약 */
 (function(){
   const tiles = [
-    {lab: '부채 ÷ 자산 중앙값', val: S.da_median.toFixed(1), unit: '%', det: `상장리츠 <b>${S.n}개</b> 전체 기준. 부채 비중 20% 미만인 <b>${S.da_under20}개</b>${S.da_median_ex == null ? '' : `를 빼면 <b>${S.da_median_ex.toFixed(1)}%</b>`}`},
-    {lab: '부채 비중이 가장 높은 종목', val: S.da_hi.v.toFixed(1), unit: '%', det: `<b>${esc(S.da_hi.name)}</b>. 부채가 자본의 2배를 넘는 종목 <b>${S.de_over2}개</b>. 자산총계 합계 ${eok(S.assets_eok)}원, 부채총계 합계 ${eok(S.debt_eok)}원`},
+    {lab: '부채 ÷ 자산 중앙값', val: (S.da_median?.toFixed(1) ?? '–'), unit: '%', det: `상장리츠 <b>${S.n}개</b> 전체 기준. 부채 비중 20% 미만인 <b>${S.da_under20}개</b>${S.da_median_ex == null ? '' : `를 빼면 <b>${S.da_median_ex.toFixed(1)}%</b>`}`},
+    {lab: '부채 비중이 가장 높은 종목', val: (S.da_hi?.v.toFixed(1) ?? '–'), unit: '%', det: `<b>${esc(S.da_hi?.name ?? '자료 없음')}</b>. 부채가 자본의 2배를 넘는 종목 <b>${S.de_over2}개</b>. 자산총계 합계 ${eok(S.assets_eok)}원, 부채총계 합계 ${eok(S.debt_eok)}원`},
     {lab: '최근 90일 주요 공시', val: n0(S.dis_major), unit: '건', det: `전체 리츠 기준. ${D.groups.slice(0, 3).map(g => `${esc(g.name)} <b>${g.n}</b>`).join(', ')}`},
     {lab: '위험 신호 공시', val: n0(S.dis_risk), unit: '건', det: `금융사고나 부실채권 발생, 부실자산 발생, 감독 조치. ${S.dis_from} 이후`},
   ];
   $('#tiles').innerHTML = tiles.map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
-  $('#lev-sub').textContent = `상장리츠 ${S.n}개의 부채 ÷ 자산은 최고 ${S.da_hi.v.toFixed(1)}%이고 중앙값은 ${S.da_median.toFixed(1)}%입니다. 부채 비중이 20% 미만인 ${S.da_under20}개 종목은 자리츠나 펀드를 거쳐 자산을 보유하는 구조일 수 있어, 표에 "간접 보유 구조일 수 있음"으로 표시했습니다.`;
+  $('#lev-sub').textContent = !R.length ? '자료 없음' : `상장리츠 ${S.n}개의 부채 ÷ 자산은 최고 ${S.da_hi.v.toFixed(1)}%이고 중앙값은 ${S.da_median.toFixed(1)}%입니다. 부채 비중이 20% 미만인 ${S.da_under20}개 종목은 자리츠나 펀드를 거쳐 자산을 보유하는 구조일 수 있어, 표에 "간접 보유 구조일 수 있음"으로 표시했습니다.`;
   $('#dis-sub').textContent = `${S.dis_from} 이후 전체 리츠의 수시공시 가운데 주요 유형 ${S.dis_major}건입니다. 같은 기간 정기, 일반 공시 ${n0(S.dis_routine)}건은 목록에 넣지 않았습니다.`;
 })();
 
 /* 부채와 자본 비중 막대 */
 function drawLev(){
+  if (!R.length) { $('#lev-chart').textContent = '자료 없음'; return; }
   const el = $('#lev-chart'), rows = [...R].sort((a, b) => b.debt_to_assets - a.debt_to_assets);
   const W = Math.max(320, el.clientWidth), rh = 20, mL = 138, mR = 50, mT = 4, H = mT + rows.length * rh + 4, iw = W - mL - mR;
   let g = `<line x1="${mL + iw / 2}" x2="${mL + iw / 2}" y1="${mT}" y2="${H - 4}" stroke="var(--axis)" stroke-width="1" stroke-dasharray="2 3"/>`;
@@ -166,7 +167,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
   function draw(){
     const r = rows();
     $('#lev-count').textContent = `${r.length}개 종목`;
-    $('#lev-table').innerHTML = '<thead><tr>' + cols.map(c => c.k ? `<th class="sortable${c.txt ? '' : ' num'}" data-k="${c.k}"${sortK === c.k ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}>${c.t}</th>` : `<th>${c.t}</th>`).join('') + '</tr></thead><tbody>' +
+    $('#lev-table').innerHTML = '<thead><tr>' + cols.map(c => c.k ? `<th class="sortable${c.txt ? '' : ' num'}" data-k="${c.k}"${sortK === c.k ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}><button type="button">${c.t}</button></th>` : `<th>${c.t}</th>`).join('') + '</tr></thead><tbody>' +
       r.map(x => '<tr>' + cols.map(c => {
         if (c.k === 'name') return `<td><a class="ext" href="${esc(x.homepage || '#')}" target="_blank" rel="noopener">${esc(x.name)}</a><span class="s"><i class="dot" style="background:${secColor(x.sector)}"></i>${esc(x.sector)}${x.debt_to_assets < 20 ? ' · 간접 보유 구조일 수 있음' : ''}</span></td>`;
         if (c.k === 'as_of') return `<td class="nw">${esc(x.as_of || '')}<span class="s">${esc(x.period || '')}</span></td>`;
@@ -174,7 +175,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
         if (c.txt) return `<td>${esc(x[c.k] || '')}</td>`;
         if (c.k === 'revenue_eok') return `<td class="num">${c.f(x)}${x.fy_end ? `<span class="s">${esc(x.fy_end)}</span>` : ''}</td>`;
         return `<td class="num">${c.f(x)}</td>`; }).join('') + '</tr>').join('') + '</tbody>';
-    $('#lev-table').querySelectorAll('th.sortable').forEach(th => th.onclick = () => { const k = th.dataset.k; if (sortK === k) asc = !asc; else { sortK = k; asc = !!cols.find(c => c.k === k).txt; } draw(); });
+    $('#lev-table').querySelectorAll('th.sortable').forEach(th => th.onclick = () => { const k = th.dataset.k; if (sortK === k) asc = !asc; else { sortK = k; asc = !!cols.find(c => c.k === k).txt; } draw(); $('#lev-table').querySelector(`[data-k="${k}"] button`).focus(); });
   }
   $('#lev-csv').onclick = () => csv('상장리츠_재무구조', ['종목','종목코드','투자대상','기준일','자산총계(억원)','부채총계(억원)','자본총계(억원)','부채÷자산(%)','부채÷자본(배)','결산기 말일','영업수익(억원)','영업이익률(%)','최대주주'],
     rows().map(x => [x.name, x.code, x.sector, x.as_of, x.assets_eok, x.debt_eok, x.equity_eok, x.debt_to_assets, x.debt_to_equity, x.fy_end, x.revenue_eok, x.op_margin, x.top_shareholder]));
