@@ -16,6 +16,7 @@ import os
 import random
 import re
 import sys
+from calendar import monthrange
 from datetime import date, timedelta
 from pathlib import Path
 from statistics import median
@@ -29,13 +30,78 @@ from textutil import PRIVATE_LABEL, mask_person, phone_files
 DATA = Path(__file__).parent / "data"
 
 
-def verify_loans(check, statements, page, listed):
-    notes = build.optional_data("loans.json")
+def saved_json(filename):
+    path = DATA / filename
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+
+
+def verify_upcoming(check, notes, confirmed, upcoming, as_of):
+    start = date.fromisoformat(as_of)
+    first = start.replace(day=1)
+    months = {}
+    cutoffs = []
+    for _ in range(13):
+        following = (first + timedelta(days=32)).replace(day=1)
+        cutoffs.append(min(first + timedelta(days=start.day-1), following - timedelta(days=1)))
+        months[first.strftime("%Y-%m")] = dict.fromkeys(("고정", "변동", "모름"), 0)
+        first = following
+
+    expected = {}
+    passed_keys = set()
+    past_amount = overdue_amount = overdue_count = within6 = 0
+    fields = ("code", "maturity", "kind", "rate_text", "rate_type")
+    for code in confirmed:
+        issuer = notes[code]
+        for loan in issuer["loans"]:
+            day = date.fromisoformat(loan["maturity"])
+            amount = loan["amount"]
+            key = (code, *(loan[k] for k in fields[1:]))
+            if loan["maturity"] < issuer["end"]:
+                overdue_amount += amount
+                overdue_count += 1
+            elif day < start:
+                passed_keys.add(key)
+                past_amount += amount
+            elif day <= cutoffs[12]:
+                expected[key] = expected.get(key, 0) + amount
+                months[loan["maturity"][:7]][loan["rate_type"]] += amount
+                if day <= cutoffs[6]:
+                    within6 += amount
+
+    rows = upcoming.get("rows", [])
+    actual = {tuple(row[k] for k in fields): row["amount"] for row in rows}
+    check(actual == expected and len(rows) == len(expected), "차환 일정 묶음별 금액과 건수")
+    days = [date.fromisoformat(row["maturity"]) for row in rows]
+    check(upcoming.get("as_of") == as_of and days == sorted(days)
+          and all(start <= day <= cutoffs[12] and row["days"] == (day-start).days and row["code"] in confirmed
+                  for day, row in zip(days, rows)), "차환 일정 수집 기준일, 만기 범위와 순서, 잔여 일수와 종목")
+    check(sum(row["amount"] for row in rows) == upcoming.get("total") == sum(expected.values()),
+          "차환 일정 전체 금액")
+    shown_months = upcoming.get("months", {})
+    check(shown_months == months and sum(sum(m.values()) for m in shown_months.values()) == upcoming.get("total"),
+          "차환 일정 월별 금리 구분과 합계")
+    floating = sum(m["변동"] for m in months.values())
+    known = sum(m["고정"] + m["변동"] for m in months.values())
+    check(upcoming.get("within6") == within6 and upcoming.get("float_share") == (floating / known if known else None),
+          "차환 일정 6개월 내 만기 금액과 변동금리 비중")
+    check(upcoming.get("passed") == dict(amount=past_amount, count=len(passed_keys),
+                                         issuers=len({key[0] for key in passed_keys})), "보고서 기준일 이후 경과분")
+    check(upcoming.get("overdue") == dict(amount=overdue_amount, count=overdue_count), "보고서 기준일 전 경과분")
+
+
+def verify_loans(check, statements, page, listed, as_of):
+    notes = saved_json("loans.json")
     visible = page.get("issuers", {})
     confirmed = set()
     buckets = {}
     due = known = fixed = total = priced = weighted = 0
-    check(set(notes) == set(statements), "주석과 재무상태표 종목 목록")
+    if notes:
+        check(any(r.get("loans") for r in visible.values()), "저장한 주석의 화면 건별 내역 존재")
+    markers = re.compile(r"은행|증권|보험|캐피탈|금고|공사|공단|기금|연금|조합|중앙회|회사|리츠|㈜|\(주\)|\(유\)|유한|펀드|신탁|운용|투자|저축|카드|생명|화재|공제|신협|새마을")
+    names = {x["lender"] for r in notes.values() for x in r.get("loans", []) if x.get("lender")}
+    count = sum(1 for name in names if re.fullmatch("[가-힣]{2,4}", name) and not markers.search(name))
+    if count:
+        print(f"  주의  법인 표지가 없는 짧은 차입처 이름 {count}개")
     listed_codes = {s["code"] for s in listed}
     missing = []
     for code,r in notes.items():
@@ -43,7 +109,9 @@ def verify_loans(check, statements, page, listed):
         src = statements.get(code, {})
         cur = src.get("current", {})
         current = (src.get("rcept_no"), src.get("basis"), cur.get("end"), cur.get("total"))
-        stamp = (r["rcept_no"], r["basis"], r["end"], r["bs_total"])
+        stamp = tuple(r.get(k) for k in ("rcept_no", "basis", "end", "bs_total"))
+        if code not in listed_codes or not cur.get("total") or current != stamp or r.get("match") not in ("일치", "근사"):
+            continue
         check(stamp == current, f"{name} 주석과 재무상태표 접수번호, 기준일, 기준 및 차입 합계")
         rows = r["loans"]
         nominal = sum(x["amount"] for x in rows)
@@ -75,13 +143,20 @@ def verify_loans(check, statements, page, listed):
         w = sum(x["amount"]*x["rate"] for x in rows if x["rate"] is not None)
         check(r["fixed_share"] == (f/k if k else None) and r["avg_rate"] == (w/p if p else None),
               f"{name} 금리 구분을 확인한 금액과 고정금리 가중 평균")
-        if code not in listed_codes or current != stamp or match not in ("일치","근사"):
-            continue
         confirmed.add(code)
         shown = visible.get(code,{})
         detail = [{k:v for k,v in row.items() if k != "months"} for row in shown.get("loans",[])]
         check(detail == sorted(rows,key=lambda x:x["maturity"]) and all(shown.get(k) == r[k] for k in
               ("end","nominal","adjustments","bs_total","diff","match","rcept_no","name")), f"{name} 화면 건별 원문과 합계")
+        start = date.fromisoformat(cur["end"])
+        months = []
+        for row in sorted(rows, key=lambda x: x["maturity"]):
+            day = date.fromisoformat(row["maturity"])
+            elapsed = 12 * (day.year - start.year) + day.month - start.month
+            if day.day < start.day and day.day != monthrange(day.year, day.month)[1]:
+                elapsed -= 1
+            months.append(elapsed)
+        check(months == [x.get("months") for x in shown.get("loans", [])], f"{name} 기준일과 만기일로 계산한 잔여 개월 수")
         total += nominal
         fixed += f
         known += k
@@ -106,20 +181,38 @@ def verify_loans(check, statements, page, listed):
         borrowers += int(bool(bs))
         if bs != 0 and s["code"] not in confirmed:
             missing.append(s["name"])
+            print(f"  주의  {s['name']} 차입 주석 미확인")
     check(set(visible) == confirmed and missing == page.get("missing") and page.get("borrowers") == borrowers,
           "화면 확인 종목과 미확인 종목 분리")
     check(page.get("buckets") == buckets and page.get("nominal") == total == sum(sum(v.values()) for v in buckets.values()),
           "화면 반기별 금리 유형별 만기 합과 명목 합")
     expected = weighted/priced if priced else None
+    verify_upcoming(check, notes, confirmed, page.get("upcoming", {}), as_of)
     avg = page.get("avg_rate")
     check(page.get("fixed_share") == (fixed/known if known else None)
           and (avg == expected or avg is not None and expected is not None and abs(avg-expected)<1e-10)
           and page.get("due") == due, "화면 고정 비중과 가중 평균 금리 및 12개월 내 만기 금액")
 
 
+def secrets_only():
+    keys = [os.environ.get(k, "") for k in ("DART_API_KEY", "ECOS_API_KEY")]
+    needles = [key.encode() for key in keys if key and key != "sample"]
+    if needles:
+        for path in DATA.rglob("*"):
+            if path.is_file():
+                content = path.read_bytes()
+                if any(key in content for key in needles):
+                    print("실패  저장 자료에서 인증키를 발견했습니다.")
+                    return 1
+    print("통과  저장 자료 인증키 검사")
+    return 0
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if sys.argv[1:] == ["--secrets-only"]:
+        return secrets_only()
     bad = passed = 0
 
     def check(ok: bool, msg: str):
@@ -319,7 +412,7 @@ def main() -> int:
 
     print("[6] DART 차입과 배당")
     dart_path = DATA / "dart.json"
-    dart_data = build.optional_data("dart.json")
+    dart_data = saved_json("dart.json")
     try:
         finance_page = (build.SITE / "finance.html").read_text(encoding="utf-8")
         finance_payload, _ = json.JSONDecoder().raw_decode(finance_page.split("const D = ", 1)[1])
@@ -328,20 +421,27 @@ def main() -> int:
     except (OSError, IndexError, ValueError, KeyError, UnboundLocalError):
         maturity, market = {}, {}
     check(set(maturity) == set(market) == {r["code"] for r in listed}, "DART 표와 상장 종목 목록 일치")
+    if dart_data:
+        check(any(r.get("total") is not None for r in maturity.values()), "저장한 DART 차입 합계의 화면 표시")
     expected_yields = []
     print("[6-1] ECOS 시장금리")
-    rate_data = build.optional_data("rates.json")
+    rate_data = saved_json("rates.json")
     series = rate_data.get("series", {})
-    check(set(series) == set(ecos.SERIES), "금리 6개 계열 확인")
+    if (DATA / "rates.json").exists():
+        check(set(series) == set(ecos.SERIES), "금리 6개 계열 확인")
     latest_rates = {}
     yield_summary = page_data.get("summary", {}) if codes is not None else {}
-    for code, (name, stat, item) in ecos.SERIES.items():
-        row = series.get(code, {})
+    if series:
+        check(bool(yield_summary.get("rates") and finance_payload.get("rates")), "두 화면의 저장 금리 표시")
+    for code, row in series.items():
+        if code not in ecos.SERIES:
+            continue
+        name, stat, item = ecos.SERIES[code]
         values = row.get("values", {})
         days = list(values)
         try:
             dates = [date.fromisoformat(day) for day in days]
-            fetched = date.fromisoformat(rate_data["fetched"])
+            fetched = date.fromisoformat(row.get("fetched", rate_data.get("fetched")))
             valid_dates = days == sorted(day.isoformat() for day in dates)
         except (ValueError, KeyError, TypeError):
             valid_dates = False
@@ -366,7 +466,7 @@ def main() -> int:
     if secret and secret != "sample":
         check(all(secret.encode() not in path.read_bytes() for root in (DATA, build.SITE)
                   for path in root.rglob("*") if path.is_file()), "금리 인증키 저장 여부")
-    if os.environ.get("VERIFY_OFFLINE"):
+    if os.environ.get("VERIFY_OFFLINE") or not series:
         skipped += 1
     else:
         start = d1 - timedelta(days=13)
@@ -378,7 +478,7 @@ def main() -> int:
         else:
             stored = {day: value for day, value in series.get("ktb10", {}).get("values", {}).items()
                       if str(start) <= day <= str(d1)}
-            check(live == stored, "국고채 10년 최근 14일 원문 대조")
+            check(all(live.get(day) == value for day, value in stored.items()), "국고채 10년 최근 14일 원문 대조")
     expected_spreads = []
     price_window_start = (d1 - timedelta(days=372)).isoformat()
 
@@ -407,12 +507,20 @@ def main() -> int:
                   f"{name} {'당기' if key == 'current' else '전기'} 이자 지급 계정 합계와 적용 근거")
             if key == "current":
                 average = (s["total"] + record["previous"]["total"]) / 2
-                if s["days"] and average and interest is not None:
+                if s["total"] and s["days"] and average and interest is not None:
                     rate = interest / average * 365 / s["days"] * 100
                 if s["total"] and interest and s["op"] is not None:
                     coverage = s["op"] / interest
                 interest_source = source
         maturity_row = maturity.get(code, {})
+        if record:
+            cur = record["current"]
+            expected_amounts = {"total": cur["total"] / 1e8, "short": cur["short"] / 1e8,
+                                "extra": cur["short"] * 0.01 / 1e8,
+                                "impact": (cur["short"] * cur["days"] / (365 * cur["op"])
+                                           if cur["op"] and cur["op"] > 0 and cur["days"] else None)}
+            check(all(k in maturity_row and matches(v, maturity_row[k]) for k, v in expected_amounts.items()),
+                  f"{name} 차입 합계, 12개월 내 만기, 연 이자 증가액과 영업이익 대비 비율")
         market_row = market.get(code, {})
         history = sorted((day, close) for day, close in prices.get(code, {}).items()
                          if close and day >= price_window_start)
@@ -429,8 +537,15 @@ def main() -> int:
                     and sum(x["days"] for x in periods) == (end - cutoff).days):
                 annual_dps = sum(x["dps"] for x in periods)
             check(annual_dps == record.get("trailing_dps"), f"{name} 최근 12개월 배당 기간과 합계")
-            if price_break and str(cutoff) < price_break <= str(end):
-                yield_reason = "기준가 변경"
+            price_day = history[-1][0] if history else snap["date"]
+            previous_close = None
+            for day, close in sorted(prices.get(code, {}).items()):
+                if not close or day > price_day:
+                    continue
+                if previous_close and day > str(cutoff) and abs(close / previous_close - 1) > 0.31:
+                    yield_reason = "기준가 변경"
+                    break
+                previous_close = close
         expected = None
         if not yield_reason and annual_dps is not None and price and price > 0:
             expected = annual_dps / price * 100
@@ -448,6 +563,7 @@ def main() -> int:
               and matches(coverage, maturity_row.get("coverage")) and interest_source == maturity_row.get("interest_source"),
               f"{name} 화면 만기 비중, 추정 금리와 근거, 영업이익 ÷ 이자")
         check(price == market_row.get("price") and price_break == market_row.get("price_break")
+              and record.get("dividend_end") == market_row.get("dividend_end")
               and yield_reason == market_row.get("market_yield_reason")
               and matches(expected, market_row.get("market_yield")), f"{name} 화면 시가배당률과 기준가 변경")
     spread_median = round(median(expected_spreads), 2) if expected_spreads else None
@@ -456,7 +572,7 @@ def main() -> int:
     expected_median = round(median(expected_yields), 2) if expected_yields else None
     check(yield_summary.get("yield_n") == len(expected_yields) and matches(yield_summary.get("yield_median"), expected_median),
           "시가배당률 값이 있는 종목 수와 중앙값 재계산")
-    verify_loans(check, dart_data, finance_payload.get("loans", {}), listed)
+    verify_loans(check, dart_data, finance_payload.get("loans", {}), listed, snap["date"])
     raw = b"\n".join(p.read_bytes() for p in (dart_path, DATA / "loans.json") if p.exists())
     check(not re.search(rb"[0-9a-fA-F]{40}", raw), "DART 자료 40자리 인증정보 문자열 점검")
     secret = os.environ.get("DART_API_KEY")

@@ -260,7 +260,7 @@ def summarize(fs, basis, reports, series):
         common = [x for x in per_share if compact(x.get("stock_knd") or "") in ("보통주", "보통주식")]
         if not common:
             numeric_rows = [x for x in per_share if any(number(x.get(field)) is not None for field in dividend_fields)]
-            if len(numeric_rows) == 1:
+            if len(numeric_rows) == 1 and not re.search("우선|종류|전환", compact(numeric_rows[0].get("stock_knd") or "")):
                 common = numeric_rows
                 notes.append(f"{no} 보통주 표시가 없어 숫자가 있는 유일한 주당 현금배당금 줄을 보통주로 처리")
         if not common:

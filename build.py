@@ -331,7 +331,51 @@ def rate_summary():
     return result
 
 
-def loan_schedule(stocks):
+def upcoming_loans(issuers, as_of):
+    start = d(as_of)
+    dates = []
+    for offset in range(13):
+        year, month = month_add(start.year, start.month, offset)
+        dates.append(date(year, month, min(start.day, monthrange(year, month)[1])))
+    months = {day.strftime("%Y-%m"): dict.fromkeys(("고정", "변동", "모름"), 0) for day in dates}
+    rows = []
+    passed = dict(amount=0, count=0, issuers=0)
+    overdue = dict(amount=0, count=0)
+    for code, issuer in issuers.items():
+        groups = defaultdict(list)
+        for loan in issuer["loans"]:
+            key = (loan["maturity"], loan["kind"], loan["rate_text"], loan["rate_type"])
+            groups[key].append(loan)
+        has_passed = False
+        for (maturity, kind, rate_text, rate_type), loans in groups.items():
+            amount = sum(x["amount"] for x in loans)
+            if maturity < issuer["end"]:
+                overdue["amount"] += amount
+                overdue["count"] += len(loans)
+            elif maturity < as_of:
+                passed["amount"] += amount
+                passed["count"] += 1
+                has_passed = True
+            elif d(maturity) <= dates[-1]:
+                lenders = Counter()
+                for loan in loans:
+                    if loan["lender"]:
+                        lenders[loan["lender"]] += loan["amount"]
+                rows.append(dict(code=code, name=issuer["name"], maturity=maturity, days=(d(maturity)-start).days,
+                                 kind=kind, rate_text=rate_text, rate_type=rate_type, amount=amount,
+                                 lenders=[name for name, _ in lenders.most_common(3)], lender_n=len(lenders),
+                                 end=issuer["end"], rate=loans[0]["rate"]))
+                months[maturity[:7]][rate_type] += amount
+        passed["issuers"] += int(has_passed)
+    rows.sort(key=lambda row: row["maturity"])
+    floating = sum(month["변동"] for month in months.values())
+    known = floating + sum(month["고정"] for month in months.values())
+    return dict(as_of=as_of, rows=rows, months=months, total=sum(x["amount"] for x in rows),
+                within6=sum(x["amount"] for x in rows if d(x["maturity"]) <= dates[6]),
+                float_share=floating / known if known else None, passed=passed, overdue=overdue)
+
+
+def loan_schedule(stocks, as_of):
     from dart_notes import ratio
 
     notes = optional_data("loans.json")
@@ -348,8 +392,8 @@ def loan_schedule(stocks):
         borrowers += int(bool(balance.get("total")))
         r = notes.get(code, {})
         if (r.get("match") not in ("일치", "근사") or r.get("rcept_no") != source.get("rcept_no")
-                or r["end"] != balance.get("end") or r["bs_total"] != balance.get("total")
-                or r["basis"] != source.get("basis")):
+                or r.get("end") != balance.get("end") or r.get("bs_total") != balance.get("total")
+                or r.get("basis") != source.get("basis")):
             missing.append(stock["name"])
             continue
         issuer = {k: r[k] for k in ("name", "end", "rcept_no", "nominal", "adjustments", "bs_total", "diff", "match")}
@@ -371,7 +415,8 @@ def loan_schedule(stocks):
             all_loans.append(x)
     fixed, avg = ratio(all_loans)
     return dict(issuers=issuers, missing=missing, borrowers=borrowers, buckets=dict(sorted(buckets.items())),
-                nominal=sum(x["amount"] for x in all_loans), due=due, fixed_share=fixed, avg_rate=avg)
+                nominal=sum(x["amount"] for x in all_loans), due=due, fixed_share=fixed, avg_rate=avg,
+                upcoming=upcoming_loans(issuers, as_of))
 
 
 def maturity_rows(stocks, corporate_rate=None):
@@ -391,7 +436,7 @@ def maturity_rows(stocks, corporate_rate=None):
         annual = 365 / days if days else None
         row.update(basis="연결" if record["basis"] == "CFS" else "별도", end=s["end"],
                    total=total / 1e8, short=short / 1e8, share=100 * short / total if total else None,
-                   rate=100 * interest * annual / average if annual and average and interest is not None else None,
+                   rate=100 * interest * annual / average if total and annual and average and interest is not None else None,
                    interest_source=s.get("interest_source", s["cost_name"]),
                    coverage=op / interest if total and interest and op is not None else None, extra=short * 0.01 / 1e8,
                    impact=short / (op * annual) if op and op > 0 and annual else None)
@@ -412,7 +457,8 @@ def build_listed_data() -> dict:
     win_start = (d(snap["date"]) - timedelta(days=372)).isoformat()
     window = {}  # 종목별 최근 1년 종가. 이력은 계속 쌓이지만 화면의 규칙은 이 구간에만 적용한다
     for r in snap["listed"]:
-        hist = {k: v for k, v in prices.get(str(r["code"]), {}).items() if k >= win_start and v}
+        all_prices = {k: v for k, v in prices.get(str(r["code"]), {}).items() if v}
+        hist = {k: v for k, v in all_prices.items() if k >= win_start}
         dates = sorted(hist)
         if len(dates) >= 2:
             window[str(r["code"])] = hist
@@ -440,8 +486,13 @@ def build_listed_data() -> dict:
         dps = dividends.get("trailing_dps")
         dividend_end = safe_date(dividends.get("dividend_end"))
         price_break = breaks[-1] if breaks else None
-        yield_blocked = bool(price_break and dividend_end
-                             and previous_year(d(dividend_end)).isoformat() < price_break <= dividend_end)
+        yield_blocked = False
+        if dividend_end:
+            cutoff = previous_year(d(dividend_end)).isoformat()
+            price_day = last_d or snap["date"]
+            history = sorted(all_prices)
+            yield_blocked = any(cutoff < b <= price_day and abs(all_prices[b] / all_prices[a] - 1) > 0.31
+                                for a, b in zip(history, history[1:]))
         mktcap = r["mktcap_eok"] or 0
         nav_eok = round(r["nav_mil"] / 100) if r.get("nav_mil") else None
         ffo_eok = round(r["ffo_mil"] / 100, 1) if r.get("ffo_mil") is not None else None
@@ -456,7 +507,7 @@ def build_listed_data() -> dict:
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "has_finance": _has_finance(fin.get(str(r.get("reit_id")))),
             "homepage": safe_url(r.get("homepage")), "listed_date": safe_date(r.get("listed_date")),
-            "market_yield": market_yield,
+            "market_yield": market_yield, "dividend_end": dividend_end or None,
             "spread": round(market_yield - benchmark, 2) if market_yield is not None and benchmark is not None else None,
             "market_yield_reason": "기준가 변경" if yield_blocked else None,
             "price": last, "mktcap_eok": mktcap,
@@ -643,7 +694,7 @@ def build_finance_data() -> dict:
         "rows": rows, "groups": [{"name": g, "n": counts[g]} for g in GROUP_ORDER if counts[g]],
         "disclosures": items,
         "rates": rates,
-        "loans": loan_schedule(snap["listed"]),
+        "loans": loan_schedule(snap["listed"], snap["date"]),
         "maturity": maturity_rows(snap["listed"], rates.get("corp_aa", {}).get("value")),
         "timelines": timelines,
         "dis_start": min((day for x in dis.values() if (day := safe_date(x.get("date")))), default=None),

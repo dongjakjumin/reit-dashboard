@@ -73,10 +73,10 @@ def update(snap=None, folder=None, force=False):
     today = (date(2026, 11, 22) if folder is not None else
              date.fromisoformat(snap["date"]) if snap else date.today())
     old = json.loads(OUTPUT.read_text(encoding="utf-8")) if OUTPUT.exists() else {}
-    if not force and old.get("fetched") == today.isoformat():
+    series = old.get("series", {})
+    if not force and all(series.get(code, {}).get("fetched") == today.isoformat() for code in SERIES):
         return
     key = "sample" if folder is not None else api_key()
-    series = old.get("series", {})
     changed = 0
     for code, (name, stat, item) in SERIES.items():
         try:
@@ -90,12 +90,13 @@ def update(snap=None, folder=None, force=False):
                 start = date(year, today.month, min(today.day, monthrange(year, today.month)[1]))
             fresh = fetch(stat, item, start, today, key, folder)
             values = dict(sorted((previous | fresh).items()))
-            series[code] = dict(name=name, stat=stat, item=item, unit="연%", values=values)
+            series[code] = dict(name=name, stat=stat, item=item, unit="연%", fetched=today.isoformat(), values=values)
             changed += 1
         except Exception as exc:
             print(f"{name} 이전 자료 유지 ({type(exc).__name__})")
     if changed:
-        record = dict(source="한국은행 ECOS", fetched=today.isoformat(), series=series)
+        complete = all(series.get(code, {}).get("fetched") == today.isoformat() for code in SERIES)
+        record = dict(source="한국은행 ECOS", fetched=today.isoformat() if complete else old.get("fetched"), series=series)
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=OUTPUT.parent, delete=False) as tmp:
             json.dump(record, tmp, ensure_ascii=False, indent=2)
         Path(tmp.name).replace(OUTPUT)

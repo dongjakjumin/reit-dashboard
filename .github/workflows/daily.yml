@@ -34,6 +34,11 @@ jobs:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
         run: python collect.py
+      - name: Check data for credentials
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+        run: python verify.py --secrets-only
       - name: Commit data
         if: ${{ !inputs.deploy_only }}
         run: |

@@ -18,7 +18,7 @@ from pathlib import Path
 from dart import DATA, api_key, read
 
 OUTPUT = DATA / "loans.json"
-UNITS = {"원": 1, "천원": 1000, "백만원": 1000000}
+UNITS = {"원": 1, "천원": 1000, "백만원": 1000000, "억원": 10**8, "십억원": 10**9}
 TABLE = re.compile(r"<TABLE\b[^>]*>.*?</TABLE>", re.I | re.S)
 ROW = re.compile(r"<TR\b[^>]*>(.*?)</TR>", re.I | re.S)
 CELL = re.compile(r"<(TD|TH|TE|TU)\b([^>]*)>(.*?)</\1>", re.I | re.S)
@@ -113,7 +113,10 @@ def loan(kind, lender, day, text, flag, amount, fraction=False):
     else:
         if m:
             category = "고정"
-    rate = float(Decimal(m[1]) * (100 if fraction else 1)) if m and category == "고정" else None
+    rate = None
+    if m and category == "고정":
+        value = Decimal(m[1])
+        rate = float(value * 100 if fraction and "%" not in simple and value < 1 else value)
     return dict(kind=kind, lender=lender if lender != "-" else "", maturity=day,
                 rate_text=text, rate=rate, rate_type=category, amount=amount)
 
@@ -136,7 +139,7 @@ class Skip(ValueError):
     pass
 
 
-def xbrl(rows, context, unit):
+def xbrl(rows, context, unit, foreign=False):
     if period(context) != "당기":
         raise Skip("전기 표" if period(context) else "XBRL 당기·전기 구분 불명")
     # 건을 열로 놓은 표와 행으로 놓은 표를 같은 방향으로 맞춘다.
@@ -144,9 +147,10 @@ def xbrl(rows, context, unit):
         rows = [list(col) for col in itertools.zip_longest(*rows, fillvalue="")]
     fields = {r[0].replace(" ", ""): r for r in rows if r and r[0]}
     names = [r for r in rows if r and not r[0]]
-    amounts = next((v for k, v in fields.items() if "명목금액" in k and "외화" not in k), [])
+    amounts = next((v for k, v in fields.items() if "명목금액" in k and "외화" not in k
+                    and (not foreign or "원화" in k or "KRW" in k) and "전기" not in k), [])
     principal = [r for k,r in fields.items() if k in ("단기차입금", "장기차입금")]
-    if not amounts and principal and any("총장부금액" in r for r in names):
+    if not amounts and not foreign and principal and any("총장부금액" in r for r in names):
         amounts = ["금액"] + [str(sum(number(r[j]) for r in principal)) for j in range(1,len(principal[0]))]
     if not amounts:
         raise Skip("원화 명목금액 없음")
@@ -181,7 +185,10 @@ def xbrl(rows, context, unit):
                 base = field("차입금,기준이자율", k)
                 if base:
                     spread = field("차입금,기준이자율조정", k)
-                    rate, flag = f"{base} + {number(spread)*100:g}%", "변동"
+                    value = number(spread.rstrip("%").strip())
+                    if "%" not in spread and abs(value) < 1:
+                        value *= 100
+                    rate, flag = f"{base} + {value:g}%", "변동"
                     break
                 if field("차입금,이자율", k):
                     rate, flag = field("차입금,이자율", k), names[-1][k]
@@ -192,17 +199,20 @@ def xbrl(rows, context, unit):
     return loans, adjustment, 0
 
 
-def parse_table(rows, context, tail):
-    unit_tags = re.findall(r"단위\s*[:：]\s*([^)]*)\)", context + " " + " ".join(rows[0][:1]))
+def parse_table(rows, context, tail, end=None):
+    unit_tags = re.findall(r"단위\s*[:：]\s*([^()\n]*)", context + "\n" + rows[0][0])
     unit_text = unit_tags[-1] if unit_tags else ""
-    u = re.search("백만원|천원|원", unit_text.replace(" ", ""))
-    if not u:
+    won_pattern = r"십억원|억원|백만원|천원|(?<![가-힣])원(?![가-힣])"
+    u = re.search(won_pattern, unit_text)
+    foreign = bool(re.search(r"[A-Z]{3}|외화|달러|엔화|유로", unit_text))
+    if not u and not foreign:
         raise Skip("원화 단위 없음")
-    unit = UNITS[u[0]]
+    unit_name = u[0] if u else None
     if rows[0][0] == "" and any("명목금액" in s or s in ("단기차입금", "장기차입금")
                                     for row in rows for s in row):
-        loans, adj, transfer = xbrl(rows, context, unit)
-        return loans, adj, transfer, u[0]
+        unit_name = unit_name or "원"
+        loans, adj, transfer = xbrl(rows, context, UNITS[unit_name], foreign)
+        return loans, adj, transfer, unit_name
     header_index = next((i for i,r in enumerate(rows[:4]) if any(re.search("만기|상환일", s) for s in r)
                          and any(re.search("이자율|금리|이율", s) for s in r)), None)
     if header_index is None:
@@ -210,18 +220,33 @@ def parse_table(rows, context, tail):
     h = [s.replace(" ", "") for s in rows[header_index]]
     body = rows[header_index+1:]
     sub = []
-    if body and any(v.replace(" ", "") in ("당기말","전기말","원화금액","외화금액") for v in body[0]):
+    if body and any(
+            re.search("^(당기|전기|원화|외화)", v.replace(" ", "")) or (end and maturity(v) == end)
+            for v in body[0]) and not any(number(v) for v in body[0]):
         sub, body = [s.replace(" ", "") for s in body[0]], body[1:]
     def column(pattern):
         return next((i for i,s in enumerate(h) if re.search(pattern,s)), None)
     cur = next((i for i,s in enumerate(h) if s == "당기말" or
-                (s == "금액" and (sub[i] == "당기말" if sub else period(context) == "당기"))), None)
-    if re.search("EUR|USD|JPY|GBP|외화", unit_text + "".join(sub), re.I) or any(
+                (s == "금액" and (sub[i] == "당기말" if i < len(sub) else period(context) == "당기"))), None)
+    if foreign or any(re.match(r"외화(?:금액|환산|잔액|표시|$)", s) for s in h + sub) or any(
             re.fullmatch("USD|EUR|JPY|GBP", s) for r in body for s in r):
-        cur = next((i for i,s in enumerate(h) if "전기" not in s and
-                    ("원화" in s or (s == "당기말" and sub and "원화" in sub[i]))), None)
+        cur = None
+        for i, heading in enumerate(h):
+            label = heading + (sub[i] if i < len(sub) else "")
+            if "원화" not in label and "KRW" not in label:
+                continue
+            label_day = maturity(label)
+            if "전기" in label or (label_day and end and label_day != end):
+                continue
+            if not ("당기" in label or (end and label_day == end)):
+                continue
+            col_unit = re.search(won_pattern, label)
+            unit_name = col_unit[0] if col_unit else unit_name or "원"
+            cur = i
+            break
         if cur is None:
             raise Skip("외화 표에 당기 원화 환산액 없음")
+    unit = UNITS[unit_name]
     if cur is None:
         raise Skip("당기말 잔액 열 없음")
     day_col = column("만기|상환일")
@@ -269,7 +294,7 @@ def parse_table(rows, context, tail):
                         flag = re.search("변동금리|고정금리",note)[0]
                         break
             loans.append(loan(cell(kind_col) or default, cell(lender_col), day, text, flag, value))
-    return loans, adj, transfer, u[0]
+    return loans, adj, transfer, unit_name
 
 
 def status(total, nominal, adjusted):
@@ -290,7 +315,7 @@ def extract(r, doc, xml):
         if not total or not rows or not rows[0]:
             continue
         try:
-            loans, adj, transfer, unit = parse_table(rows, context, tail)
+            loans, adj, transfer, unit = parse_table(rows, context, tail, end)
         except Skip as exc:
             skipped.append(f"표 {i}: {exc}")
             ambiguous |= str(exc) == "XBRL 당기·전기 구분 불명"
@@ -310,6 +335,13 @@ def extract(r, doc, xml):
         for group in itertools.combinations(tables,n):
             if not best or score(group) < score(best):
                 best = group
+    seen = set()
+    for index, rows, *_ in best:
+        keys = {(x["lender"], x["maturity"], x["rate_text"], x["amount"]) for x in rows}
+        if seen.intersection(keys):
+            ambiguous = True
+            skipped.append(f"표 {index}: 다른 표와 차입처, 만기일, 이자율 원문, 금액 중복")
+        seen.update(keys)
     chosen = [t[0] for t in best]
     skipped.extend(f"표 {t[0]}: 다른 표 조합을 채택" for t in tables if t[0] not in chosen)
     if not tables and total and not skipped:
@@ -348,7 +380,12 @@ def document(code, r, folder, key):
 def update(snap=None, folder=None, force=False):
     source = read(DATA/"dart.json")
     stored = read(OUTPUT) if OUTPUT.exists() else {}
-    due = [c for c,r in source.items() if folder or force or stored.get(c,{}).get("rcept_no") != r["rcept_no"]]
+    due = []
+    for code, record in source.items():
+        note = stored.get(code, {})
+        expected = (record["rcept_no"], record["basis"], record["current"]["end"], record["current"]["total"])
+        if folder or force or tuple(note.get(k) for k in ("rcept_no", "basis", "end", "bs_total")) != expected:
+            due.append(code)
     if not due:
         return
     key = None if folder else api_key()
