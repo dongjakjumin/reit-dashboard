@@ -92,3 +92,5 @@ th.sortable[aria-sort=ascending]::after{content:" ▴"}
 td.pos{color:var(--up)} td.neg{color:var(--down)}
 .spark{display:block;width:84px;height:24px}
 a.ext{color:inherit;text-decoration:underline;text-decoration-color:var(--axis);text-underline-offset:3px}
+.seg{max-width:100%;overflow-x:auto}
+.seg button{white-space:nowrap;flex:none}

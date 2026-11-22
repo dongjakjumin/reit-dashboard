@@ -114,3 +114,29 @@ def listed_wale() -> list[dict]:
 def price_history(code: str, date_from: str, date_to: str) -> list[dict]:
     """종목 1개의 일별 종가. 날짜는 YYYYMMDD."""
     return post("/main/searchStockChart", {"stockCd": code, "fromDt": date_from, "toDt": date_to})
+
+
+def reit_basic(reit_id: int) -> dict:
+    """리츠 상세 > 기본정보(자산총계, 부채총계, 자본총계, 최대주주 등)."""
+    return post("/reits/prmpc/searchPrmpcOperTab01_01", {"reitsNo": reit_id, "no": reit_id})
+
+
+def reit_balance_series(reit_id: int) -> list[dict]:
+    """리츠 상세 > 결산기별 자산, 부채, 자본."""
+    return post("/reits/prmpc/searchPrmpcOperTab01_02", {"reitsNo": reit_id, "no": reit_id})
+
+
+def reit_income_series(reit_id: int) -> list[dict]:
+    """리츠 상세 > 결산기별 영업수익, 영업이익."""
+    return post("/reits/prmpc/searchPrmpcOperTab01_03", {"reitsNo": reit_id, "no": reit_id})
+
+
+def disclosures(date_from: str, date_to: str) -> list[dict]:
+    """수시공시 목록. 날짜는 YYYYMMDD."""
+    data = post("/reits/pblntf/cmpny/searchPblntfCmpny", {
+        "matterCode": "", "cmpnyNm": "", "pblntfContent": "", "pblntfNo": "",
+        "pblntfDe1": date_from, "pblntfDe2": date_to, "pageSize": 3000, "pageNum": 1})
+    rows = data.get("list") or []
+    if int(data.get("total") or 0) != len(rows):
+        raise RuntimeError(f"수시공시 total={data.get('total')}인데 {len(rows)}건을 받음")
+    return rows

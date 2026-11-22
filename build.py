@@ -281,15 +281,116 @@ def build_listed_data() -> dict:
     }
 
 
-def render(template: str, out: str, data: dict) -> int:
+# 수시공시 유형 묶음(화면의 필터 단추). 여기에 없는 유형은 '정기, 일반'으로 센다.
+DISCLOSURE_GROUPS = {
+    "RT02100018": "위험 신호", "RT02100019": "위험 신호", "RT02100027": "위험 신호",
+    "RT02100021": "자산 취득, 처분", "RT02100022": "자산 취득, 처분",
+    "RT02100023": "신용평가", "RT02100024": "최대주주 변경",
+    "RT02100028": "특수관계 거래", "RT02100029": "대출 실행",
+    "RT02100020": "기타 공시", "RT02100002": "기타 공시",
+}
+GROUP_ORDER = ["위험 신호", "자산 취득, 처분", "신용평가", "최대주주 변경", "특수관계 거래", "대출 실행", "기타 공시"]
+
+
+def _norm_company(name: str) -> str:
+    return re.sub(r"\(주\)|㈜|주식회사|\s", "", name or "")
+
+
+def build_finance_data() -> dict:
+    """상장리츠 재무 구조와 리츠 주요 공시."""
+    snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
+    fin = json.loads((DATA / "financials.json").read_text(encoding="utf-8"))
+    dis = json.loads((DATA / "disclosures.json").read_text(encoding="utf-8"))
+    today = d(snap["date"])
+    eok = lambda won: round(won / 1e8) if won is not None else None
+
+    rows = []
+    for r in snap["listed"]:
+        f = fin.get(str(r.get("reit_id")))
+        if not f or not f.get("assets"):
+            continue
+        ser = [x for x in f["series"] if x.get("assets")]
+        last = ser[-1] if ser else {}
+        m = re.search(r"(\d+기)\s*(결산기|\d분기|반기)?", (last.get("label") or "").replace("\\n", " "))
+        rev, op = last.get("revenue"), last.get("op_profit")
+        rows.append({
+            "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
+            "homepage": r.get("homepage"), "mktcap_eok": r.get("mktcap_eok"),
+            "as_of": last.get("end"), "period": " ".join(x for x in (m.groups() if m else ()) if x),
+            "assets_eok": eok(f["assets"]), "debt_eok": eok(f["debt"]), "equity_eok": eok(f["equity"]),
+            "debt_to_assets": round(f["debt"] / f["assets"] * 100, 1),
+            "debt_to_equity": round(f["debt"] / f["equity"], 2) if f.get("equity") and f["equity"] > 0 else None,
+            "revenue_eok": round(rev / 1e8, 1) if rev is not None else None,
+            "op_margin": round(op / rev * 100, 1) if rev and op is not None else None,
+            "top_shareholder": clean_company(f.get("top_shareholder") or ""),
+            "series": [{"end": x["end"], "assets_eok": eok(x["assets"]), "debt_eok": eok(x["debt"]),
+                        "debt_to_assets": round(x["debt"] / x["assets"] * 100, 1)} for x in ser],
+        })
+    da = [r["debt_to_assets"] for r in rows]
+    hi = max(rows, key=lambda r: r["debt_to_assets"])
+    lo = min(rows, key=lambda r: r["debt_to_assets"])
+
+    listed_names = {_norm_company(r["company"]): r["name"] for r in snap["listed"]}
+    cut90 = (today - timedelta(days=90)).isoformat()
+    items, routine90 = [], 0
+    for no, x in dis.items():
+        grp = DISCLOSURE_GROUPS.get(x.get("matter_code"))
+        if (x.get("date") or "") < cut90:
+            continue
+        if not grp:
+            routine90 += 1
+            continue
+        items.append({"no": no, "date": x["date"], "group": grp, "matter": x["matter"],
+                      "company_s": short_reit(x["company"]), "type": x.get("company_type") or "",
+                      "listed": listed_names.get(_norm_company(x["company"])), "text": x.get("text") or ""})
+    items.sort(key=lambda z: (z["date"], int(z["no"])), reverse=True)
+    counts = {g: sum(1 for i in items if i["group"] == g) for g in GROUP_ORDER}
+    cfg_path = ROOT / "config.json"
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
+    return {
+        "collected_at": snap["collected_at"], "date": snap["date"],
+        "fin_fetched": max(f["fetched"] for f in fin.values()),
+        "summary": {
+            "n": len(rows), "da_median": round(_median(da), 1),
+            "da_hi": {"name": hi["name"], "v": hi["debt_to_assets"]},
+            "da_lo": {"name": lo["name"], "v": lo["debt_to_assets"]},
+            "de_over2": sum(1 for r in rows if r["debt_to_equity"] and r["debt_to_equity"] > 2),
+            "da_under20": sum(1 for r in rows if r["debt_to_assets"] < 20),
+            "da_median_ex": round(_median([v for v in da if v >= 20]), 1),
+            "assets_eok": sum(r["assets_eok"] for r in rows), "debt_eok": sum(r["debt_eok"] for r in rows),
+            "dis_major": len(items), "dis_routine": routine90, "dis_risk": counts["위험 신호"],
+            "dis_from": cut90,
+        },
+        "rows": rows, "groups": [{"name": g, "n": counts[g]} for g in GROUP_ORDER if counts[g]],
+        "disclosures": items,
+        "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
+    }
+
+
+PAGES = [("index", "./", "인가와 프로젝트리츠"), ("listed", "listed.html", "상장리츠"),
+         ("finance", "finance.html", "재무 구조와 공시")]
+
+
+def nav_html(current: str) -> str:
+    links = "".join(f'\n  <a href="{href}"' + (' aria-current="page"' if key == current else "") + f">{label}</a>"
+                    for key, href, label in PAGES)
+    return f'<nav class="top" aria-label="화면 이동">{links}\n</nav>'
+
+
+def render(template: str, out: str, data: dict | None, page: str) -> int:
     tpl = (ROOT / template).read_text(encoding="utf-8")
     css = (ROOT / "style.css").read_text(encoding="utf-8")
-    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-    if "/*__DATA__*/null" not in tpl or "/*__CSS__*/" not in tpl:
-        raise RuntimeError(f"{template}에서 자료나 스타일을 넣을 자리를 찾지 못함")
-    html = tpl.replace("/*__CSS__*/", css).replace("/*__DATA__*/null", payload)
+    for mark in ("/*__CSS__*/", "<!--__NAV__-->"):
+        if mark not in tpl:
+            raise RuntimeError(f"{template}에서 {mark} 자리를 찾지 못함")
+    html = tpl.replace("/*__CSS__*/", css).replace("<!--__NAV__-->", nav_html(page))
+    if data is not None:
+        if "/*__DATA__*/null" not in html:
+            raise RuntimeError(f"{template}에서 자료를 넣을 자리를 찾지 못함")
+        payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+        html = html.replace("/*__DATA__*/null", payload)
     SITE.mkdir(exist_ok=True)
-    (SITE / out).write_text(html, encoding="utf-8")
+    (SITE / out).write_text(html, encoding="utf-8", newline="\n")
     return len(html)
 
 
@@ -297,9 +398,11 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     data = build_data()
-    n_index = render("template.html", "index.html", data)
+    n_index = render("template.html", "index.html", data, "index")
     listed = build_listed_data()
-    n_listed = render("template_listed.html", "listed.html", listed)
+    n_listed = render("template_listed.html", "listed.html", listed, "listed")
+    finance = build_finance_data()
+    n_fin = render("template_finance.html", "finance.html", finance, "finance")
     s = data["summary"]
     print(f"[빌드] {data['collected_at']} | 리츠 {s['n_reits']}개, 자산총계 {s['assets_eok']/10000:.2f}조원, "
           f"자산관리회사 {s['n_amc']}곳 | 최근 12개월 {s['new12']}건(직전 {s['prev12']}건) | "
@@ -309,6 +412,11 @@ def main():
           f"지수 1년 {ls['index_ret']:+.1f}%({ls['index_n']}개), "
           f"P/NAV 중앙값 {ls['pnav_median']}(1배 미만 {ls['pnav_below1']}/{ls['pnav_n']}), "
           f"연환산 배당률 중앙값 {ls['dvd_median']}% | listed.html {n_listed:,}자")
+    fs = finance["summary"]
+    print(f"[빌드] 재무 구조 {fs['n']}개, 부채/자산 중앙값 {fs['da_median']}%, "
+          f"최고 {fs['da_hi']['name']} {fs['da_hi']['v']}%, 최저 {fs['da_lo']['name']} {fs['da_lo']['v']}% | "
+          f"최근 90일 주요 공시 {fs['dis_major']}건(위험 신호 {fs['dis_risk']}건), 정기와 일반 {fs['dis_routine']}건 | "
+          f"finance.html {n_fin:,}자")
 
 
 if __name__ == "__main__":

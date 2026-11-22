@@ -185,11 +185,87 @@ def update_prices(snap: dict):
     _save(path, prices)
 
 
+FIN_REFRESH_DAYS = 7      # 상장리츠 재무 자료는 일주일에 한 번만 다시 받는다
+DISCLOSURE_DAYS = 120     # 수시공시는 최근 120일을 받아 누적한다
+# 임원, 자산운용전문인력 변경처럼 개인 이름이 주 내용인 공시는 내용 문구를 저장하지 않는다
+DISCLOSURE_NO_TEXT = {"RT02100003", "RT02100015"}
+
+
+def update_financials(snap: dict):
+    """상장리츠의 자산, 부채, 자본과 결산기별 추이. 요청 수를 줄이려고 주 1회만 갱신."""
+    path = DATA / "financials.json"
+    fin = _load(path, {})
+    today = datetime.strptime(snap["date"], "%Y-%m-%d")
+    fetched = 0
+    for row in snap["listed"]:
+        rid = row.get("reit_id")
+        if not rid:
+            continue
+        key = str(rid)
+        old = fin.get(key)
+        fresh = old and (today - datetime.strptime(old["fetched"], "%Y-%m-%d")).days < FIN_REFRESH_DAYS \
+            and old.get("fiscal_end") == row.get("fiscal_end")
+        if fresh:
+            continue
+        b = reits_api.reit_basic(rid)
+        bal = reits_api.reit_balance_series(rid)
+        inc = {x.get("stacntRelmDe"): x for x in reits_api.reit_income_series(rid)}
+        series = []
+        for x in bal:
+            end = x.get("stacntRelmDe")
+            label = " ".join(str(x.get("psacntQuNo") or "").split())
+            i = inc.get(end, {})
+            series.append({"end": end, "label": label,
+                           "assets": _num(x.get("assetsSum")), "debt": _num(x.get("debtSum")),
+                           "equity": _num(x.get("caplSum")),
+                           "revenue": _num(i.get("ernSum")), "op_profit": _num(i.get("profitSum"))})
+        series.sort(key=lambda z: z["end"] or "")
+        fin[key] = {
+            "fetched": snap["date"], "code": row["code"], "name": row["name"],
+            "fiscal_end": row.get("fiscal_end"),
+            "assets": _num(b.get("totAssets")), "debt": _num(b.get("cmpnyDebt")),
+            "equity": _num(b.get("cmpnyCaplSm")), "capital": _num(b.get("cmpnyCapl")),
+            "top_shareholder": (b.get("shrholdrNm") or "").strip() or None,
+            "base_year": b.get("baseYear"), "period": b.get("psacntNo"),
+            "series": series,
+        }
+        fetched += 1
+    _save(path, fin, pretty=True)
+    return fetched
+
+
+def update_disclosures(snap: dict):
+    """수시공시 누적 기록. 공시번호를 키로 쌓고, 1년이 지난 건은 지운다."""
+    path = DATA / "disclosures.json"
+    log = _load(path, {})
+    today = datetime.strptime(snap["date"], "%Y-%m-%d")
+    rows = reits_api.disclosures((today - timedelta(days=DISCLOSURE_DAYS)).strftime("%Y%m%d"),
+                                 today.strftime("%Y%m%d"))
+    for x in rows:
+        no = x.get("pblntfNo")
+        if no is None:
+            continue
+        code = x.get("matterCode")
+        text = "" if code in DISCLOSURE_NO_TEXT else " ".join(str(x.get("changeCn") or "").split())[:300]
+        log[str(int(no))] = {
+            "date": x.get("pblntfDe"), "company": (x.get("cmpnyNm") or "").strip(),
+            "company_type": x.get("cmpnySeNm"), "matter_code": code,
+            "matter": " ".join(str(x.get("matterNm") or "").split()), "text": text,
+        }
+    cutoff = (today - timedelta(days=365)).strftime("%Y-%m-%d")
+    log = {k: v for k, v in log.items() if (v.get("date") or "") >= cutoff}
+    _save(path, dict(sorted(log.items(), key=lambda kv: (kv[1]["date"], int(kv[0])), reverse=True)))
+    return len(rows)
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     snap = collect()
     update_prices(snap)
+    n_fin = update_financials(snap)
+    n_dis = update_disclosures(snap)
+    print(f"[수집] 상장리츠 재무 {n_fin}건 갱신, 수시공시 최근 {DISCLOSURE_DAYS}일 {n_dis}건")
     _save(SNAP / f"{snap['date']}.json", snap)
     _save(DATA / "latest.json", snap)
     update_logs(snap)

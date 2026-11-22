@@ -4,7 +4,8 @@
 2) 리츠정보시스템에 다시 물어 전체 건수가 저장분과 같은지 본다.
 3) 리츠 몇 건을 뽑아 상세 화면(다른 조회 경로)의 값과 목록 값을 대조한다.
 4) 상장리츠: 건수, 합계, P/NAV 재계산, 주가 이력, 첫 화면의 NAV와 FFO 대조.
-5) 저장 파일에 전화번호 모양의 문자열이 없는지 본다.
+5) 재무 구조와 수시공시: 자산 = 부채 + 자본, 상세 화면 재조회, 공시 건수.
+6) 저장 파일에 전화번호 모양의 문자열이 없는지 본다.
 
 숫자가 하나라도 어긋나면 종료 코드 1. 원문 접속이 안 돼 재조회를 못 한 항목은 건너뛴 것으로 적고 실패로 세지 않는다.
 """
@@ -115,11 +116,40 @@ def main() -> int:
         check(ok, f"{r['name']} | NAV {r['nav_mil']:,}백만원, FFO {r['ffo_mil']:,}백만원 | "
                   f"첫 화면 NAV {nav_main.get(r['name'])}, FFO {ffo_main.get(r['name'])}")
 
-    print("[5] 개인정보")
+    print("[5] 재무 구조와 수시공시")
+    fin = json.loads((DATA / "financials.json").read_text(encoding="utf-8"))
+    dis = json.loads((DATA / "disclosures.json").read_text(encoding="utf-8"))
+    fd = build.build_finance_data()
+    check(len(fd["rows"]) == len(listed), f"재무 자료 {len(fd['rows'])}개 = 상장리츠 {len(listed)}개")
+    check(all(abs(v["assets"] - v["debt"] - v["equity"]) <= 1e8 for v in fin.values()),
+          "자산총계 = 부채총계 + 자본총계(1억원 이내)")
+    check(all(abs(r["debt_eok"] / r["assets_eok"] * 100 - r["debt_to_assets"]) < 0.2 for r in fd["rows"]),
+          "부채 ÷ 자산 재계산 일치")
+    check(sum(g["n"] for g in fd["groups"]) == fd["summary"]["dis_major"], "공시 유형별 건수 합 = 주요 공시 건수")
+    for r in random.sample(listed, 3):
+        b1 = ask("/reits/prmpc/searchPrmpcOperTab01_01", {"reitsNo": r["reit_id"], "no": r["reit_id"]})
+        if b1 is None:
+            continue
+        v = fin[str(r["reit_id"])]
+        check(str(b1.get("totAssets")) == str(v["assets"]) and str(b1.get("cmpnyDebt")) == str(v["debt"]),
+              f"{r['name']} | 저장 자산 {v['assets']:,}원, 부채 {v['debt']:,}원 = 상세 화면 재조회")
+    from datetime import date, timedelta
+    d1 = date.fromisoformat(snap["date"])
+    d0 = d1 - timedelta(days=14)
+    live_d = ask("/reits/pblntf/cmpny/searchPblntfCmpny", {
+        "matterCode": "", "cmpnyNm": "", "pblntfContent": "", "pblntfNo": "",
+        "pblntfDe1": d0.strftime("%Y%m%d"), "pblntfDe2": d1.strftime("%Y%m%d"), "pageSize": 10, "pageNum": 1})
+    if live_d:
+        stored = sum(1 for x in dis.values() if d0.isoformat() <= (x.get("date") or "") <= d1.isoformat())
+        # 수집 뒤에 새 공시가 올라올 수 있으므로 원문이 조금 많은 것은 허용한다
+        check(0 <= int(live_d["total"]) - stored <= 15,
+              f"최근 14일 수시공시 원문 {int(live_d['total'])}건, 저장 {stored}건")
+
+    print("[6] 개인정보")
     blob = "".join(p.read_text(encoding="utf-8") for p in DATA.rglob("*.json"))
     for site in (Path(__file__).parent / "site").glob("*.html"):
         blob += site.read_text(encoding="utf-8")
-    check(not re.search(r"01[016789]-?\d{3,4}-?\d{4}", blob), "저장 파일과 화면에 휴대전화 번호 모양 문자열 없음")
+    check(not re.search(r"(?<![\d.])01[016789]-?\d{3,4}-?\d{4}(?!\d)", blob), "저장 파일과 화면에 휴대전화 번호 모양 문자열 없음")
     check('"mberPhone"' not in blob and '"mberNm"' not in blob, "담당자 항목 이름 없음")
 
     print("결과:", ("모두 통과" if bad == 0 else f"실패 {bad}건")
