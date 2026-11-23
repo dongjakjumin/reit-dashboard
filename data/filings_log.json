@@ -6,17 +6,21 @@
   "req_type": "프로젝트리츠 설립신고",
   "name": "주식회사 코람코개발앵커제1호프로젝트위탁관리자부동산투자회사",
   "applicant": "(주)코람코자산신탁",
-  "status": "보완완료",
+  "status": "보완요청",
   "project_name": "마포 상수동 역세권장기전세주택 개발사업",
   "biz_type": "개발",
   "founding_capital": 10300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
     "보완완료"
+   ],
+   [
+    "2026-11-23",
+    "보완요청"
    ]
   ],
   "gone_on": null
@@ -34,7 +38,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -56,7 +60,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -78,7 +82,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -100,7 +104,7 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -122,7 +126,7 @@
   "founding_capital": 6081500000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -144,7 +148,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -166,7 +170,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -188,7 +192,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -214,7 +218,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -236,7 +240,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -258,7 +262,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -280,7 +284,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -302,7 +306,7 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -324,7 +328,7 @@
   "founding_capital": 750000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -346,7 +350,7 @@
   "founding_capital": 4580000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -368,7 +372,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -390,7 +394,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -412,7 +416,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -434,7 +438,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -456,7 +460,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -478,7 +482,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
@@ -500,11 +504,33 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-22",
+  "last_seen": "2026-11-23",
   "status_history": [
    [
     "2026-11-21",
     "보완요청"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11913": {
+  "id": 11913,
+  "reit_id": 1271,
+  "date": "2026-11-23",
+  "req_type": "프로젝트리츠 설립신고",
+  "name": "주식회사 코람코프라임에셋제1호프로젝트위탁관리자부동산투자회사",
+  "applicant": "(주)코람코자산신탁",
+  "status": "접수",
+  "project_name": "구의동 우정재산 개발사업",
+  "biz_type": "개발",
+  "founding_capital": 5000000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-23",
+  "last_seen": "2026-11-23",
+  "status_history": [
+   [
+    "2026-11-23",
+    "접수"
    ]
   ],
   "gone_on": null
