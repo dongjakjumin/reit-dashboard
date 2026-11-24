@@ -418,6 +418,16 @@ def main() -> int:
           and {x["code"] for x in lc["removed"]} == (seen_before - now_codes if now_codes else set())
           and all(x["code"] in now_codes for x in lc["added"]),
           f"상장 목록 변동 재계산(빠짐 {len(lc['removed'])}개, 들어옴 {len(lc['added'])}개)")
+    # 빠진 종목의 DART 공시: 보고서명 규칙, 접수번호 14자리, 접수일 = 접수번호 앞 8자리, 화면에는 가장 최근 건
+    exits = saved_json("exits.json")
+    exit_rule = re.compile(r"해산사유|상장폐지|합병결정|분할결정|회생절차|파산")
+    exit_files = [f for v in exits.values() for f in v.get("filings", [])]
+    check(all(exit_rule.search(f["title"]) and re.fullmatch(r"\d{14}", f["rcept_no"])
+              and f["rcept_no"][:8] == f["date"].replace("-", "") for f in exit_files)
+          and all(x.get("exit") == next(iter((exits.get(x["code"]) or {}).get("filings") or []), None) for x in lc["removed"])
+          and all(v.get("filings") == sorted(v.get("filings", []), key=lambda f: f["rcept_no"], reverse=True) for v in exits.values()),
+          f"목록에서 빠진 종목의 DART 공시 {len(exit_files)}건 형식과 화면 표시"
+          + "".join(f" · {x['name']} {x['exit']['date']} {x['exit']['title']}" for x in lc["removed"] if x.get("exit")))
     # 수익률을 가격 이력에서 따로 계산해 화면 값과 견준다(기준가가 바뀐 종목은 제외)
     from datetime import date as _date, timedelta as _td
     for row in [x for x in ld["rows"] if x["ret_1y"] is not None][:3]:

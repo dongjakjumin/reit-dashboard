@@ -19,6 +19,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 OUTPUT = DATA / "dart.json"
+EXITS = DATA / "exits.json"
+# 상장리츠 목록에서 빠진 종목의 사유를 보여 주는 공시(보고서명 기준). 신고인 이름은 저장하지 않는다
+EXIT_TITLE = re.compile(r"해산사유|상장폐지|합병결정|분할결정|회생절차|파산")
 
 
 def read(path):
@@ -352,6 +355,51 @@ def update(snap=None, folder=None, force=False):
     print(f"DART {len(due)}개 중 {changed}개 갱신")
 
 
+def update_exits(snap=None, folder=None):
+    """dart.json에는 있으나 지금 상장리츠 목록에 없는 종목의 최근 180일 공시에서 해산, 상장폐지 같은 보고서를 찾는다.
+    목록에서 빠진 지 120일이 지난 종목(마지막 DART 갱신 기준)은 더 보지 않는다. 종목마다 주 1회만 조회한다."""
+    key = None if folder else api_key()
+    if folder or not key:
+        return
+    snap = snap or read(DATA / "latest.json")
+    if not snap.get("listed"):
+        return  # 상장 목록을 받지 못한 날은 빠진 종목을 판단하지 않는다
+    records = read(OUTPUT) if OUTPUT.exists() else {}
+    old = read(EXITS) if EXITS.exists() else {}
+    today = date.today()
+    current = {str(r["code"]) for r in snap["listed"]}
+    gone = {code: r for code, r in records.items() if code not in current and r.get("corp_code")
+            and (today - date.fromisoformat(r.get("fetched") or "2000-01-01")).days <= 120}
+    out = {code: v for code, v in old.items() if code in gone}
+    source = Source(None, key)
+    for code in gone:
+        if (today - date.fromisoformat(out.get(code, {}).get("fetched") or "2000-01-01")).days < 7:
+            continue
+        try:
+            listing = source.request("list.json", {"corp_code": gone[code]["corp_code"], "page_count": 100,
+                                                   "bgn_de": (today - timedelta(days=180)).strftime("%Y%m%d"),
+                                                   "end_de": today.strftime("%Y%m%d")}, json.loads)
+            if listing.get("status") not in ("000", "013"):
+                raise DartError(listing.get("status"))
+            filings = sorted(({"date": f"{x['rcept_dt'][:4]}-{x['rcept_dt'][4:6]}-{x['rcept_dt'][6:8]}",
+                               "title": " ".join(x["report_nm"].split()), "rcept_no": x["rcept_no"]}
+                              for x in listing.get("list", [])
+                              if EXIT_TITLE.search(x.get("report_nm", "")) and re.fullmatch(r"\d{14}", x.get("rcept_no", ""))
+                              and re.fullmatch(r"\d{8}", x.get("rcept_dt", ""))),
+                             key=lambda x: x["rcept_no"], reverse=True)
+            out[code] = {"name": gone[code].get("name"), "fetched": today.isoformat(), "filings": filings}
+        except Exception as exc:
+            print(f"DART 이탈 공시 {code} 이전 자료 유지 ({type(exc).__name__})")
+    text = json.dumps(out, ensure_ascii=False, indent=2)
+    if key in text or re.search(r"[a-fA-F0-9]{40}", text):
+        raise ValueError("인증정보 확인 필요")
+    if out != old:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=DATA, delete=False) as tmp:
+            tmp.write(text)
+        Path(tmp.name).replace(EXITS)
+    print(f"DART 상장 목록에서 빠진 종목 {len(gone)}개 공시 확인")
+
+
 def money(value):
     return f"{value:,}원" if value is not None else "자료 없음"
 
@@ -387,9 +435,12 @@ if __name__ == "__main__":
     parser.add_argument("--from-dir", type=Path)
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--explain", action="store_true")
+    parser.add_argument("--exits", action="store_true", help="상장 목록에서 빠진 종목의 해산, 상장폐지 공시만 확인")
     args = parser.parse_args()
     if args.explain:
         explain()
+    elif args.exits:
+        update_exits()
     else:
         update(folder=args.from_dir, force=args.force)
 

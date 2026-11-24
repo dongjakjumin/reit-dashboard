@@ -346,11 +346,11 @@ def main():
     _save(SNAP / f"{snap['date']}.json", snap)
     _save(DATA / "latest.json", snap)
     update_logs(snap)
-    from dart import update as update_dart
+    from dart import update as update_dart, update_exits
     from dart_notes import update as update_notes
     from dart_fv import update as update_fv
     from ecos import update as update_rates
-    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures), ("DART", update_dart), ("DART 주석", update_notes), ("DART 공정가치", update_fv),
+    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures), ("DART", update_dart), ("DART 주석", update_notes), ("DART 공정가치", update_fv), ("DART 이탈 공시", update_exits),
                           ("금리", update_rates)):
         try:
             update(snap)

@@ -142,7 +142,8 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
 (function(){
   const secTxt = D.sectors.slice(0, 3).map(s => `${esc(s.name)} <b>${eok(s.mktcap_eok)}</b>`).join(', ');
   const LC = D.list_changes || {removed: [], added: []};
-  const lcTxt = [...LC.removed.map(x => `${esc(x.name)} 목록에서 빠짐(${dshort(x.missing_from)})`), ...LC.added.map(x => `${esc(x.name)} 새로 들어옴(${dshort(x.first_seen)})`)].join(', ');
+  const why = x => x.exit ? `, ${dshort(x.exit.date)} ${esc(x.exit.title.match(/\(([^)]*)\)/)?.[1] || x.exit.title)} 공시` : '';
+  const lcTxt = [...LC.removed.map(x => `${esc(x.name)} 목록에서 빠짐(${dshort(x.missing_from)}${why(x)})`), ...LC.added.map(x => `${esc(x.name)} 새로 들어옴(${dshort(x.first_seen)})`)].join(', ');
   const tiles = [
     {lab: '상장 리츠', val: n0(S.n), unit: '개', det: `시가총액 합계 <b>${eok(S.mktcap_eok)}원</b>. ${secTxt}${lcTxt ? `<br>최근 90일 상장 목록 변동: ${lcTxt}` : ''}`},
     {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 시가총액 가중 <b>${pct(S.index_cap_ret)}</b>. 단순평균에 배당 1년치를 더하면 <b>${pct(S.index_tr)}</b>.<br>오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>. 제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
@@ -337,9 +338,10 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 /* 상장 목록 변동(날짜별 수집 원자료 기준) */
 (function(){
   const LC = D.list_changes || {removed: [], added: []};
-  const parts = [...LC.removed.map(x => `${x.name}(${x.code}): ${x.missing_from || '다음 수집'} 수집부터 리츠정보시스템 상장리츠 목록에 없음(마지막 확인 ${x.last_seen}).`),
-                 ...LC.added.map(x => `${x.name}(${x.code}): ${x.first_seen} 수집부터 목록에 있음.`)];
-  $('#list-changes').textContent = parts.length ? `상장 목록 변동(최근 90일 수집 기록): ${parts.join(' ')} 목록에서 빠진 종목은 이 표와 주가 지수에 넣지 않았습니다. 상장폐지 여부와 사유는 거래소 공시에서 확인해야 합니다.` : '';
+  const parts = [...LC.removed.map(x => `${esc(x.name)}(${esc(x.code)}): ${esc(x.missing_from || '다음 수집')} 수집부터 리츠정보시스템 상장리츠 목록에 없음(마지막 확인 ${esc(x.last_seen)}).`
+                   + (x.exit ? ` DART에 ${esc(x.exit.date)} <a class="ext" href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${encodeURIComponent(x.exit.rcept_no)}">${esc(x.exit.title)}</a> 공시가 있습니다.` : '')),
+                 ...LC.added.map(x => `${esc(x.name)}(${esc(x.code)}): ${esc(x.first_seen)} 수집부터 목록에 있음.`)];
+  $('#list-changes').innerHTML = parts.length ? `상장 목록 변동(최근 90일 수집 기록): ${parts.join(' ')} 목록에서 빠진 종목은 이 표와 주가 지수에 넣지 않았습니다. 상장폐지 여부와 날짜는 거래소 공시에서 확인해야 합니다.` : '';
 })();
 </script>
 </body>

@@ -757,6 +757,11 @@ def build_listed_data() -> dict:
         list_changes["added"] = sorted(({"code": c, "name": seen_name[c], "first_seen": first_seen[c]}
                                         for c in current if first_seen.get(c, snap_days[0]) > snap_days[0]),
                                        key=lambda x: x["first_seen"], reverse=True)
+    # 빠진 종목에는 DART에서 찾은 가장 최근의 해산, 상장폐지 같은 공시를 붙인다(dart.py update_exits)
+    exits = optional_data("exits.json")
+    for x in list_changes["removed"]:
+        found = (exits.get(x["code"]) or {}).get("filings") or []
+        x["exit"] = found[0] if found else None
 
     def group_stats(name: str, members: list[dict]) -> dict:
         """투자대상별 중앙값. P/B, 감정가 P/NAV, LTV는 반올림 전 값으로, 시가배당률은 요약 칸과 같은 값으로 낸다.
