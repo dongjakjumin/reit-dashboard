@@ -30,12 +30,23 @@ FV_MODEL = re.compile(r"최초\s*인식\s*(?:시점\s*)?(?:이후|후)에?(?:는
 SENTENCE = re.compile(r"(?:당기말|보고기간\s*말|보고기간\s*종료일)\s*현재\s*(?:연결회사의\s*|회사의\s*|당사의\s*)?"
                       r"투자부동산의?\s*공정가치는\s*([\d,]+)\s*(백만원|천원|억원|원)")
 NEGATION = re.compile(r"원가\s*모형|관계기업|공동기업")
-DEPRECIATION = re.compile(r"감가상각(?:을|은|는)?\s*하지\s*(?:않|아니)")
+DEPRECIATION = re.compile(r"(?:감가)?상각(?:비)?(?:을|를|은|는)?\s*(?:인식|수행|계상)?\s*하지\s*(?:않|아니)")
+# 절 끝: '~하며', '~하고'(진행형 '하고 있'은 빼고), '~으나', '~지만', 쉼표, 문장 끝
+CLAUSE_END = re.compile(r"(?:하|되|않|있|이|았|었|였)고(?!\s*있)|며|으나|지만|[,，]|다\.")
 TOTAL = re.compile(r"^(합계|총계|계)|합계$")
 TOTAL_HEAD = re.compile(r"(?:^|\s)(?:합\s*계|총\s*계|계)\s*$")
 SECTION = re.compile(r'<TITLE[^>]*AASSOCNOTE="D-0-[^"]*"[^>]*>(.*?)</TITLE>', re.S)
-NO_REAPPRAISAL = re.compile(r"(?:공정가치\s*평가|감정\s*평가)를?\s*(?:재수행|재실시|다시\s*(?:수행|실시))하지\s*(?:아니하였|아니했|않았)")
-CONDITIONAL = re.compile(r"수\s*있|경우|전기에는|전기에도")
+NO_REAPPRAISAL = re.compile(r"(?:공정가치\s*평가|감정\s*평가)를?\s*(?:재수행|재실시|다시\s*(?:수행|실시))하지\s*"
+                            r"(?:아니하였|아니했|않았|않고|아니하고)")
+PAST_END = re.compile(r"(?:였|했|았|었)(?:습니다|다)\.\s*$|(?:였|했|았|었)음\s*$")
+PRIOR_PERIOD = re.compile(r"전기(?:말)?\s*(?:에는|에도|중에는)")
+# 문장 끝: '~다.'와 마침표 없는 각주 끝('~하였음', '~없음')
+SENT_END = re.compile(r"다\.|(?:였|했|았|었|없)음(?=[\s.,]|$)")
+# 날짜 나열: 'A 및 B', 'A, B', '지배기업은 A, 종속기업은 B'의 이음말과 날짜(DATE에서 앞쪽 경계 조건을 뺀 본체)
+DATE_BODY = r"\d{4}\s*(?:년\s*\d{1,2}\s*월(?:\s*\d{1,2}\s*일)?|[.\-]\s*\d{1,2}\s*[.\-]\s*\d{1,2})"
+LIST_GAP = r"\s*(?:및|와|과|,|，|、|그리고)\s*(?:[가-힣A-Za-z0-9()\s]{1,15}?(?:은|는)\s*)?"
+# 표 안에서도 남길 칸: 문장이거나 평가기준일, 재평가 생략을 말하는 칸('(*)' 옆의 각주 문장 등)
+PROSE_CELL = re.compile(r"다\.|평가\s*기준일|재수행|재실시|다시\s*(?:수행|실시)")
 DATE = re.compile(r"(?<![\d,.])(\d{4})\s*(?:년\s*(\d{1,2})\s*월(?:\s*(\d{1,2})\s*일)?|[.\-]\s*(\d{1,2})\s*[.\-]\s*(\d{1,2})(?![\d,]))")
 
 
@@ -52,16 +63,15 @@ def num(cell):
 
 def fair_value_model(text):
     """투자부동산을 말하는 같은 문장에 '최초 인식 후 공정가치로 측정' 또는 '공정가치 모형 적용'이 있는지.
-    같은 문장에 원가모형, 관계기업, 공동기업이 나오거나, 구절 뒤 첫 쉼표까지 '않', '아니'가 있으면(부정) 뺀다.
-    '감가상각하지 않습니다' 같은 말은 부정으로 보지 않는다."""
+    구절 앞에 원가모형, 관계기업, 공동기업이 나오거나, 구절 뒤 첫 절('~하며', '~하고', '~으나', 쉼표까지)에
+    '않', '아니', '수 있'이 있으면(부정이나 선택 가능 서술) 뺀다. '감가상각하지 않습니다' 같은 말은 부정으로 보지 않는다."""
     for m in FV_MODEL.finditer(text):
         start = max(text.rfind("다.", 0, m.start()), text.rfind(". ", 0, m.start())) + 1
-        stop = text.find("다.", m.end())
-        finish = stop + 2 if 0 <= stop - m.end() < 300 else m.end() + 80
         head = text[start:m.end()]
-        clause = DEPRECIATION.sub("", re.split(r"[,，]", text[m.end():finish], maxsplit=1)[0])
-        if ("투자부동산" in head and "금융" not in head and not NEGATION.search(text[start:finish])
-                and not re.search("않|아니", clause)):
+        b = CLAUSE_END.search(text, m.end(), m.end() + 150)
+        clause = DEPRECIATION.sub("", text[m.end():b.end() if b else m.end() + 80])
+        if ("투자부동산" in head and "금융" not in head and not NEGATION.search(head)
+                and not re.search(r"않|아니|수\s*있", clause)):
             return True
     return False
 
@@ -167,38 +177,69 @@ def before_end(dates, end):
 
 
 def prose(xml):
-    """표를 지운 주석 글. 칸 하나에 문장을 담은 글상자 표('(*) 투자부동산의 공정가치는 ~')는 주석 글이라 남긴다."""
-    return clean(TABLE.sub(lambda m: m[0] if len(CELL.findall(m[0])) <= 1 and "다." in clean(m[0]) else " ", xml))
+    """표를 지운 주석 글. 표 안에서도 문장이 든 칸('(*)' 옆의 각주 문장, 글상자)은 남기고 숫자와 날짜 머리 칸은 지운다.
+    지운 표에 '투자부동산'이 있으면 그 말만 남겨, 표 뒤 각주가 투자부동산 이야기인지 알 수 있게 한다."""
+    def keep(m):
+        cells = [clean(v) for _tag, _attrs, v in CELL.findall(m[0])]
+        texts = [c for c in cells if PROSE_CELL.search(c)]
+        mark = "투자부동산" if "투자부동산" in clean(m[0]) and not any("투자부동산" in c for c in texts) else ""
+        return f" {mark} {' '.join(texts)} "
+    return clean(TABLE.sub(keep, xml))
+
+
+def sentences(text):
+    """'~다.'와 마침표 없는 각주 끝('~하였음')에서 문장을 나눈다."""
+    out, pos = [], 0
+    for m in SENT_END.finditer(text):
+        out.append(text[pos:m.end()])
+        pos = m.end()
+    return out + ([text[pos:]] if pos < len(text) else [])
+
+
+def attached_dates(text):
+    """평가기준일에 바로 붙은 날짜만: 'DATE을 평가기준일로', '평가기준일(은|이|:) DATE', '평가기준일(DATE)'.
+    'A 및 B을 평가기준일로', '평가기준일은 각각 A, B'처럼 나열된 날짜도 센다.
+    '보고기간 종료일(2026년 6월 30일)'처럼 평가 시점이 아닌 날짜는 뺀다."""
+    found = []
+    for m in DATE.finditer(text):
+        after = re.sub(rf"^(?:{LIST_GAP}{DATE_BODY})+", "", text[m.end():m.end() + 120])
+        before = re.sub(rf"(?:{DATE_BODY}{LIST_GAP})+$", "", text[max(0, m.start() - 120):m.start()])
+        if (re.match(r"\s*(?:을|를|로|이|가|의)?\s*(?:각각\s*|모두\s*)?평가\s*기준일", after)
+                or re.search(r"평가\s*기준일\s*(?:은|는|이|가|:|：)?\s*(?:각각\s*|모두\s*)?[(\[]?\s*$", before)):
+            found += iso_dates(m[0])
+    return found
 
 
 def cited_dates(text):
-    """'평가기준일'이 든 문장의 날짜와 그 문장들. 표를 지운 글에서 문장을 나누고, 그 문장이나 바로 앞 문장이
-    투자부동산을 말하며 유형자산 문장이 아닐 때만 센다."""
-    found, prev, sents = [], "", []
-    for s in re.split(r"(?<=다\.)", text):
+    """'평가기준일'이 든 문장의 (날짜, 그 문장들, 평가기준일에 바로 붙은 날짜). 표를 지운 글에서 문장을 나누고,
+    그 문장이나 바로 앞 문장이 투자부동산을 말하며 유형자산 문장이 아닐 때만 센다."""
+    found, attached, prev, sents = [], [], "", []
+    for s in sentences(text):
         if "평가기준일" in s and "유형자산" not in s and "투자부동산" in prev + s:
             found += iso_dates(s)
+            attached += attached_dates(s)
             sents.append(s.strip())
         prev = s
-    return sorted(set(found)), " ".join(sents)
+    return sorted(set(found)), " ".join(sents), sorted(set(attached))
 
 
 def reappraisal_skipped(text, end):
     """주석이 '최근 평가기준일 대비 공정가치 변동이 작아 평가를 다시 하지 않았다'고 적었으면
     (결산월 전 날짜 목록, 근거 글)을 돌려준다. 근거 글은 그 문장과 바로 앞 문장이다.
     문장에 날짜가 없으면 바로 앞 문장이 평가기준일을 말할 때 그 날짜를 쓴다. 그런 문장이 없으면 None."""
-    for m in NO_REAPPRAISAL.finditer(text):
-        p = text.rfind("다.", 0, m.start())
-        start = p + 2 if p >= 0 else 0
-        q = text.rfind("다.", 0, p) if p > 0 else -1
-        prev = text[q + 2 if q >= 0 else 0:start] if p >= 0 else ""
-        stop = text.find("다.", m.end())
-        sentence = text[start:stop + 2 if stop >= 0 else m.end()]
+    sents = sentences(text)
+    for i, sentence in enumerate(sents):
+        m = NO_REAPPRAISAL.search(sentence)
+        if not m:
+            continue
         # 앞 문장은 끝 800자만 본다. 문장이 1,500자를 넘으면 문장 나누기가 어긋난 글이라 쓰지 않는다
-        prev = prev[-800:]
-        # 회계정책 조건문('~할 수 있습니다')이나 전기 서술('전기에는 ~')은 이번 결산의 사실이 아니다
+        prev = sents[i - 1][-800:] if i else ""
+        # 일치 구절이 든 절('~하였으나,', '~하며,' 뒤)에 전기 서술('전기에는 ~')이 있으면 이번 결산의 사실이 아니다
+        cut = max((x.end() for x in re.finditer(r"(?:으나|하나|지만|며|고)\s*[,，]", sentence[:m.start()])), default=0)
+        # '아니할 수 있습니다' 같은 회계정책 조건문은 과거형이 아니라 걸린다. '~하지 않고'는 문장 끝이 과거형이어야 한다
+        past = not m[0].endswith("고") or PAST_END.search(sentence.strip())
         if (len(sentence) > 1500 or "투자부동산" not in prev + sentence or "유형자산" in sentence
-                or CONDITIONAL.search(sentence)):
+                or PRIOR_PERIOD.search(sentence[cut:m.end()]) or not past):
             continue
         pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
         # 근거 글은 자르지 않는다(verify.py가 날짜마다 근거 글에 있는지 본다)
@@ -215,10 +256,11 @@ def amount_in(row, heads):
         if TOTAL_HEAD.search(heads[j]) and "전기" not in heads[j] and num(row[j]) > 100:
             return num(row[j])
     current = [j for j in cols if "전기" not in heads[j]]
-    levels = [re.search(r"수준\s*([123])", heads[j]) for j in current]
+    levels = [re.search(r"수준\s*(III|II|I|[123ⅠⅡⅢ])", heads[j]) for j in current]
     if current and all(levels):
-        # 같은 수준이 두 번 나오면 머리에 '전기'가 없는 전기 블록이 붙은 표라, 더하지 않고 비운다
-        if len({x[1] for x in levels}) < len(levels):
+        # 같은 수준이 두 번 나오면 머리에 '전기'가 없는 전기 블록이 붙은 표라, 더하지 않고 비운다(로마 숫자 머리도 같은 수준으로 셈)
+        level_no = {"I": "1", "II": "2", "III": "3", "Ⅰ": "1", "Ⅱ": "2", "Ⅲ": "3"}
+        if len({level_no.get(x[1], x[1]) for x in levels}) < len(levels):
             return None
         if sum(num(row[j]) for j in current) > 100:
             return sum(num(row[j]) for j in current)
@@ -318,15 +360,15 @@ def extract(r, doc, xml):
     note = {"장부금액과 공정가치 표": f"표 장부금액 {extra.get('table_book', 0):,}원, 재무상태표와 차이 {extra.get('table_book', 0) - book:,}원",
             "공정가치 모형": "재무상태표의 투자부동산이 공정가치"}.get(method, "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용")
     dates, age = base["appraisal_dates"], {}
-    if base["not_reappraised"] and method == "장부금액과 공정가치 표" and extra.get("fv_prior") not in (None, fv):
-        # 표의 전기말 공정가치가 당기와 다르면 '다시 평가하지 않음' 문장과 맞지 않아 신호를 보류한다
-        dates, age = [], dict(not_reappraised=False, reappraisal_text="")
-    elif method == "장부금액과 공정가치 표" and not base["not_reappraised"] and extra.get("fv_prior") == fv:
+    if method == "장부금액과 공정가치 표" and not base["not_reappraised"] and extra.get("fv_prior") == fv:
         # 공정가치가 전기말 그대로면 표 바로 뒤 주석이 적은 평가기준일이 곧 지금 감정가의 기준일이다.
-        # 결산월이나 그 뒤의 평가기준일이 있으면 결산일에 다시 평가한 것이라 '전기말과 같음' 신호를 쓰지 않는다
-        start = table_hit["end_pos"]
-        cited, proof = cited_dates(prose(xml[start:start + 20000])[:2500])
-        at_end = any(d[:7] >= cur["end"][:7] for d in cited)
+        # 평가기준일에 바로 붙은 날짜가 결산월이나 그 뒤면 결산일에 다시 평가한 것이라 '전기말과 같음' 신호를 쓰지 않는다
+        seg = xml[table_hit["end_pos"]:table_hit["end_pos"] + 20000]
+        opened, closed = seg.upper().rfind("<TABLE"), seg.upper().rfind("</TABLE")
+        if opened > closed:  # 창 끝에서 잘린 표는 머리의 날짜가 섞이지 않게 뺀다
+            seg = seg[:opened]
+        cited, proof, attached = cited_dates(prose(seg)[:2500])
+        at_end = any(d[:7] >= cur["end"][:7] for d in attached)
         dates = [] if at_end else before_end(cited, cur["end"])
         age = dict(appraised_at_end=at_end, appraisal_text=proof)
     return dict(base, fv=fv, method=method, table=table, **extra, **age, note=note, appraisal_dates=dates,

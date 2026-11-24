@@ -43,6 +43,22 @@ def fv_stale_of(fvr):
     return None
 
 
+def stale_row_ok(fvr, row, same_report):
+    """감정 시점 신호 한 종목 대조. (통과 여부, 신호). 근거 글에는 생략 문장(재수행 등과 과거형)이 있고,
+    날짜마다 연도와 월이 근거 글에 있어야 한다. 평가기준일은 결산월 전 날짜이고 신호가 있는 종목에만 있다."""
+    stale = fv_stale_of(fvr) if same_report else None
+    dates = [d for d in fvr.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}(?:-\d{2})?", str(d))] if stale else []
+    proof = (fvr.get("reappraisal_text") if stale == "skipped" else fvr.get("appraisal_text") if stale == "same" else "") or ""
+    core = [x for x in re.split(r"(?<=다\.)", proof) if re.search(r"재수행|재실시|다시\s*(?:수행|실시)", x)]
+    proof_ok = stale != "skipped" or any(re.search(r"하였|했|았|였", x) for x in core)
+    proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof)
+                                for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
+    ok = (proof_ok and row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
+          and all(d[:7] < fvr["end"][:7] for d in dates) and (not same_report or stale or not fvr.get("appraisal_dates"))
+          and (fvr.get("fv_prior") is None or fvr.get("method") == "장부금액과 공정가치 표"))
+    return ok, stale
+
+
 def saved_json(filename):
     path = DATA / filename
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
@@ -909,20 +925,8 @@ def main() -> int:
         ok &= row.get("fv_rcept") == (fvr["rcept_no"] if same_report else None)
         ok &= row.get("fv_confirm") == ([x for x in fvr.get("confirm") or [] if x in fv_methods] if same_report else [])
         # 감정 시점 신호: 주석의 '공정가치 평가를 다시 하지 않음' 문장이 먼저, 없으면 같은 주석 표의 전기말 공정가치가 당기와 같은지
-        stale = fv_stale_of(fvr) if same_report else None
-        dates = [d for d in fvr.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}(?:-\d{2})?", str(d))] if stale else []
-        # 평가기준일은 결산일 전 날짜이고 신호가 있는 종목에만 있다. 전기말 공정가치는 표 방식일 때만 있다
-        # 근거 글로 다른 규칙 대조: 생략 문장은 과거형이고 조건문이나 전기 서술이 아니며, 날짜마다 연도와 월이 근거 글에 있다
-        proof = (fvr.get("reappraisal_text") if stale == "skipped" else fvr.get("appraisal_text") if stale == "same" else "") or ""
-        # 생략 문장(근거 글 가운데 '재수행' 등이 든 마지막 문장)만 과거형인지, 조건문이나 전기 서술이 아닌지 본다. 앞 문장은 날짜 대조에만 쓴다
-        core = ([x for x in re.split(r"(?<=다\.)", proof) if re.search(r"재수행|재실시|다시\s*(?:수행|실시)", x)] or [""])[-1]
-        proof_ok = stale != "skipped" or (bool(core) and bool(re.search(r"하였|했|았", core))
-                                          and not re.search(r"수\s*있|경우|전기에는|전기에도", core))
-        proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof)
-                                    for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
-        stale_ok.append(proof_ok and row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
-                        and all(d[:7] < fvr["end"][:7] for d in dates) and (not same_report or stale or not fvr.get("appraisal_dates"))
-                        and (fvr.get("fv_prior") is None or fvr.get("method") == "장부금액과 공정가치 표"))
+        ok_row, stale = stale_row_ok(fvr, row, same_report)
+        stale_ok.append(ok_row)
         if stale:
             stale_kind[stale] += 1
             stale_pnav += want is not None

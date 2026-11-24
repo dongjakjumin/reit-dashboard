@@ -51,22 +51,26 @@ def grid(raw):
 
 
 def lead(context):
-    """표 바로 앞 글. 마지막 '다.' 뒤에 제목 같은 글이 있으면 그것, 단위 표시뿐이면 마지막 문장과 그 뒤."""
+    """표 바로 앞 글: 마지막 완결 문장부터 끝까지(그 뒤의 소제목, 단위 표시 포함)."""
     end = context.rfind("다.")
-    tail = context[end + 2:] if end >= 0 else context
-    if re.sub(r"\(?\s*단위\s*[:：][^)]*\)?|\s", "", tail):
-        return tail
+    if end < 0:
+        return context
     start = context.rfind("다.", 0, end)
     return context[start + 2 if start >= 0 else 0:]
+
+
+def asset_note(context):
+    """표 바로 앞 글이 보유 금융상품(단기금융상품의 전자단기사채 등)을 말하고, 차입이나 발행 사채는 말하지 않으면 True."""
+    near = lead(context)
+    return bool(ASSET_NOTE.search(near)) and not re.search(r"차입|(?<!전자단기)사채", near)
 
 
 def candidates(xml, basis, body):
     for index, m in enumerate(TABLE.finditer(xml), 1):
         raw = m[0]
         context = clean(xml[max(0, m.start()-4500):m.start()])[-350:]
-        near = lead(context)
-        # 표 바로 앞 글이 보유 금융상품(단기금융상품의 전자단기사채 등)을 말하고 차입을 말하지 않으면 차입 표로 보지 않는다
-        if ASSET_NOTE.search(near) and "차입" not in near:
+        # 표 바로 앞 글이 보유 금융상품(단기금융상품의 전자단기사채 등)을 말하면 차입 표로 보지 않는다
+        if asset_note(context):
             continue
         # 사채 발행 내역 표(발행일, 만기일, 잔액)는 이자율 열이 없어도 후보로 둔다. 표 앞 글이 사채를 말할 때만이다
         # (칸 속 '전자단기사채'만으로는 차입 표로 보지 않는다)
@@ -244,7 +248,7 @@ def parse_table(rows, context, tail, end=None):
         # 이자율 열 없이 발행일과 만기일을 한 줄에 적은 사채 표. 이자율은 '모름'으로 둔다(고정 비중과 평균 금리에서 빠짐)
         header_index = next((i for i, r in enumerate(rows[:4]) if any("발행일" in s for s in r)
                              and any("만기일" in s for s in r)), None)
-        if header_index is None or not re.search("사채", context) or (ASSET_NOTE.search(lead(context)) and "차입" not in lead(context)):
+        if header_index is None or not re.search("사채", context) or asset_note(context):
             raise Skip("만기일과 이자율을 함께 기재한 잔액 표 없음")
     h = [s.replace(" ", "") for s in rows[header_index]]
     body = rows[header_index+1:]
