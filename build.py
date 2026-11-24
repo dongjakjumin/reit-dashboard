@@ -510,8 +510,10 @@ def loan_missing_reason(r: dict, source: dict) -> str | None:
     """같은 보고서의 주석을 읽었는데 건별 내역을 못 쓴 이유. 다른 보고서 기준이면(주석을 아직 못 읽음) 이유를 적지 않는다."""
     if r.get("rcept_no") != source.get("rcept_no"):
         return None
-    if not r.get("loans") and "만기일과 이자율이 함께 있는 차입 잔액 표 없음" in (r.get("skipped") or []):
-        return "만기일이 적힌 주석 차입 표를 찾지 못함"
+    if not r.get("loans"):
+        # 후보 표가 아예 없으면 만기일 표가 없는 것이고, 후보 표를 모두 건너뛰었으면 읽지 못한 것이다(합계를 견줄 단계가 아님)
+        return ("만기일이 적힌 주석 차입 표를 찾지 못함" if "만기일과 이자율이 함께 있는 차입 잔액 표 없음" in (r.get("skipped") or [])
+                else "주석 차입 표에서 건별 내역을 읽지 못함")
     if r.get("match") == "불일치":
         return "주석 합계가 재무상태표 차입과 다름"
     return None

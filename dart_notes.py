@@ -22,6 +22,8 @@ UNITS = {"원": 1, "천원": 1000, "백만원": 1000000, "억원": 10**8, "십�
 TABLE = re.compile(r"<TABLE\b[^>]*>.*?</TABLE>", re.I | re.S)
 ROW = re.compile(r"<TR\b[^>]*>(.*?)</TR>", re.I | re.S)
 CELL = re.compile(r"<(TD|TH|TE|TU)\b([^>]*)>(.*?)</\1>", re.I | re.S)
+# 보유 금융상품 주석(단기금융상품의 전자단기사채 등). 전환사채의 파생금융상품은 빼고 본다
+ASSET_NOTE = re.compile(r"(?<!파생)금융상품|금융자산|현금성자산")
 
 
 def clean(raw):
@@ -51,11 +53,13 @@ def grid(raw):
 def candidates(xml, basis, body):
     for index, m in enumerate(TABLE.finditer(xml), 1):
         raw = m[0]
-        # 사채 발행 내역 표(발행일, 만기일, 잔액)는 이자율 열이 없어도 후보로 둔다
-        bond = re.search("발행일", raw) and re.search("만기일", raw) and re.search("사채", raw)
+        context = clean(xml[max(0, m.start()-4500):m.start()])[-350:]
+        # 사채 발행 내역 표(발행일, 만기일, 잔액)는 이자율 열이 없어도 후보로 둔다. 표 앞 글이 사채를 말하고,
+        # 보유 금융상품 주석이 아닐 때만이다(칸 속 '전자단기사채'만으로는 차입 표로 보지 않는다)
+        bond = (re.search("발행일", raw) and re.search("만기일", raw) and re.search("사채", context)
+                and not ASSET_NOTE.search(context))
         if not re.search("만기|상환일", raw) or not (re.search("이자율|금리|이율", raw) or bond):
             continue
-        context = clean(xml[max(0, m.start()-4500):m.start()])[-350:]
         if re.search("차입|사채", clean(raw) + context):
             if body:
                 titles = re.findall(r"<TITLE\b[^>]*>(.*?)</TITLE>", xml[:m.start()], re.S | re.I)
@@ -227,18 +231,20 @@ def parse_table(rows, context, tail, end=None):
         # 이자율 열 없이 발행일과 만기일을 한 줄에 적은 사채 표. 이자율은 '모름'으로 둔다(고정 비중과 평균 금리에서 빠짐)
         header_index = next((i for i, r in enumerate(rows[:4]) if any("발행일" in s for s in r)
                              and any("만기일" in s for s in r)), None)
-        if header_index is None or not re.search("사채", context + " ".join(s for r in rows for s in r)):
+        if header_index is None or not re.search("사채", context) or ASSET_NOTE.search(context):
             raise Skip("만기일과 이자율을 함께 기재한 잔액 표 없음")
     h = [s.replace(" ", "") for s in rows[header_index]]
     body = rows[header_index+1:]
     sub = []
     if body and any(
-            re.search("^(당기|전기|원화|외화)", v.replace(" ", "")) or (end and maturity(v) == end)
+            re.search("^(당기|전기|원화|외화|이자율|금액|잔액)", v.replace(" ", "")) or (end and maturity(v) == end)
             for v in body[0]) and not any(number(v) for v in body[0]):
         sub, body = [s.replace(" ", "") for s in body[0]], body[1:]
     def column(pattern):
         return next((i for i,s in enumerate(h) if re.search(pattern,s)), None)
-    cur = next((i for i,s in enumerate(h) if s == "당기말" or
+    # 당기말 아래가 이자율과 금액으로 나뉜 표는 금액 칸만 잔액 열로 본다
+    rate_sub = lambda i: i < len(sub) and re.search("이자율|금리|이율", sub[i])
+    cur = next((i for i,s in enumerate(h) if (s == "당기말" and not rate_sub(i)) or
                 (s == "금액" and (sub[i] == "당기말" if i < len(sub) else period(context) == "당기"))), None)
     if foreign or any(re.match(r"외화(?:금액|환산|잔액|표시|$)", s) for s in h + sub) or any(
             re.fullmatch("USD|EUR|JPY|GBP", s) for r in body for s in r):
@@ -261,6 +267,10 @@ def parse_table(rows, context, tail, end=None):
     unit = UNITS[unit_name]
     if cur is None:
         raise Skip("당기말 잔액 열 없음")
+    # 고른 열 값이 모두 100 이하이면 잔액이 아니라 이자율을 고른 것으로 본다(억원 이상 단위 표는 작은 값이 정상일 수 있어 뺀다)
+    picked = [number(r[cur]) for r in body if cur < len(r) and number(r[cur])]
+    if unit < UNITS["억원"] and picked and max(picked) <= 100:
+        raise Skip("잔액 열 값이 이자율 크기")
     day_col = column("만기|상환일")
     rate_col = column("이자율|이율|연금리|^금리(?:[(%]|$)")
     lender_col = column("차입처|금융기관|인수기관|거래은행")

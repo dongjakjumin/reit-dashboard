@@ -203,8 +203,9 @@ def verify_loans(check, statements, page, listed, as_of):
         n, src = notes.get(s["code"], {}), statements.get(s["code"], {})
         if s["name"] not in missing or n.get("rcept_no") != src.get("rcept_no"):
             continue
-        if not n.get("loans") and "만기일과 이자율이 함께 있는 차입 잔액 표 없음" in (n.get("skipped") or []):
-            reasons[s["name"]] = "만기일이 적힌 주석 차입 표를 찾지 못함"
+        if not n.get("loans"):
+            reasons[s["name"]] = ("만기일이 적힌 주석 차입 표를 찾지 못함" if "만기일과 이자율이 함께 있는 차입 잔액 표 없음"
+                                  in (n.get("skipped") or []) else "주석 차입 표에서 건별 내역을 읽지 못함")
         elif n.get("match") == "불일치":
             reasons[s["name"]] = "주석 합계가 재무상태표 차입과 다름"
     check(page.get("missing_reason") == reasons, f"건별 내역 미확인 이유 {len(reasons)}건")

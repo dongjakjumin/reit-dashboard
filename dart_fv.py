@@ -29,7 +29,8 @@ FINANCIAL = re.compile(r"현금및현금성자산|차입금|금융자산|금융�
 FV_MODEL = re.compile(r"최초\s*인식\s*(?:시점\s*)?(?:이후|후)에?(?:는)?\s*공정가치로\s*측정|공정가치\s*모형을?\s*(?:적용|선택|사용)")
 SENTENCE = re.compile(r"(?:당기말|보고기간\s*말|보고기간\s*종료일)\s*현재\s*(?:연결회사의\s*|회사의\s*|당사의\s*)?"
                       r"투자부동산의?\s*공정가치는\s*([\d,]+)\s*(백만원|천원|억원|원)")
-NEGATION = re.compile(r"않|원가\s*모형|관계기업|공동기업")
+NEGATION = re.compile(r"원가\s*모형|관계기업|공동기업")
+NEGATED = re.compile(r"\s*하지\s*(?:않|아니)")
 TOTAL = re.compile(r"^(합계|총계|계)|합계$")
 TOTAL_HEAD = re.compile(r"(?:^|\s)(?:합\s*계|총\s*계|계)\s*$")
 SECTION = re.compile(r'<TITLE[^>]*AASSOCNOTE="D-0-[^"]*"[^>]*>(.*?)</TITLE>', re.S)
@@ -50,13 +51,14 @@ def num(cell):
 
 def fair_value_model(text):
     """투자부동산을 말하는 같은 문장에 '최초 인식 후 공정가치로 측정' 또는 '공정가치 모형 적용'이 있는지.
-    '선택하지 않고'처럼 부정하거나 원가모형, 관계기업, 공동기업을 함께 말하는 문장은 뺀다."""
+    구절 바로 뒤가 '하지 않'(부정)이거나 구절 앞에 원가모형, 관계기업, 공동기업이 나오면 뺀다.
+    같은 문장 뒤쪽의 '감가상각하지 않습니다' 같은 말은 부정으로 보지 않는다."""
     for m in FV_MODEL.finditer(text):
         start = max(text.rfind("다.", 0, m.start()), text.rfind(". ", 0, m.start())) + 1
-        stop = text.find("다.", m.end())
-        sentence = text[start:stop + 2 if 0 <= stop - m.end() < 300 else m.end() + 80]
         head = text[start:m.end()]
-        if "투자부동산" in head and "금융" not in head and not NEGATION.search(sentence):
+        if NEGATED.match(text, m.end()) or NEGATION.search(head):
+            continue
+        if "투자부동산" in head and "금융" not in head:
             return True
     return False
 
@@ -129,7 +131,8 @@ def book_fv_table(xml, book):
         for group, skip in [([t], set()) for t in totals] + ([(body, copies)] if body else []):
             total = lambda j: round(sum(num(r[j]) or 0 for i, r in group if (i, j) not in skip and j < len(r)) * unit)
             table_book = total(book_j)
-            if abs(table_book - book) <= 0.002 * book:
+            # 장부금액이 맞아도 공정가치 칸이 비었으면('-') 다음 후보(본문 합산)를 본다
+            if abs(table_book - book) <= 0.002 * book and total(fv_j) > 0:
                 return dict(table=index, table_book=table_book, fv=total(fv_j), end_pos=m.end(),
                             fv_prior=(total(prior_j) or None) if prior_j is not None else None)
     return None
@@ -173,10 +176,17 @@ def reappraisal_skipped(text, end):
 
 
 def amount_in(row, heads):
-    """서열체계 표 한 줄의 공정가치 금액. 합계 열, 당기 열, 금액이나 공정가치 열 순서로 찾고,
-    그런 열이 없으면 100 넘는 숫자가 하나뿐일 때만 그 값을 쓴다(수준별 일부 금액이나 전기 값을 고르지 않게)."""
-    tests = (lambda x: TOTAL_HEAD.search(x) and "전기" not in x,
-             lambda x: "당기" in x and "전기" not in x,
+    """서열체계 표 한 줄의 공정가치 금액. 합계 열, 수준별 열(합계 열 없이 당기 숫자 열이 모두 수준별이면 더함),
+    당기 열, 금액이나 공정가치 열 순서로 찾고, 그런 열이 없으면 100 넘는 숫자가 하나뿐일 때만 그 값을 쓴다
+    (수준별 일부 금액이나 전기 값을 고르지 않게)."""
+    cols = [j for j in range(1, min(len(row), len(heads))) if num(row[j]) is not None]
+    for j in cols:
+        if TOTAL_HEAD.search(heads[j]) and "전기" not in heads[j] and num(row[j]) > 100:
+            return num(row[j])
+    current = [j for j in cols if "전기" not in heads[j]]
+    if current and all("수준" in heads[j] for j in current) and sum(num(row[j]) for j in current) > 100:
+        return sum(num(row[j]) for j in current)
+    tests = (lambda x: "당기" in x and "전기" not in x,
              lambda x: ("금액" in x or "공정가치" in x) and not re.search("수준|서열|전기", x))
     for test in tests:
         for j in range(1, min(len(row), len(heads))):
@@ -203,9 +213,10 @@ def hierarchy_fv(xml):
         if not unit or not ("수준" in joined or "서열" in joined) or "장부" in joined:
             continue
         for r in rows[h:]:
-            v = amount_in(r, heads) if r and r[0].replace(" ", "") == "투자부동산" else None
-            if v:
-                return dict(table=index, fv=round(v * unit))
+            if r and r[0].replace(" ", "") == "투자부동산":
+                # 처음 만난 '투자부동산' 줄에서 멈춘다. 못 읽었다고 다음 표(흔히 전기 표)로 넘어가지 않는다
+                v = amount_in(r, heads)
+                return dict(table=index, fv=round(v * unit)) if v else None
     # 2차: 바로 앞 문장이 투자부동산 서열체계를 말하고, 당기말 열이 전기말 열보다 앞이며, 금융상품 줄이 없는 표의 합계 줄
     for index, rows, h, heads, before in tables:
         joined, near = " ".join(heads), before[-300:]
@@ -226,7 +237,8 @@ def hierarchy_fv(xml):
 
 
 def notes_section(xml, basis):
-    """사업보고서 본문 파일에는 연결과 별도 주석이 함께 있다. 재무제표 기준에 맞는 주석 구역만 돌려준다(못 찾으면 전체)."""
+    """사업보고서 본문 파일에는 연결과 별도 주석이 함께 있다. 재무제표 기준에 맞는 주석 구역만 돌려준다(못 찾으면 전체).
+    본문 파일이면 fv.json의 표 번호(table)는 이 구역 안에서 센 순서다."""
     marks = [(m.start(), clean(m[1])) for m in SECTION.finditer(xml)]
     want = re.compile(r"^\d+\.\s*연결재무제표\s*주석" if basis == "CFS" else r"^\d+\.\s*재무제표\s*주석")
     for n, (pos, title) in enumerate(marks):
