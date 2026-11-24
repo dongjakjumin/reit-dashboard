@@ -187,6 +187,17 @@ def verify_loans(check, statements, page, listed, as_of):
             print(f"  주의  {s['name']} 차입 주석 미확인")
     check(set(visible) == confirmed and missing == page.get("missing") and page.get("borrowers") == borrowers,
           "화면 확인 종목과 미확인 종목 분리")
+    # 미확인 이유는 같은 보고서의 주석을 읽었을 때만 적는다(만기일 표 없음 / 합계 불일치)
+    reasons = {}
+    for s in listed:
+        n, src = notes.get(s["code"], {}), statements.get(s["code"], {})
+        if s["name"] not in missing or n.get("rcept_no") != src.get("rcept_no"):
+            continue
+        if not n.get("loans") and "만기일과 이자율이 함께 있는 차입 잔액 표 없음" in (n.get("skipped") or []):
+            reasons[s["name"]] = "만기일이 적힌 주석 차입 표를 찾지 못함"
+        elif n.get("match") == "불일치":
+            reasons[s["name"]] = "주석 합계가 재무상태표 차입과 다름"
+    check(page.get("missing_reason") == reasons, f"건별 내역 미확인 이유 {len(reasons)}건")
     check(page.get("buckets") == buckets and page.get("nominal") == total == sum(sum(v.values()) for v in buckets.values()),
           "화면 반기별 금리 유형별 만기 합과 명목 합")
     expected = weighted/priced if priced else None

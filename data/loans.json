@@ -2994,7 +2994,8 @@
     "unit": "원",
     "end": "2026-06-30",
     "tables": [
-      51
+      51,
+      52
     ],
     "loans": [
       {
@@ -3166,14 +3167,34 @@
         "rate_type": "고정",
         "amount": 4000000000,
         "fx": false
+      },
+      {
+        "kind": "제1회 무기명식 이권부 무보증 사모 전환사채",
+        "lender": "",
+        "maturity": "2026-09-05",
+        "rate_text": "",
+        "rate": null,
+        "rate_type": "모름",
+        "amount": 3777318900,
+        "fx": false
+      },
+      {
+        "kind": "제2회 무기명식 이권부 무보증 사모 전환사채",
+        "lender": "",
+        "maturity": "2027-02-26",
+        "rate_text": "",
+        "rate": null,
+        "rate_type": "모름",
+        "amount": 31897382041,
+        "fx": false
       }
     ],
-    "nominal": 588000000000,
+    "nominal": 623674700941,
     "adjustments": -853763081,
-    "reclassifications": -385681537466,
+    "reclassifications": -421356238407,
     "bs_total": 622820937860,
-    "diff": -35674700941,
-    "match": "불일치",
+    "diff": 0,
+    "match": "일치",
     "fixed_share": 1.0,
     "avg_rate": 4.368418367346939,
     "skipped": [

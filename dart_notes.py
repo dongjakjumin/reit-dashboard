@@ -51,7 +51,9 @@ def grid(raw):
 def candidates(xml, basis, body):
     for index, m in enumerate(TABLE.finditer(xml), 1):
         raw = m[0]
-        if not re.search("만기|상환일", raw) or not re.search("이자율|금리|이율", raw):
+        # 사채 발행 내역 표(발행일, 만기일, 잔액)는 이자율 열이 없어도 후보로 둔다
+        bond = re.search("발행일", raw) and re.search("만기일", raw) and re.search("사채", raw)
+        if not re.search("만기|상환일", raw) or not (re.search("이자율|금리|이율", raw) or bond):
             continue
         context = clean(xml[max(0, m.start()-4500):m.start()])[-350:]
         if re.search("차입|사채", clean(raw) + context):
@@ -222,7 +224,11 @@ def parse_table(rows, context, tail, end=None):
     header_index = next((i for i,r in enumerate(rows[:4]) if any(re.search("만기|상환일", s) for s in r)
                          and any(re.search("이자율|금리|이율", s) for s in r)), None)
     if header_index is None:
-        raise Skip("만기일과 이자율을 함께 기재한 잔액 표 없음")
+        # 이자율 열 없이 발행일과 만기일을 한 줄에 적은 사채 표. 이자율은 '모름'으로 둔다(고정 비중과 평균 금리에서 빠짐)
+        header_index = next((i for i, r in enumerate(rows[:4]) if any("발행일" in s for s in r)
+                             and any("만기일" in s for s in r)), None)
+        if header_index is None or not re.search("사채", context + " ".join(s for r in rows for s in r)):
+            raise Skip("만기일과 이자율을 함께 기재한 잔액 표 없음")
     h = [s.replace(" ", "") for s in rows[header_index]]
     body = rows[header_index+1:]
     sub = []

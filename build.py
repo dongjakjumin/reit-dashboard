@@ -506,12 +506,23 @@ def upcoming_loans(issuers, as_of):
                 float_share=floating / known if known else None, passed=passed, overdue=overdue)
 
 
+def loan_missing_reason(r: dict, source: dict) -> str | None:
+    """같은 보고서의 주석을 읽었는데 건별 내역을 못 쓴 이유. 다른 보고서 기준이면(주석을 아직 못 읽음) 이유를 적지 않는다."""
+    if r.get("rcept_no") != source.get("rcept_no"):
+        return None
+    if not r.get("loans") and "만기일과 이자율이 함께 있는 차입 잔액 표 없음" in (r.get("skipped") or []):
+        return "만기일이 적힌 주석 차입 표를 찾지 못함"
+    if r.get("match") == "불일치":
+        return "주석 합계가 재무상태표 차입과 다름"
+    return None
+
+
 def loan_schedule(stocks, as_of):
     from dart_notes import ratio
 
     notes = optional_data("loans.json")
     statements = optional_data("dart.json")
-    issuers, missing, buckets = {}, [], {}
+    issuers, missing, buckets, reasons = {}, [], {}, {}
     all_loans = []
     borrowers = due = 0
     for stock in stocks:
@@ -526,6 +537,8 @@ def loan_schedule(stocks, as_of):
                 or r.get("end") != balance.get("end") or r.get("bs_total") != balance.get("total")
                 or r.get("basis") != source.get("basis")):
             missing.append(stock["name"])
+            if loan_missing_reason(r, source):
+                reasons[stock["name"]] = loan_missing_reason(r, source)
             continue
         issuer = {k: r[k] for k in ("name", "end", "rcept_no", "nominal", "adjustments", "bs_total", "diff", "match")}
         issuers[code] = issuer
@@ -545,7 +558,7 @@ def loan_schedule(stocks, as_of):
                 due += x["amount"]
             all_loans.append(x)
     fixed, avg = ratio(all_loans)
-    return dict(issuers=issuers, missing=missing, borrowers=borrowers, buckets=dict(sorted(buckets.items())),
+    return dict(issuers=issuers, missing=missing, missing_reason=reasons, borrowers=borrowers, buckets=dict(sorted(buckets.items())),
                 nominal=sum(x["amount"] for x in all_loans), due=due, fixed_share=fixed, avg_rate=avg,
                 upcoming=upcoming_loans(issuers, as_of))
 
