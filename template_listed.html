@@ -193,7 +193,7 @@ function drawIndex(){
 
 /* P/NAV 가로 막대 */
 function drawPnav(){
-  const el = $('#pnav-chart'), rows = R.filter(r => r.pnav != null).sort((a, b) => a.pnav - b.pnav);
+  const el = $('#pnav-chart'), rows = R.filter(r => r.pnav != null).sort((a, b) => a.pnav - b.pnav || a.mktcap_eok / a.nav_eok - b.mktcap_eok / b.nav_eok);
   if (!rows.length) { el.textContent = "자료 없음"; return; }
   const W = Math.max(320, el.clientWidth), rh = 19, mL = 138, mR = 44, mT = 16, H = mT + rows.length * rh + 6;
   const iw = W - mL - mR, max = Math.max(1.1, ...rows.map(r => r.pnav)) * 1.02, X = v => mL + v / max * iw;
@@ -231,7 +231,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     {k: 'annual_dvd_pct', t: '연환산 배당률(납입자본금)', f: r => r.annual_dvd_pct != null ? r.annual_dvd_pct.toFixed(2) + '%' : '–'},
     {k: 'pnav', t: 'P/NAV', f: r => r.pnav != null ? r.pnav.toFixed(2) + '배' : '–'},
     {k: 'pffo', t: 'P/FFO(연환산)', f: r => r.pffo != null ? r.pffo.toFixed(1) + '배' : '–'},
-    {k: 'wale_years', t: 'WALE', f: r => r.wale_years ? r.wale_years.toFixed(1) + '년' : '–'},
+    {k: 'wale_years', t: 'WALE', f: r => r.wale_years ? (Math.round(r.wale_years * 10) / 10).toFixed(1) + '년' : '–'},
     {k: 'fiscal_end', t: '직전 결산', txt: true},
     {k: 'listed_date', t: '상장일', txt: true},
   ];

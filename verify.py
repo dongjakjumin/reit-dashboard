@@ -643,7 +643,7 @@ def main() -> int:
         benchmark = latest_rates.get("ktb10")
         spread = round(expected - benchmark, 2) if expected is not None and benchmark is not None else None
         if spread is not None:
-            expected_spreads.append(spread)
+            expected_spreads.append(expected - benchmark)  # 중앙값은 반올림 전 값으로 낸다
         corp = latest_rates.get("corp_aa")
         fx = (code in finance_payload.get("loans", {}).get("issuers", {})
               and any(x["fx"] for x in notes[code]["loans"]))

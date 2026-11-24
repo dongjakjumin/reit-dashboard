@@ -486,6 +486,7 @@ def build_listed_data() -> dict:
     prices = optional_data("prices.json")
     fin = optional_data("financials.json")
     rows = []
+    raw = {}  # 반올림 전 비율. 중앙값은 이 값으로 내야 화면 끝자리가 맞는다
     win_start = (d(snap["date"]) - timedelta(days=372)).isoformat()
     window = {}  # 종목별 최근 1년 종가. 이력은 계속 쌓이지만 화면의 규칙은 이 구간에만 적용한다
     for r in snap["listed"]:
@@ -535,21 +536,26 @@ def build_listed_data() -> dict:
         elif r.get("dvd_pct") and r.get("annual_dvd_pct"):
             ppy = min(4, max(1, round(r["annual_dvd_pct"] / r["dvd_pct"])))
         market_yield = dps / last * 100 if not yield_blocked and dps is not None and last and last > 0 else None
+        # 비율은 원자료(백만원)로 계산한다. 억원으로 반올림한 NAV, FFO로 나누면 끝자리가 틀린다.
+        pnav = mktcap / (r["nav_mil"] / 100) if r.get("nav_mil") and r["nav_mil"] > 0 and mktcap else None
+        pffo = mktcap / (r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") and r["ffo_mil"] > 0 and ppy and mktcap else None
+        spread = market_yield - benchmark if market_yield is not None and benchmark is not None else None
+        raw[r["code"]] = {"pnav": pnav, "spread": spread}
         rows.append({
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "has_finance": _has_finance(fin.get(str(r.get("reit_id")))),
             "homepage": safe_url(r.get("homepage")), "listed_date": safe_date(r.get("listed_date")),
             "market_yield": market_yield, "dividend_end": dividend_end or None,
-            "spread": round(market_yield - benchmark, 2) if market_yield is not None and benchmark is not None else None,
+            "spread": round(spread, 2) if spread is not None else None,
             "market_yield_reason": "기준가 변경" if yield_blocked else None,
             "price": last, "mktcap_eok": mktcap,
-            "chg_pct": round((last / hist[dates[-2]] - 1) * 100, 2) if len(dates) >= 2 and last_d not in breaks else None,
+            "chg_pct": round((last / hist[dates[-2]] - 1) * 100, 1) if len(dates) >= 2 and last_d not in breaks else None,
             "price_date": last_d,
             "ret_1w": ret(7), "ret_1m": ret(30), "ret_3m": ret(91), "ret_1y": ret(365),
             "dvd_pct": r.get("dvd_pct"), "annual_dvd_pct": r.get("annual_dvd_pct") or None,
             "nav_eok": nav_eok, "ffo_eok": ffo_eok, "periods_per_year": ppy,
-            "pnav": round(mktcap / nav_eok, 2) if nav_eok and nav_eok > 0 and mktcap else None,
-            "pffo": round(mktcap / (ffo_eok * ppy), 1) if ffo_eok and ffo_eok > 0 and ppy and mktcap else None,
+            "pnav": round(pnav, 2) if pnav is not None else None,
+            "pffo": round(pffo, 1) if pffo is not None else None,
             "wale_years": r.get("wale_years") or None,
             "price_break": price_break, "halted": halted,
             "fiscal_end": safe_date(r.get("fiscal_end")), "fiscal_period": r.get("fiscal_period"),
@@ -603,9 +609,10 @@ def build_listed_data() -> dict:
     sectors = sorted(({"name": s, "n": sum(1 for r in rows if r["sector"] == s),
                        "mktcap_eok": sum(r["mktcap_eok"] for r in rows if r["sector"] == s)} for s in sec_names),
                      key=lambda x: -x["mktcap_eok"])
-    pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]
+    pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]  # 1배 미만 개수와 최저, 최고는 화면에 보이는 값으로 센다
+    pnav_raw = [v["pnav"] for v in raw.values() if v["pnav"] is not None]
     yields = [r["market_yield"] for r in rows if r["market_yield"] is not None]
-    spreads = [r["spread"] for r in rows if r["spread"] is not None]
+    spreads = [v["spread"] for v in raw.values() if v["spread"] is not None]
     dvds = [r["annual_dvd_pct"] for r in rows if r["annual_dvd_pct"]]
     changes = [r["ret_1y"] for r in rows if str(r["code"]) in full and r["ret_1y"] is not None] if common else []
     excluded = Counter("기준가 변경" if r["price_break"] else "장기 동일 종가와 거래량 없음" if r["halted"]
@@ -619,7 +626,7 @@ def build_listed_data() -> dict:
             "n": len(rows), "mktcap_eok": sum(r["mktcap_eok"] for r in rows),
             "index_ret": round(idx[-1] - 100, 1) if idx else None, "index_n": len(full) if idx else 0,
             "up_1y": sum(1 for v in changes if v > 0), "down_1y": sum(1 for v in changes if v < 0),
-            "pnav_median": _median(pnavs, 2), "pnav_n": len(pnavs),
+            "pnav_median": _median(pnav_raw, 2), "pnav_n": len(pnavs),
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
             "yield_median": _median(yields, 2), "yield_n": len(yields),
             "rates": rates, "spread_median": _median(spreads, 2), "spread_n": len(spreads),
@@ -696,11 +703,12 @@ def build_finance_data() -> dict:
     today = d(snap["date"])
     eok = lambda won: round(won / 1e8) if won is not None else None
 
-    rows, timelines = [], {}
+    rows, timelines, raw_fin = [], {}, []
     for r in snap["listed"]:
         f = fin.get(str(r.get("reit_id")))
         if not _has_finance(f):
             continue
+        raw_fin.append((f["assets"], f["debt"]))
         timelines[r["code"]] = _finance_events(f["series"])
         ser = [x for x in f["series"] if x.get("assets") and x.get("debt") is not None]
         last = ser[-1] if ser else {}
@@ -722,7 +730,9 @@ def build_finance_data() -> dict:
             "series": [{"end": safe_date(x["end"]), "assets_eok": eok(x["assets"]), "debt_eok": eok(x["debt"]),
                         "debt_to_assets": round(x["debt"] / x["assets"] * 100, 1)} for x in ser],
         })
+    # 부채 비중 20% 기준은 화면에 보이는 값으로 가르고, 중앙값과 합계는 반올림 전 원 단위 값으로 낸다
     da = [r["debt_to_assets"] for r in rows]
+    raw_da = [(shown, debt / assets * 100) for shown, (assets, debt) in zip(da, raw_fin)]
     hi = max(rows, key=lambda r: r["debt_to_assets"], default=None)
     lo = min(rows, key=lambda r: r["debt_to_assets"], default=None)
 
@@ -766,13 +776,13 @@ def build_finance_data() -> dict:
         "collected_at": snap["collected_at"], "date": snap["date"],
         "fin_fetched": max((f["fetched"] for f in fin.values()), default=None),
         "summary": {
-            "n": len(rows), "da_median": _median(da, 1),
+            "n": len(rows), "da_median": _median([v for _, v in raw_da], 1),
             "da_hi": {"name": hi["name"], "v": hi["debt_to_assets"]} if hi else None,
             "da_lo": {"name": lo["name"], "v": lo["debt_to_assets"]} if lo else None,
             "de_over2": sum(1 for r in rows if r["debt_to_equity"] and r["debt_to_equity"] > 2),
             "da_under20": sum(1 for r in rows if r["debt_to_assets"] < 20),
-            "da_median_ex": _median([v for v in da if v >= 20], 1),
-            "assets_eok": sum(r["assets_eok"] for r in rows), "debt_eok": sum(r["debt_eok"] for r in rows),
+            "da_median_ex": _median([v for shown, v in raw_da if shown >= 20], 1),
+            "assets_eok": round(sum(a for a, _ in raw_fin) / 1e8), "debt_eok": round(sum(b for _, b in raw_fin) / 1e8),
             "dis_major": len(items), "dis_routine": routine90, "dis_risk": counts["위험 신호"],
             "dis_from": cut90,
         },
