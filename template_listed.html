@@ -84,7 +84,7 @@
       <li><b>NAV</b>는 리츠정보시스템에 공시된 값을 그대로 썼습니다. <span id="nav-book"></span>감정평가 차익을 반영한 NAV가 아니므로 시가총액 ÷ NAV를 P/NAV가 아니라 P/B(장부가 기준)로 적었습니다.</li>
       <li><b>FFO</b>: 당기순이익에 감가상각비를 더하고 평가손익, 매각손익, 손상차손과 환입, 판매손익을 조정한 값입니다(리츠정보시스템 정의). 결산기 한 번의 금액입니다.</li>
       <li><b>P/B</b>: 현재 시가총액 ÷ 직전 결산기 NAV로 이 화면에서 계산했습니다. 리츠정보시스템 화면의 P/NAV는 결산월 말 주가(원)를 NAV 총액(백만원)으로 나눈 값으로 보여 배수로 읽기 어려워 쓰지 않았습니다.</li>
-      <li><b>P/NAV(감정가)</b>: 현재 시가총액 ÷ 감정가 기준 NAV입니다. 감정가 기준 NAV는 DART 사업보고서의 지배기업 소유주지분에, 주석에 적힌 투자부동산 공정가치(감정평가액)와 장부금액의 차이를 지배지분 비율만큼 더한 값입니다. 공정가치 모형을 쓰는 리츠는 장부금액이 곧 공정가치라 차이가 0입니다. 주석 표는 장부금액 합계가 재무상태표와 맞을 때만 쓰고, 어느 방식으로 읽었든 공정가치가 장부금액의 0.5~2배를 벗어나면 쓰지 않습니다. 다른 주석 표에서도 같은 값이 나오면 툴팁에 적었습니다. 공정가치가 같은 주석 표의 전기말 값과 같거나, 주석에 최근 평가기준일 뒤 변동이 작아 공정가치 평가를 다시 하지 않았다고 적은 종목은 눈금을 점선으로 그리고 툴팁에 감정 시점을 적었습니다. 비교 표의 P/NAV(감정가) 값 뒤 *도 같은 뜻입니다. 비지배지분이 자본의 5%를 넘거나 재무상태표에 투자부동산이 없는 종목은 비웠습니다. 기준일은 최근 사업보고서의 결산기 말입니다.<span id="fv-cross"></span></li>
+      <li><b>P/NAV(감정가)</b>: 현재 시가총액 ÷ 감정가 기준 NAV입니다. 감정가 기준 NAV는 DART 사업보고서의 지배기업 소유주지분에, 주석에 적힌 투자부동산 공정가치(감정평가액)와 장부금액의 차이를 지배지분 비율만큼 더한 값입니다. 공정가치 모형을 쓰는 리츠는 장부금액이 곧 공정가치라 차이가 0입니다. 주석 표는 장부금액 합계가 재무상태표와 맞을 때만 쓰고, 어느 방식으로 읽었든 공정가치가 장부금액의 0.5~2배를 벗어나면 쓰지 않습니다. 다른 주석 표에서도 같은 값이 나오면 툴팁에 적었습니다. 공정가치가 같은 주석 표의 전기말 값과 같거나, 주석에 공정가치 평가를 다시 하지 않았다고 적은 종목은 눈금을 점선으로 그리고 툴팁에 미갱신 신호와 주석의 평가기준일을 적었습니다. 비교 표의 P/NAV(감정가) 값 뒤 *도 같은 뜻입니다. 비지배지분이 자본의 5%를 넘거나 재무상태표에 투자부동산이 없는 종목은 비웠습니다. 기준일은 최근 사업보고서의 결산기 말입니다.<span id="fv-cross"></span></li>
       <li><b>P/FFO</b>: 현재 시가총액 ÷ 연환산 FFO입니다. 직전 결산기 FFO에 365를 곱하고 해당 결산기의 일수로 나눕니다. 연속된 두 결산기 말일을 확인할 수 없으면 연환산 배당률과 배당수익률로 연간 결산 횟수를 추정합니다. FFO가 0 이하이거나 결산 횟수를 추정할 수 없으면 비워 두었습니다.</li>
       <li><b>WALE</b>: 임차인별 잔여 임대기간을 임대면적으로 가중평균한 값입니다(리츠정보시스템 정의, 단위 년). 직전 결산기 값이라 칸 아래에 결산월을 적었습니다. 리츠가 IR 자료에 내는 WALE은 임대료로 가중하거나 기준일이 달라 값이 다를 수 있어, 숫자를 인용할 때는 IR 자료와 대조해야 합니다.</li>
       <li><b>LTV</b>: 재무 화면과 같은 값으로, DART 사업보고서의 차입금과 사채 합계를 자산총계로 나눴습니다. 연결 재무제표가 있으면 연결 기준입니다.</li>
@@ -248,8 +248,8 @@ function drawPnav(){
       ? (r.pb_dart != null ? `<div class="tr"><span>DART 자본 기준 P/B(${esc(r.fv_end)})</span><span>${r.pb_dart.toFixed(2)}배</span></div>` : '')
         + `<div class="tr"><span>감정가 NAV(${esc(r.fv_end)})</span><span>${eok(r.nav_fv_eok)}원</span></div><div class="tr"><span>P/NAV(감정가)</span><span>${r.pnav_fv.toFixed(2)}배</span></div>`
         + (r.fv_confirm?.length ? `<div class="tr"><span>공정가치 대조</span><span>${esc(r.fv_confirm.join(', '))}와 일치</span></div>` : '')
-        + (r.fv_stale ? `<div class="tr"><span>감정 시점</span><span>${r.fv_stale === 'skipped' ? '공정가치 평가 다시 안 함(주석)' : '전기말 공정가치와 같음'}</span></div>` : '')
-        + (r.fv_appraisal_dates?.length ? `<div class="tr"><span>최근 평가기준일</span><span>${esc([...new Set([r.fv_appraisal_dates[0], r.fv_appraisal_dates.at(-1)])].map(d => d.replace(/^(\d{4})-0?(\d+)(?:-0?(\d+))?$/, (_, y, m, dd) => dd ? `${y}.${m}.${dd}` : `${y}.${m}`)).join('~'))}</span></div>` : '')
+        + (r.fv_stale ? `<div class="tr"><span>감정가 미갱신 신호</span><span>${r.fv_stale === 'skipped' ? '공정가치 평가 다시 안 함(주석)' : '전기말 공정가치와 같음'}</span></div>` : '')
+        + (r.fv_appraisal_dates?.length ? `<div class="tr"><span>평가기준일(주석)</span><span>${esc([...new Set([r.fv_appraisal_dates[0], r.fv_appraisal_dates.at(-1)])].map(d => d.replace(/^(\d{4})-0?(\d+)(?:-0?(\d+))?$/, (_, y, m, dd) => dd ? `${y}.${m}.${dd}` : `${y}.${m}`)).join('~'))}</span></div>` : '')
       : `<div class="tr"><span>P/NAV(감정가)</span><span>${esc(r.nav_fv_reason || '자료 없음')}</span></div>`), e));
     x.addEventListener('mousemove', moveTip); x.addEventListener('mouseleave', hideTip); });
 }
@@ -314,8 +314,8 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   $('#sec-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
     $('#sec-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); sec = b.dataset.v; draw(); });
   $('#tb-more').onchange = e => { more = e.target.checked; if (!more && cols.find(c => c.k === sortK).more) { sortK = 'mktcap_eok'; asc = false; } draw(); };
-  $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','배당 집계 말일','현재 배당 수준(%)','최근 결산기 주당배당금(원)','주당배당금 전기 대비(%)','국고채 대비(%p)','연환산 배당률(납입자본금, %)','NAV(억원)','P/B','P/NAV(감정가)','감정가 NAV(억원)','공정가치 차익(억원)','감정가 기준일','감정가 미갱신 신호','FFO(억원, 결산기)','P/FFO(연환산)','LTV(%)','WALE(년)','직전 결산','기수','상장일'],
-    rows().map(x => [x.name, x.code, x.sector, x.price, x.chg_pct, x.mktcap_eok, x.ret_1m, x.ret_3m, x.ret_1y, x.dvd_pct, x.market_yield, x.dividend_end, x.run_yield, x.dps_last, x.dps_chg, x.spread, x.annual_dvd_pct, x.nav_eok, x.pnav, x.pnav_fv, x.nav_fv_eok, x.fv_gain_eok, x.fv_end, x.fv_stale === 'skipped' ? '주석에 평가 다시 안 함' : x.fv_stale === 'same' ? '전기말 공정가치와 같음' : '', x.ffo_eok, x.pffo, x.ltv, x.wale_years, x.fiscal_end, x.fiscal_period, x.listed_date]));
+  $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','배당 집계 말일','현재 배당 수준(%)','최근 결산기 주당배당금(원)','주당배당금 전기 대비(%)','국고채 대비(%p)','연환산 배당률(납입자본금, %)','NAV(억원)','P/B','P/NAV(감정가)','감정가 NAV(억원)','공정가치 차익(억원)','감정가 NAV 결산일','감정가 미갱신 신호','평가기준일(주석)','FFO(억원, 결산기)','P/FFO(연환산)','LTV(%)','WALE(년)','직전 결산','기수','상장일'],
+    rows().map(x => [x.name, x.code, x.sector, x.price, x.chg_pct, x.mktcap_eok, x.ret_1m, x.ret_3m, x.ret_1y, x.dvd_pct, x.market_yield, x.dividend_end, x.run_yield, x.dps_last, x.dps_chg, x.spread, x.annual_dvd_pct, x.nav_eok, x.pnav, x.pnav_fv, x.nav_fv_eok, x.fv_gain_eok, x.fv_end, x.fv_stale === 'skipped' ? '주석에 평가 다시 안 함' : x.fv_stale === 'same' ? '전기말 공정가치와 같음' : '', (x.fv_appraisal_dates || []).join(' / '), x.ffo_eok, x.pffo, x.ltv, x.wale_years, x.fiscal_end, x.fiscal_period, x.listed_date]));
   draw();
 })();
 

@@ -612,7 +612,8 @@ def appraisal_age(fv: dict) -> dict:
     dates = [d for d in fv.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}(?:-\d{2})?", str(d))]
     if fv.get("not_reappraised"):
         return dict(fv_stale="skipped", fv_appraisal_dates=dates)
-    if fv.get("method") == "장부금액과 공정가치 표" and fv.get("fv_prior") and fv["fv_prior"] == fv["fv"]:
+    if (fv.get("method") == "장부금액과 공정가치 표" and fv.get("fv_prior") and fv["fv_prior"] == fv["fv"]
+            and not fv.get("appraised_at_end")):
         return dict(fv_stale="same", fv_appraisal_dates=dates)
     return dict(fv_stale=None, fv_appraisal_dates=[])
 

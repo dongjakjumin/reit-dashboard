@@ -30,12 +30,13 @@ FV_MODEL = re.compile(r"최초\s*인식\s*(?:시점\s*)?(?:이후|후)에?(?:는
 SENTENCE = re.compile(r"(?:당기말|보고기간\s*말|보고기간\s*종료일)\s*현재\s*(?:연결회사의\s*|회사의\s*|당사의\s*)?"
                       r"투자부동산의?\s*공정가치는\s*([\d,]+)\s*(백만원|천원|억원|원)")
 NEGATION = re.compile(r"원가\s*모형|관계기업|공동기업")
-NEGATED = re.compile(r"\s*하지\s*(?:않|아니)")
+DEPRECIATION = re.compile(r"감가상각(?:을|은|는)?\s*하지\s*(?:않|아니)")
 TOTAL = re.compile(r"^(합계|총계|계)|합계$")
 TOTAL_HEAD = re.compile(r"(?:^|\s)(?:합\s*계|총\s*계|계)\s*$")
 SECTION = re.compile(r'<TITLE[^>]*AASSOCNOTE="D-0-[^"]*"[^>]*>(.*?)</TITLE>', re.S)
-NO_REAPPRAISAL = re.compile(r"(?:공정가치\s*평가|감정\s*평가)를?\s*(?:재수행|재실시|다시\s*(?:수행|실시))하지\s*(?:아니|않)")
-DATE = re.compile(r"(\d{4})\s*년\s*(\d{1,2})\s*월(?:\s*(\d{1,2})\s*일)?")
+NO_REAPPRAISAL = re.compile(r"(?:공정가치\s*평가|감정\s*평가)를?\s*(?:재수행|재실시|다시\s*(?:수행|실시))하지\s*(?:아니하였|아니했|않았)")
+CONDITIONAL = re.compile(r"수\s*있|경우|전기에는|전기에도")
+DATE = re.compile(r"(?<![\d,.])(\d{4})\s*(?:년\s*(\d{1,2})\s*월(?:\s*(\d{1,2})\s*일)?|[.\-]\s*(\d{1,2})\s*[.\-]\s*(\d{1,2})(?![\d,]))")
 
 
 def num(cell):
@@ -51,14 +52,16 @@ def num(cell):
 
 def fair_value_model(text):
     """투자부동산을 말하는 같은 문장에 '최초 인식 후 공정가치로 측정' 또는 '공정가치 모형 적용'이 있는지.
-    구절 바로 뒤가 '하지 않'(부정)이거나 구절 앞에 원가모형, 관계기업, 공동기업이 나오면 뺀다.
-    같은 문장 뒤쪽의 '감가상각하지 않습니다' 같은 말은 부정으로 보지 않는다."""
+    같은 문장에 원가모형, 관계기업, 공동기업이 나오거나, 구절 뒤 첫 쉼표까지 '않', '아니'가 있으면(부정) 뺀다.
+    '감가상각하지 않습니다' 같은 말은 부정으로 보지 않는다."""
     for m in FV_MODEL.finditer(text):
         start = max(text.rfind("다.", 0, m.start()), text.rfind(". ", 0, m.start())) + 1
+        stop = text.find("다.", m.end())
+        finish = stop + 2 if 0 <= stop - m.end() < 300 else m.end() + 80
         head = text[start:m.end()]
-        if NEGATED.match(text, m.end()) or NEGATION.search(head):
-            continue
-        if "투자부동산" in head and "금융" not in head:
+        clause = DEPRECIATION.sub("", re.split(r"[,，]", text[m.end():finish], maxsplit=1)[0])
+        if ("투자부동산" in head and "금융" not in head and not NEGATION.search(text[start:finish])
+                and not re.search("않|아니", clause)):
             return True
     return False
 
@@ -128,13 +131,18 @@ def book_fv_table(xml, book):
         body = [(i, r) for i, r in data if not TOTAL.search(label(r)) and "소계" not in label(r) and num(r[book_j]) is not None]
         # 합계 줄을 앞에서부터 하나씩 대 보고(당기 블록 아래 전기 블록이 붙은 표는 앞 합계가 당기다), 맞는 합계가 없으면
         # 본문 줄을 더한다. 본문을 더할 때 여러 줄에 걸친 칸(토지와 건물에 감정가 하나)은 한 번만 센다
+        blank = False
         for group, skip in [([t], set()) for t in totals] + ([(body, copies)] if body else []):
+            if blank and group is not body:
+                continue
             total = lambda j: round(sum(num(r[j]) or 0 for i, r in group if (i, j) not in skip and j < len(r)) * unit)
             table_book = total(book_j)
-            # 장부금액이 맞아도 공정가치 칸이 비었으면('-') 다음 후보(본문 합산)를 본다
-            if abs(table_book - book) <= 0.002 * book and total(fv_j) > 0:
-                return dict(table=index, table_book=table_book, fv=total(fv_j), end_pos=m.end(),
-                            fv_prior=(total(prior_j) or None) if prior_j is not None else None)
+            if abs(table_book - book) <= 0.002 * book:
+                if total(fv_j) > 0:
+                    return dict(table=index, table_book=table_book, fv=total(fv_j), end_pos=m.end(),
+                                fv_prior=(total(prior_j) or None) if prior_j is not None else None)
+                # 장부금액이 맞는 합계 줄의 공정가치 칸이 비었으면('-') 다른 합계 줄(흔히 전기 블록)은 보지 않고 본문 합산만 본다
+                blank = True
     return None
 
 
@@ -143,35 +151,54 @@ def sentence_fv(text):
     return round(float(m[1].replace(",", "")) * UNITS[m[2]]) if m else None
 
 
-def iso_dates(text, end):
-    """글 속 'YYYY년 M월 D일'(일이 없으면 'YYYY년 M월')을 결산일 전 것만 골라 정렬한다."""
-    found = {f"{y}-{int(mo):02d}" + (f"-{int(dd):02d}" if dd else "") for y, mo, dd in DATE.findall(text)}
-    return sorted(d for d in found if d < end)
+def iso_dates(text):
+    """글 속 날짜('YYYY년 M월 D일', 일 없는 'YYYY년 M월', 'YYYY.MM.DD', 'YYYY-MM-DD')를 YYYY-MM(-DD)로 바꿔 정렬한다."""
+    found = set()
+    for m in DATE.finditer(text):
+        y, mo, dd = int(m[1]), int(m[2] or m[4]), m[3] or m[5]
+        if 2000 <= y <= 2100 and 1 <= mo <= 12 and (not dd or 1 <= int(dd) <= 31):
+            found.add(f"{y}-{mo:02d}" + (f"-{int(dd):02d}" if dd else ""))
+    return sorted(found)
 
 
-def cited_dates(text, end):
-    """'평가기준일'이 든 문장의 날짜. 그 문장이나 바로 앞 문장이 투자부동산을 말하고, 유형자산 문장이 아닐 때만 센다."""
-    found, prev = [], ""
+def before_end(dates, end):
+    """결산월 전 날짜만(일 없는 연월도 월 단위로 견준다)."""
+    return [d for d in dates if d[:7] < end[:7]]
+
+
+def prose(xml):
+    """표를 지운 주석 글. 칸 하나에 문장을 담은 글상자 표('(*) 투자부동산의 공정가치는 ~')는 주석 글이라 남긴다."""
+    return clean(TABLE.sub(lambda m: m[0] if len(CELL.findall(m[0])) <= 1 and "다." in clean(m[0]) else " ", xml))
+
+
+def cited_dates(text):
+    """'평가기준일'이 든 문장의 날짜와 그 문장들. 표를 지운 글에서 문장을 나누고, 그 문장이나 바로 앞 문장이
+    투자부동산을 말하며 유형자산 문장이 아닐 때만 센다."""
+    found, prev, sents = [], "", []
     for s in re.split(r"(?<=다\.)", text):
         if "평가기준일" in s and "유형자산" not in s and "투자부동산" in prev + s:
-            found += iso_dates(s, end)
+            found += iso_dates(s)
+            sents.append(s.strip())
         prev = s
-    return sorted(set(found))
+    return sorted(set(found)), " ".join(sents)
 
 
 def reappraisal_skipped(text, end):
-    """주석이 '최근 평가기준일 대비 공정가치 변동이 작아 평가를 다시 하지 않았다'고 적었으면 그 문장의 결산일 전 날짜를 돌려준다.
+    """주석이 '최근 평가기준일 대비 공정가치 변동이 작아 평가를 다시 하지 않았다'고 적었으면
+    (결산월 전 날짜 목록, 근거 글)을 돌려준다. 근거 글은 그 문장과 바로 앞 문장이다.
     문장에 날짜가 없으면 바로 앞 문장이 평가기준일을 말할 때 그 날짜를 쓴다. 그런 문장이 없으면 None."""
     for m in NO_REAPPRAISAL.finditer(text):
         p = text.rfind("다.", 0, m.start())
         start = p + 2 if p >= 0 else 0
         q = text.rfind("다.", 0, p) if p > 0 else -1
         prev = text[q + 2 if q >= 0 else 0:start] if p >= 0 else ""
-        sentence = text[start:m.end()]
-        if "투자부동산" not in prev + sentence or "유형자산" in sentence:
+        stop = text.find("다.", m.end())
+        sentence = text[start:stop + 2 if stop >= 0 else m.end()]
+        # 회계정책 조건문('~할 수 있습니다')이나 전기 서술('전기에는 ~')은 이번 결산의 사실이 아니다
+        if "투자부동산" not in prev + sentence or "유형자산" in sentence or CONDITIONAL.search(sentence):
             continue
         pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
-        return iso_dates(pick, end)
+        return before_end(iso_dates(pick), end), (prev + sentence).strip()[-600:]
     return None
 
 
@@ -184,8 +211,13 @@ def amount_in(row, heads):
         if TOTAL_HEAD.search(heads[j]) and "전기" not in heads[j] and num(row[j]) > 100:
             return num(row[j])
     current = [j for j in cols if "전기" not in heads[j]]
-    if current and all("수준" in heads[j] for j in current) and sum(num(row[j]) for j in current) > 100:
-        return sum(num(row[j]) for j in current)
+    levels = [re.search(r"수준\s*([123])", heads[j]) for j in current]
+    if current and all(levels):
+        # 같은 수준이 두 번 나오면 머리에 '전기'가 없는 전기 블록이 붙은 표라, 더하지 않고 비운다
+        if len({x[1] for x in levels}) < len(levels):
+            return None
+        if sum(num(row[j]) for j in current) > 100:
+            return sum(num(row[j]) for j in current)
     tests = (lambda x: "당기" in x and "전기" not in x,
              lambda x: ("금액" in x or "공정가치" in x) and not re.search("수준|서열|전기", x))
     for test in tests:
@@ -251,14 +283,17 @@ def extract(r, doc, xml):
     cur = r["current"]
     book = cur.get("investment_property")
     base = dict(name=r["name"], rcept_no=r["rcept_no"], basis=r["basis"], end=cur["end"], doc=doc, book=book,
-                fv=None, method=None, table=None, confirm=[], fv_prior=None, not_reappraised=False, appraisal_dates=[])
+                fv=None, method=None, table=None, confirm=[], fv_prior=None, not_reappraised=False, appraisal_dates=[],
+                appraised_at_end=False, reappraisal_text="", appraisal_text="")
     if not book:
         return dict(base, note="재무상태표에 투자부동산 없음")
     if doc == r["rcept_no"] + ".xml":
         xml = notes_section(xml, r["basis"])
     text = clean(xml)
-    skipped = reappraisal_skipped(text, cur["end"])
-    base.update(not_reappraised=skipped is not None, appraisal_dates=skipped or [])
+    # 표를 지운 글에서 문장을 찾는다(표 머리의 '전기말(2025년 12월 31일)' 같은 날짜가 섞이지 않게)
+    skipped = reappraisal_skipped(prose(xml), cur["end"])
+    base.update(not_reappraised=skipped is not None, appraisal_dates=skipped[0] if skipped else [],
+                reappraisal_text=skipped[1] if skipped else "")
     found = []  # (방식, 공정가치, 표 번호, 더 남길 항목)
     table_hit = book_fv_table(xml, book)
     if table_hit:
@@ -278,11 +313,19 @@ def extract(r, doc, xml):
     method, fv, table, extra = usable[0]
     note = {"장부금액과 공정가치 표": f"표 장부금액 {extra.get('table_book', 0):,}원, 재무상태표와 차이 {extra.get('table_book', 0) - book:,}원",
             "공정가치 모형": "재무상태표의 투자부동산이 공정가치"}.get(method, "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용")
-    dates = base["appraisal_dates"]
-    if method == "장부금액과 공정가치 표" and not base["not_reappraised"] and extra.get("fv_prior") == fv:
-        # 공정가치가 전기말 그대로면 표 바로 뒤 주석이 적은 평가기준일이 곧 지금 감정가의 기준일이다
-        dates = cited_dates(clean(xml[table_hit["end_pos"]:table_hit["end_pos"] + 8000])[:2500], cur["end"])
-    return dict(base, fv=fv, method=method, table=table, **extra, note=note, appraisal_dates=dates,
+    dates, age = base["appraisal_dates"], {}
+    if base["not_reappraised"] and method == "장부금액과 공정가치 표" and extra.get("fv_prior") not in (None, fv):
+        # 표의 전기말 공정가치가 당기와 다르면 '다시 평가하지 않음' 문장과 맞지 않아 신호를 보류한다
+        dates, age = [], dict(not_reappraised=False, reappraisal_text="")
+    elif method == "장부금액과 공정가치 표" and not base["not_reappraised"] and extra.get("fv_prior") == fv:
+        # 공정가치가 전기말 그대로면 표 바로 뒤 주석이 적은 평가기준일이 곧 지금 감정가의 기준일이다.
+        # 결산월이나 그 뒤의 평가기준일이 있으면 결산일에 다시 평가한 것이라 '전기말과 같음' 신호를 쓰지 않는다
+        start = table_hit["end_pos"]
+        cited, proof = cited_dates(prose(xml[start:start + 20000])[:2500])
+        at_end = any(d[:7] >= cur["end"][:7] for d in cited)
+        dates = [] if at_end else before_end(cited, cur["end"])
+        age = dict(appraised_at_end=at_end, appraisal_text=proof[:400])
+    return dict(base, fv=fv, method=method, table=table, **extra, **age, note=note, appraisal_dates=dates,
                 confirm=[x[0] for x in usable[1:] if abs(x[1] - fv) <= 0.005 * book])
 
 

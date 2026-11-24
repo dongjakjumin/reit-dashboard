@@ -15,6 +15,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표의 투자부동산이 공정가치"
   },
   "330590": {
@@ -31,6 +34,9 @@
     "fv_prior": 3204700000000,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 2785956573000,
     "note": "표 장부금액 2,785,956,573,000원, 재무상태표와 차이 -481원"
   },
@@ -54,6 +60,9 @@
       "2025-05-30",
       "2025-07-11"
     ],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "투자부동산의 공정가치는 해당 지역의 부동산 평가와 관련하여 적절한 자격과 경험을 가지고 있는 외부의 독립적인 기업에서 평가를 수행하였으며, 투자부동산 중 장교동 사옥의 공정가치는 (주)경일감정평가법인(평가기준일: 2025년 7월 11일), 여의도, 평촌, 구리, 중동 사옥의 공정가치는 (주)중앙감정평가법인(평가기준일: 2025년 5월 30일), 노원 사옥의 공정가치는 나라감정평가법인(평가기준일: 2024년 5월 10일)이 수행한 평가에 근거하여 결정되었습니다.",
     "table_book": 1513037000000,
     "note": "표 장부금액 1,513,037,000,000원, 재무상태표와 차이 -410,823원"
   },
@@ -71,6 +80,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 2416509835000,
     "note": "표 장부금액 2,416,509,835,000원, 재무상태표와 차이 -416원"
   },
@@ -88,6 +100,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용"
   },
   "448730": {
@@ -106,6 +121,9 @@
     "fv_prior": 1050770000000,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 1045626171000,
     "note": "표 장부금액 1,045,626,171,000원, 재무상태표와 차이 1,192원"
   },
@@ -125,6 +143,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 1706560063000,
     "note": "표 장부금액 1,706,560,063,000원, 재무상태표와 차이 -286,186,580원"
   },
@@ -144,6 +165,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표의 투자부동산이 공정가치"
   },
   "0030R0": {
@@ -160,6 +184,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 692475519000,
     "note": "표 장부금액 692,475,519,000원, 재무상태표와 차이 505원"
   },
@@ -177,6 +204,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용"
   },
   "334890": {
@@ -193,6 +223,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표에 투자부동산 없음"
   },
   "088260": {
@@ -214,6 +247,9 @@
       "2024-01-26",
       "2024-01-31"
     ],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "보고기간 종료일 현재 공정가치측정에 사용된 가치평가기법은 지배기업은 2024년 1월 31일, 종속기업은 2024년 1월 26일을 평가기준일로 하여 원가법, 거래사례비교법및 수익환원법에 의한 평가액에 대하여 적절한 가중치를 부여하여 공정가치를 결정하였습니다.",
     "table_book": 643681156283,
     "note": "표 장부금액 643,681,156,283원, 재무상태표와 차이 0원"
   },
@@ -233,6 +269,9 @@
     "fv_prior": 861664568700,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 801984333280,
     "note": "표 장부금액 801,984,333,280원, 재무상태표와 차이 0원"
   },
@@ -254,6 +293,9 @@
       "2024-07-04",
       "2025-03-26"
     ],
+    "appraised_at_end": false,
+    "reappraisal_text": "(주1) 투자부동산의 공정가치는 해당 지역의 부동산 평가와 관련하여 적절한 자격과 경험을 가지고 있는 외부의 독립적인 부동산평가법인인 대한감정평가법인이 수행한 평가에 근거하여 결정되었습니다. 연결기업은 최근 평가기준일자(원설로 677: 2021년 5월 17일, 원설로 691: 2025년 3월 26일, 남대문로 2가 5-3 : 2024년 7월 4일) 대비 당기말 현재 공정가치의 변동이 중요하지 않은 것으로 판단하여 공정가치평가를 재수행하지 아니하였습니다.",
+    "appraisal_text": "",
     "table_book": 355990221000,
     "note": "표 장부금액 355,990,221,000원, 재무상태표와 차이 177원"
   },
@@ -278,6 +320,9 @@
       "2025-08-31",
       "2025-12"
     ],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "투자부동산의 공정가치는 당기 및 전기 이전에 각각 해당 지역의 부동산 평가와 관련하여 적절한 자격과 경험을 가지고 있는 외부의 독립적인 부동산평가법인인 제일감정평가법인(평가기준일: 2024년 12월 17일), 미래새한감정평가법인(평가기준일: 2025년 8월 31일, 2025년 1월 24일), 경일감정평가법인(평가기준일: 2025년 4월 4일), 대한감정평가법인(평가기준일: 2025년 2월 24일) 및 삼창감정평가법인(평가기준일: 2025년 12월)이 수행한 평가에 근거하여 결정되었으며, 당기 및 전기 중 유의적인 변동은 없습니다.",
     "table_book": 844243553000,
     "note": "표 장부금액 844,243,553,000원, 재무상태표와 차이 -328원"
   },
@@ -295,6 +340,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표에 투자부동산 없음"
   },
   "417310": {
@@ -311,6 +359,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표에 투자부동산 없음"
   },
   "338100": {
@@ -327,6 +378,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표에 투자부동산 없음"
   },
   "145270": {
@@ -343,6 +397,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표의 투자부동산이 공정가치"
   },
   "357250": {
@@ -363,6 +420,9 @@
     "appraisal_dates": [
       "2025-01-13"
     ],
+    "appraised_at_end": false,
+    "reappraisal_text": "투자부동산의 공정가치는 2025년 1월 13일을 평가기준일로 하여 (주)경일감정평가법인이 시장가격을 반영하고 있는 비교방식에 의한 가격과 수익환원법에 의한 가격을 각각 50%, 50%의 가중치를 적용하여 산출한 감정가액을 공정가치로 사용하였습니다. 한편, 회사는 최근 평가기준일자 대비 당기말 현재 공정가치의 변동이 중요하지 않은 것으로 판단하여 공정가치평가를 재수행하지 아니하였습니다.",
+    "appraisal_text": "",
     "note": "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용"
   },
   "481850": {
@@ -379,6 +439,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "note": "재무상태표에 투자부동산 없음"
   },
   "396690": {
@@ -397,6 +460,9 @@
     "fv_prior": 298388160000,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 322527254000,
     "note": "표 장부금액 322,527,254,000원, 재무상태표와 차이 -263원"
   },
@@ -416,6 +482,9 @@
     "fv_prior": null,
     "not_reappraised": false,
     "appraisal_dates": [],
+    "appraised_at_end": false,
+    "reappraisal_text": "",
+    "appraisal_text": "",
     "table_book": 65140045000,
     "note": "표 장부금액 65,140,045,000원, 재무상태표와 차이 -63,082,136원"
   }
