@@ -35,8 +35,14 @@ section[aria-labelledby="h-proj"] .card{min-width:0}
 
 <section aria-labelledby="h-sum">
   <h2 id="h-sum">요약</h2>
-  <p class="sub">자산총계는 리츠정보시스템 목록에 표시된 값(직전 분기 투자보고서 기준)을 더한 것입니다. 새로 인가된 리츠는 투자보고서가 나오기 전까지 0으로 표시됩니다.</p>
+  <p class="sub">자산총계는 리츠정보시스템 목록에 표시된 값(직전 분기 투자보고서 기준)을 더한 것입니다. 새로 생긴 리츠는 첫 투자보고서가 나오기 전까지 0으로 표시됩니다.</p>
   <div class="tiles" id="tiles"></div>
+</section>
+
+<section aria-labelledby="h-week">
+  <h2 id="h-week">최근 1주 동향</h2>
+  <p class="sub" id="week-sub"></p>
+  <div class="card"><dl class="wk" id="week"></dl></div>
 </section>
 
 <section aria-labelledby="h-fil">
@@ -201,6 +207,40 @@ function legend(el, names, colors){ el.innerHTML = names.map(n => `<span><i clas
 /* 머리말 */
 $('#stamp').textContent = `최종 수집 ${D.collected_at} · 영업일 오전 10시 갱신 · 수집 기록 ${D.log_days}일째(${D.first_log}부터)`;
 $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' (' + D.contact + ')' : ''}` : '';
+
+/* 최근 1주 동향: 네 화면의 자료에서 최근 7일에 생긴 일만 모은다 */
+(function(){
+  const W = D.weekly;
+  const md = s => s ? `${+s.slice(5, 7)}.${+s.slice(8, 10)}` : '';
+  const sign = (v, unit) => v == null ? '–' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(unit === '%p' ? 2 : 1) + unit;
+  const list = (items, n, f) => `<ul class="wk-l">${items.slice(0, n).map(x => `<li>${f(x)}</li>`).join('')}${items.length > n ? `<li class="s-in">외 ${items.length - n}건</li>` : ''}</ul>`;
+  const gname = g => esc(g.replace(', ', '과 '));
+  $('#week-sub').textContent = `${W.start}부터 ${W.end}까지 7일 동안 생긴 일을 네 화면의 자료에서 모았습니다.`
+    + (W.log_from > W.start ? ` 접수 상태 변화는 수집 기록이 있는 ${W.log_from}부터 셉니다.` : '');
+  const rows = [];
+  const byKind = D.kinds.map(k => [k, W.new_reits.filter(r => r.kind === k).length]).filter(x => x[1]);
+  rows.push(['새로 생긴 리츠', W.new_reits.length
+    ? `<b>${W.new_reits.length}개</b>(${byKind.map(([k, n]) => `${esc(k)} ${n}`).join(', ')})` + list(W.new_reits, 6, r => `${esc(r.name_s)} <span class="s-in">${md(r.date)} ${esc(r.kind)}, ${esc(r.amc_s)}</span>`)
+    : '없음']);
+  rows.push(['이번 주 접수', W.received.length
+    ? `<b>${W.received.length}건</b>(접수현황에 남아 있는 신청 기준)` + list(W.received, 6, f => `${esc(f.name_s)} <span class="s-in">${md(f.date)} ${esc(f.req_type)}, ${esc(f.applicant)}</span>`)
+    : '접수현황에 이번 주 접수일인 신청이 없습니다.']);
+  rows.push(['상태가 바뀐 신청', (W.changed.length ? `<b>${W.changed.length}건</b>` + list(W.changed, 6, c => `${esc(c.name_s)} <span class="s-in">${md(c.date)} ${esc(c.before)} → ${esc(c.after)}</span>`) : '없음')
+    + (W.gone.length ? `접수 목록에서 빠진 신청 <b>${W.gone.length}건</b>` + list(W.gone, 4, g => `${esc(g.name_s)} <span class="s-in">${md(g.date)} ${esc(g.req_type)}</span>`) : '')]);
+  const grp = Object.entries(W.dis_groups).map(([g, n]) => `${gname(g)} ${n}`).join(', ');
+  rows.push(['리츠 주요 공시', W.dis_n
+    ? `<b>${W.dis_n}건</b>(${grp}) <a class="ext" href="finance.html#h-dis">공시 표 보기</a>` + (W.notable.length ? list(W.notable, 5, x => `${esc(x.company_s)} <span class="s-in">${md(x.date)} ${gname(x.group)}: ${esc(x.matter)}</span>`) : '')
+    : '없음']);
+  const ix = W.index;
+  const mv = ms => ms.map(m => `${esc(m.name)} ${sign(m.ret, '%')}`).join(', ');
+  rows.push(['상장리츠', (ix ? `주가 지수 <b>${sign(ix.ret, '%')}</b>(${md(ix.from)} 대비 ${md(ix.to)}, ${W.index_n}개 종목 단순평균). ` : '')
+    + `1주 동안 오른 종목 <b>${W.up}개</b>, 내린 종목 <b>${W.down}개</b>${W.flat ? `, 보합 ${W.flat}개` : ''}. <a class="ext" href="listed.html#h-table">종목별 비교 보기</a>`
+    + (W.top.length ? `<ul class="wk-l"><li>많이 오른 종목: ${mv(W.top)}</li><li>많이 내린 종목: ${mv(W.bottom)}</li></ul>` : '')]);
+  const rate = (code, label) => { const r = W.rates[code]; return r ? `${label} <b>${r.value.toFixed(3)}%</b>(${r.change == null ? '1주 전 값 없음' : `1주 전보다 ${sign(r.change, '%p')}`}, ${md(r.date)})` : ''; };
+  const rt = [rate('ktb10', '국고채 10년'), rate('corp_aa', '회사채 3년 AA-')].filter(Boolean);
+  if (rt.length) rows.push(['금리', rt.join(', ')]);
+  $('#week').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+})();
 
 /* 요약 */
 (function(){

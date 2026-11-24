@@ -104,6 +104,13 @@ a.ext{color:inherit;text-decoration:underline;text-decoration-color:var(--axis);
 .kv .s{font-size:12.5px;color:var(--muted)}
 h4.minor{font-size:14px;margin:20px 0 8px}
 #amc-pick{max-width:100%}
+dl.wk{display:grid;grid-template-columns:128px 1fr;gap:10px 16px;margin:0;font-size:13.5px}
+dl.wk dt{font-weight:600;color:var(--ink2)}
+dl.wk dd{margin:0;min-width:0;overflow-wrap:anywhere}
+dl.wk .s-in{color:var(--muted);font-size:12.5px}
+dl.wk ul.wk-l{margin:4px 0 6px;padding-left:18px}
+dl.wk ul.wk-l li{margin:2px 0}
+@media (max-width:600px){dl.wk{grid-template-columns:1fr;gap:2px}dl.wk dd{margin-bottom:10px}}
 #list-changes:empty{display:none}
 .seg{max-width:100%;overflow-x:auto}
 .seg button{white-space:nowrap;flex:none}

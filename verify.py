@@ -17,6 +17,7 @@ import random
 import re
 import sys
 from calendar import monthrange
+from collections import Counter
 from datetime import date, timedelta
 from itertools import groupby
 from pathlib import Path
@@ -677,6 +678,70 @@ def main() -> int:
           "접수 자료에 허용한 항목만 저장됨(담당자 이름, 연락처 항목 없음)")
     check(all(mask_person(v.get("top_shareholder")) == v.get("top_shareholder") for v in fin.values()),
           "최대주주 칸에 개인 이름 모양 값 없음")
+
+    print("[8] 최근 1주 동향")
+    try:
+        index_payload, _ = json.JSONDecoder().raw_decode((build.SITE / "index.html").read_text(encoding="utf-8").split("const D = ", 1)[1])
+        week = index_payload.get("weekly") or {}
+    except (OSError, IndexError, ValueError):
+        week = {}
+    end = snap["date"]
+    start = (date.fromisoformat(end) - timedelta(days=6)).isoformat()
+    check(week.get("start") == start and week.get("end") == end, f"최근 1주 동향 구간 {start}~{end}")
+    new_reits = sorted((r["date"], r["kind"]) for r in reits if start <= (r["date"] or "") <= end)
+    check(sorted((x["date"], x["kind"]) for x in week.get("new_reits", [])) == new_reits,
+          f"최근 1주 새로 생긴 리츠 {len(new_reits)}개(운영 목록의 인가, 등록, 신고일 기준)")
+    received = sorted(f["date"] for f in snap["filings"] if start <= (f["date"] or "") <= end)
+    check(sorted(x["date"] for x in week.get("received", [])) == received, f"최근 1주 접수일인 신청 {len(received)}건")
+    status_moves = sorted((day, after) for rec in flog.values()
+                          for (_, _before), (day, after) in zip(rec.get("status_history") or [], (rec.get("status_history") or [])[1:])
+                          if start <= day <= end)
+    check(sorted((x["date"], x["after"]) for x in week.get("changed", [])) == status_moves,
+          f"최근 1주 상태가 바뀐 신청 {len(status_moves)}건(접수 기록의 상태 이력 기준)")
+    gone_week = sorted(rec["gone_on"] for rec in flog.values() if rec.get("gone_on") and start <= rec["gone_on"] <= end)
+    check(sorted(x["date"] for x in week.get("gone", [])) == gone_week, f"최근 1주 접수 목록에서 빠진 신청 {len(gone_week)}건")
+    week_groups = Counter(build.DISCLOSURE_GROUPS[x["matter_code"]] for x in dis_saved.values()
+                          if build.DISCLOSURE_GROUPS.get(x.get("matter_code")) and start <= (x.get("date") or "") <= end)
+    check(week.get("dis_n") == sum(week_groups.values())
+          and week.get("dis_groups") == {g: week_groups[g] for g in build.GROUP_ORDER if week_groups[g]},
+          f"최근 1주 주요 공시 {sum(week_groups.values())}건과 유형별 건수(저장한 공시에서 다시 셈)")
+    # 종목별 1주 수익률: 저장한 종가에서 마지막 종가일과 그 7일 전(그날이나 그 앞의 마지막 거래일)을 견준다
+    row_flags = {str(r["code"]): r for r in ld["rows"]}
+    moves = []
+    for code, row in row_flags.items():
+        hist = {k: v for k, v in prices.get(code, {}).items() if v}
+        days = sorted(hist)
+        if len(days) < 2 or row.get("halted"):
+            continue
+        base_days = [x for x in days if x <= (date.fromisoformat(days[-1]) - timedelta(days=7)).isoformat()]
+        if not base_days:
+            continue
+        span = [x for x in days if x >= base_days[-1]]
+        if any(abs(hist[b] / hist[a] - 1) > 0.31 for a, b in zip(span, span[1:])):
+            continue  # 기준가가 바뀐 날이 끼면 비교하지 않는다
+        moves.append((round((hist[days[-1]] / hist[base_days[-1]] - 1) * 100, 1), row["name"]))
+    moves.sort()
+    check(week.get("up") == sum(m > 0 for m, _ in moves) and week.get("down") == sum(m < 0 for m, _ in moves),
+          f"최근 1주 오른 종목 {sum(m > 0 for m, _ in moves)}개, 내린 종목 {sum(m < 0 for m, _ in moves)}개")
+    check([(x["ret"], x["name"]) for x in week.get("bottom", [])] == moves[:3]
+          and [(x["ret"], x["name"]) for x in week.get("top", [])] == moves[::-1][:3],
+          "최근 1주 많이 오르고 내린 종목 3개씩과 수익률")
+    idx_pairs = list(zip(ld["index"]["dates"], ld["index"]["values"]))
+    if idx_pairs:
+        base_pairs = [p for p in idx_pairs if p[0] <= (date.fromisoformat(idx_pairs[-1][0]) - timedelta(days=7)).isoformat()]
+        expected_week = round((idx_pairs[-1][1] / base_pairs[-1][1] - 1) * 100, 1) if base_pairs else None
+        check((week.get("index") or {}).get("ret") == expected_week, f"최근 1주 주가 지수 변화 {expected_week}%")
+    saved_rates = build.optional_data("rates.json").get("series", {})
+    for code in ("ktb10", "corp_aa"):
+        values = saved_rates.get(code, {}).get("values") or {}
+        if not values:
+            continue
+        latest = max(values)
+        prev = [x for x in values if x <= (date.fromisoformat(latest) - timedelta(days=7)).isoformat()]
+        expected_rate = round(values[latest] - values[max(prev)], 3) if prev else None
+        got_rate = week.get("rates", {}).get(code, {})
+        check(got_rate.get("value") == values[latest] and got_rate.get("change") == expected_rate,
+              f"최근 1주 금리 {code} {values[latest]}%, 1주 전 대비 {expected_rate}%p")
 
     print("결과:", f"통과 {passed}건, 실패 {bad}건"
           + (f", 건너뛴 원문 재조회 {skipped}건" if skipped else ""))

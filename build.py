@@ -540,7 +540,7 @@ def build_listed_data() -> dict:
             "price": last, "mktcap_eok": mktcap,
             "chg_pct": round((last / hist[dates[-2]] - 1) * 100, 2) if len(dates) >= 2 and last_d not in breaks else None,
             "price_date": last_d,
-            "ret_1m": ret(30), "ret_3m": ret(91), "ret_1y": ret(365),
+            "ret_1w": ret(7), "ret_1m": ret(30), "ret_3m": ret(91), "ret_1y": ret(365),
             "dvd_pct": r.get("dvd_pct"), "annual_dvd_pct": r.get("annual_dvd_pct") or None,
             "nav_eok": nav_eok, "ffo_eok": ffo_eok, "periods_per_year": ppy,
             "pnav": round(mktcap / nav_eok, 2) if nav_eok and nav_eok > 0 and mktcap else None,
@@ -769,6 +769,64 @@ PAGES = [("index", "./", "인가와 프로젝트리츠"), ("listed", "listed.htm
          ("finance", "finance.html", "재무 구조와 공시"), ("calc", "calc.html", "사업성 계산기")]
 
 
+def weekly_digest(data: dict, listed: dict, finance: dict) -> dict:
+    """첫 화면의 '최근 1주 동향'. 네 화면에서 이미 계산한 자료 가운데 최근 7일(수집일 포함)에 생긴 일만 모은다."""
+    end = data["date"]
+    start = (d(end) - timedelta(days=6)).isoformat()
+    flog = json.loads((DATA / "filings_log.json").read_text(encoding="utf-8"))
+
+    new_reits = [{k: r[k] for k in ("date", "kind", "name_s", "amc_s", "sector", "project")}
+                 for r in data["reits"] if r["date"] >= start]
+    received = [{k: f[k] for k in ("date", "req_type", "name_s", "applicant", "status")}
+                for f in data["filings"] if f["date"] >= start]
+    changed, gone = [], []
+    for rec in flog.values():
+        name, company = short_reit(mask_person(rec["name"])), clean_company(mask_person(rec["applicant"]))
+        history = rec.get("status_history") or []
+        for (_, before), (day, after) in zip(history, history[1:]):
+            if start <= day <= end:
+                changed.append({"date": day, "name_s": name, "applicant": company, "before": before, "after": after})
+        if rec.get("gone_on") and start <= rec["gone_on"] <= end:
+            gone.append({"date": rec["gone_on"], "name_s": name, "applicant": company, "req_type": rec["req_type"]})
+    changed.sort(key=lambda x: (x["date"], x["name_s"]), reverse=True)
+    gone.sort(key=lambda x: (x["date"], x["name_s"]), reverse=True)
+
+    dis = [x for x in finance["disclosures"] if start <= x["date"] <= end]
+    groups = Counter(x["group"] for x in dis)
+    notable = [{k: x[k] for k in ("date", "group", "matter", "company_s", "timeline_code")}
+               for x in dis if x["group"] in ("위험 신호", "자산 취득, 처분", "신용평가", "최대주주 변경")]
+
+    # 상장리츠: 지수와 종목 수익률은 마지막 종가일과 그 7일 전(그날이나 그 앞의 마지막 거래일)을 견준다
+    idx = list(zip(listed["index"]["dates"], listed["index"]["values"]))
+    index_week = None
+    if idx:
+        base = [(day, v) for day, v in idx if day <= (d(idx[-1][0]) - timedelta(days=7)).isoformat()]
+        if base:
+            index_week = {"from": base[-1][0], "to": idx[-1][0],
+                          "ret": round((idx[-1][1] / base[-1][1] - 1) * 100, 1)}
+    movers = sorted(({"code": r["code"], "name": r["name"], "ret": r["ret_1w"]} for r in listed["rows"]
+                     if r.get("ret_1w") is not None and not r.get("halted")),
+                    key=lambda x: (x["ret"], x["name"]))
+
+    rates = {}
+    for code, series in optional_data("rates.json").get("series", {}).items():
+        values = series.get("values") or {}
+        if code not in ("ktb10", "corp_aa") or not values:
+            continue
+        latest = max(values)
+        prev = max((day for day in values if day <= (d(latest) - timedelta(days=7)).isoformat()), default=None)
+        rates[code] = {"value": values[latest], "date": latest, "prev_date": prev,
+                       "change": round(values[latest] - values[prev], 3) if prev else None}
+
+    return {"start": start, "end": end, "log_from": data["first_log"],
+            "new_reits": new_reits, "received": received, "changed": changed, "gone": gone,
+            "dis_n": len(dis), "dis_groups": {g: groups[g] for g in GROUP_ORDER if groups[g]}, "notable": notable,
+            "index": index_week, "index_n": listed["summary"].get("index_n"),
+            "up": sum(m["ret"] > 0 for m in movers), "down": sum(m["ret"] < 0 for m in movers),
+            "flat": sum(m["ret"] == 0 for m in movers),
+            "top": movers[::-1][:3], "bottom": movers[:3], "rates": rates}
+
+
 def nav_html(current: str) -> str:
     links = "".join(f'\n  <a href="{href}"' + (' aria-current="page"' if key == current else "") + f">{label}</a>"
                     for key, href, label in PAGES)
@@ -805,10 +863,11 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     data = build_data()
-    n_index = render("template.html", "index.html", data, "index")
     listed = build_listed_data()
-    n_listed = render("template_listed.html", "listed.html", listed, "listed")
     finance = build_finance_data()
+    data["weekly"] = weekly_digest(data, listed, finance)
+    n_index = render("template.html", "index.html", data, "index")
+    n_listed = render("template_listed.html", "listed.html", listed, "listed")
     n_fin = render("template_finance.html", "finance.html", finance, "finance")
     # 사업성 계산기: 수집 자료를 쓰지 않는다. 기본 가정과 계산 엔진만 넣는다.
     defaults = json.loads((ROOT / "calc_defaults.json").read_text(encoding="utf-8"))
