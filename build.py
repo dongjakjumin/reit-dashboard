@@ -845,6 +845,7 @@ def build_finance_data() -> dict:
     dis = optional_data("disclosures.json")
     today = d(snap["date"])
     eok = lambda won: round(won / 1e8) if won is not None else None
+    dart_fs = optional_data("dart.json")
 
     rows, timelines, raw_fin = [], {}, []
     for r in snap["listed"]:
@@ -861,6 +862,10 @@ def build_finance_data() -> dict:
         rev = (fy or {}).get("revenue")
         # FFO는 리츠정보시스템 성과지표의 최근 결산기 값 × 연간 결산 횟수(상장리츠 화면의 P/FFO와 같은 기준)
         ppy = periods_per_year(r, f["series"])
+        # LTV = DART 사업보고서 재무상태표의 차입금과 사채 합계 ÷ 자산총계(연결 재무제표가 있으면 연결)
+        drec = dart_fs.get(r["code"]) or {}
+        dcur = drec.get("current") or {}
+        ltv = dcur["total"] / dcur["assets"] * 100 if dcur.get("assets") and dcur.get("total") is not None else None
         rows.append({
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "homepage": safe_url(r.get("homepage")), "mktcap_eok": r.get("mktcap_eok"),
@@ -869,6 +874,10 @@ def build_finance_data() -> dict:
             "assets_eok": eok(f["assets"]), "debt_eok": eok(f["debt"]), "equity_eok": eok(f["equity"]),
             "debt_to_assets": round(f["debt"] / f["assets"] * 100, 1),
             "debt_to_equity": round(f["debt"] / f["equity"], 2) if f.get("equity") and f["equity"] > 0 else None,
+            "ltv": round(ltv, 1) if ltv is not None else None,
+            "ltv_basis": ("연결" if drec.get("basis") == "CFS" else "별도") if ltv is not None else None,
+            "ltv_end": safe_date(dcur.get("end")) if ltv is not None else None,
+            "borrow_eok": eok(dcur["total"]) if ltv is not None else None,
             "revenue_eok": round(rev / 1e8, 1) if rev is not None else None,
             "ffo_y_eok": round(r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") is not None and ppy else None,
             "ffo_end": safe_date(r.get("fiscal_end")) if r.get("ffo_mil") is not None and ppy else None,
@@ -881,6 +890,13 @@ def build_finance_data() -> dict:
     raw_da = [(shown, debt / assets * 100) for shown, (assets, debt) in zip(da, raw_fin)]
     hi = max(rows, key=lambda r: r["debt_to_assets"], default=None)
     lo = min(rows, key=lambda r: r["debt_to_assets"], default=None)
+    # LTV 중앙값도 반올림 전 값으로 낸다. 별도 기준 부채 비중이 20% 미만인데 연결 기준 차입 비율이 그보다 높으면
+    # 리츠 바깥(자회사)에 차입이 있다는 뜻이라 자회사를 거쳐 보유하는 구조로 본다.
+    ltv_rows = [r for r in rows if r["ltv"] is not None]
+    raw_ltv = [dart_fs[r["code"]]["current"]["total"] / dart_fs[r["code"]]["current"]["assets"] * 100 for r in ltv_rows]
+    ltv_hi = max(ltv_rows, key=lambda r: r["ltv"], default=None)
+    via_sub = [r for r in ltv_rows if r["debt_to_assets"] < 20 and r["ltv_basis"] == "연결" and r["borrow_eok"]
+               and r["ltv"] > r["debt_to_assets"]]
 
     # 공시의 회사명과 상장 목록의 회사명은 원문에서 표기가 다를 수 있어, 리츠조회 목록의 이름도 함께 쓴다
     reit_name_by_id = {r["id"]: r["name"] for r in snap["reits"]}
@@ -928,6 +944,10 @@ def build_finance_data() -> dict:
             "de_over2": sum(1 for r in rows if r["debt_to_equity"] and r["debt_to_equity"] > 2),
             "da_under20": sum(1 for r in rows if r["debt_to_assets"] < 20),
             "da_median_ex": _median([v for shown, v in raw_da if shown >= 20], 1),
+            "ltv_median": _median(raw_ltv, 1), "ltv_n": len(ltv_rows),
+            "ltv_cfs": sum(1 for r in ltv_rows if r["ltv_basis"] == "연결"),
+            "ltv_hi": {"name": ltv_hi["name"], "v": ltv_hi["ltv"]} if ltv_hi else None,
+            "via_sub": len(via_sub),
             "assets_eok": round(sum(a for a, _ in raw_fin) / 1e8), "debt_eok": round(sum(b for _, b in raw_fin) / 1e8),
             "dis_major": len(items), "dis_routine": routine90, "dis_risk": counts["위험 신호"],
             "dis_from": cut90,
@@ -1066,7 +1086,7 @@ def main():
           f"P/B 중앙값 {ls['pnav_median']}(1배 미만 {ls['pnav_below1']}/{ls['pnav_n']}), "
           f"시가배당률 가중 {ls['yield_wavg']}%(중앙값 {ls['yield_median']}%) | listed.html {n_listed:,}자")
     fs = finance["summary"]
-    print(f"[빌드] 재무 구조 {fs['n']}개, 부채/자산 중앙값 {fs['da_median']}%, "
+    print(f"[빌드] 재무 구조 {fs['n']}개, LTV 중앙값 {fs['ltv_median']}%({fs['ltv_n']}개), 부채/자산 중앙값 {fs['da_median']}%, "
           f"최근 90일 주요 공시 {fs['dis_major']}건(위험 신호 {fs['dis_risk']}건), 정기와 일반 {fs['dis_routine']}건 | "
           f"finance.html {n_fin:,}자")
     print(f"[빌드] 사업성 계산기 calc.html {n_calc:,}자")

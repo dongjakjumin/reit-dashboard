@@ -478,6 +478,25 @@ def main() -> int:
           "자산총계 = 부채총계 + 자본총계(1억원 이내)")
     check(all(abs(r["debt_eok"] / r["assets_eok"] * 100 - r["debt_to_assets"]) < 0.2 for r in fd["rows"]),
           "부채 ÷ 자산 재계산 일치")
+    # LTV = DART 사업보고서 차입금과 사채 합계 ÷ 자산총계(연결 우선). 표의 값, 기준, 기준일, 차입 금액과 중앙값을 다시 계산한다.
+    dart_fs = build.optional_data("dart.json")
+    ltv_ok, ltv_raw = [], []
+    for r in fd["rows"]:
+        rec = dart_fs.get(r["code"]) or {}
+        cur = rec.get("current") or {}
+        want = cur["total"] / cur["assets"] * 100 if cur.get("assets") and cur.get("total") is not None else None
+        if want is not None:
+            ltv_raw.append(want)
+        ltv_ok.append(r.get("ltv") == (round(want, 1) if want is not None else None) and (want is None or (
+            0 <= want <= 100 and r.get("ltv_basis") == ("연결" if rec["basis"] == "CFS" else "별도")
+            and r.get("ltv_end") == cur["end"] and r.get("borrow_eok") == round(cur["total"] / 1e8))))
+    check(all(ltv_ok) and len(ltv_raw) >= len(fd["rows"]) - 2,
+          f"LTV(차입금과 사채 ÷ 자산총계) {sum(ltv_ok)}/{len(ltv_ok)}종목 재계산 일치")
+    via_sub = sum(1 for r in fd["rows"] if r["debt_to_assets"] < 20 and r.get("ltv_basis") == "연결"
+                  and r.get("borrow_eok") and r["ltv"] > r["debt_to_assets"])
+    check(fd["summary"].get("ltv_n") == len(ltv_raw) and fd["summary"].get("via_sub") == via_sub
+          and fd["summary"].get("ltv_median") == (round(median(ltv_raw), 1) if ltv_raw else None),
+          f"LTV 중앙값 {fd['summary'].get('ltv_median')}%({len(ltv_raw)}개), 자회사를 거쳐 차입한 종목 {via_sub}개 재계산")
     check(sum(g["n"] for g in fd["groups"]) == fd["summary"]["dis_major"], "공시 유형별 건수 합 = 주요 공시 건수")
     # 재무 구조 표의 FFO(연환산) = 리츠정보시스템 FFO(백만원) ÷ 100 × 연간 결산 횟수(상장리츠 화면과 같은 기준)
     listed_src = {r["code"]: r for r in snap["listed"]}

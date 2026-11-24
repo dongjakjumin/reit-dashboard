@@ -136,9 +136,15 @@ def statement(rows, term, notes):
     balances = {}
     accounts = []
     section = None
+    assets = None
     for r in bs:
         name = compact(r["account_nm"])
         amount = number(r.get(field))
+        if name == "자산총계" or r["account_id"] == "ifrs-full_Assets":
+            # 차입 비율(LTV)의 분모. 처음 나온 자산총계 줄만 쓴다.
+            if assets is None:
+                assets = amount
+            continue
         if name in ("유동부채", "비유동부채", "부채총계"):
             section = {"유동부채": True, "비유동부채": False, "부채총계": None}[name]
             balances[section] = amount or 0
@@ -166,7 +172,7 @@ def statement(rows, term, notes):
         debt[key] = sum(a["amount"] or 0 for a in accounts if a["current"] == current and a.get("included", True))
     if None not in balances or True not in balances:
         raise ValueError("부채 구간 누락")
-    debt.update(total=debt["short"] + debt["long"], liabilities=balances[None],
+    debt.update(total=debt["short"] + debt["long"], liabilities=balances[None], assets=assets,
                 current_liabilities=balances[True], noncurrent_liabilities=balances.get(False, balances[None]-balances[True]))
     if (debt["short"] > debt["current_liabilities"] or debt["long"] > debt["noncurrent_liabilities"]
             or debt["total"] > debt["liabilities"]):
@@ -352,6 +358,8 @@ def explain():
                 print(label, group, a["name"], a["amount"] if a["amount"] is not None else "공란",
                       "" if a.get("included", True) else "합계에서 제외", sep="\t")
             print(f"{label} {s['start']} ~ {s['end']} | 유동 {s['short']:,}원 | 비유동 {s['long']:,}원 | 합계 {s['total']:,}원")
+            if s.get("assets"):
+                print(f"{label} 자산총계 {s['assets']:,}원 | 차입 ÷ 자산 {100 * s['total'] / s['assets']:.1f}%")
             print("금리와 이자 배수에 사용한 값", s.get("interest_source", s["cost_name"]) or "자료 없음",
                   "|", money(s.get("interest", s["cost"])))
             for a in s.get("interest_accounts", []):
