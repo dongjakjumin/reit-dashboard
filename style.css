@@ -140,4 +140,7 @@ dl.wk ul.wk-l li{margin:2px 0}
 #maturity-table th, #lev-table th, #maturity-table th button, #lev-table th button { white-space: normal; }
 #lev-table td:last-child { overflow-wrap: anywhere; min-width: 150px; }
 #maturity-table td.num .s { white-space: normal; }
+/* 상장리츠 표는 긴 보조 문구만 줄바꿈하고 칸 여백을 조금 줄여 1120px 본문 폭에 들어가게 한다 */
+#tb td .s.wr { white-space: normal; }
+#tb :is(th, td) { padding-left: 8px; padding-right: 8px; }
 #maturity-table td:nth-child(2) { white-space: nowrap; }

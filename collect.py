@@ -348,8 +348,9 @@ def main():
     update_logs(snap)
     from dart import update as update_dart
     from dart_notes import update as update_notes
+    from dart_fv import update as update_fv
     from ecos import update as update_rates
-    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures), ("DART", update_dart), ("DART 주석", update_notes),
+    for group, update in (("시세", update_prices), ("재무", update_financials), ("공시", update_disclosures), ("DART", update_dart), ("DART 주석", update_notes), ("DART 공정가치", update_fv),
                           ("금리", update_rates)):
         try:
             update(snap)

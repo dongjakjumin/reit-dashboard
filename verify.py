@@ -809,6 +809,35 @@ def main() -> int:
     check(yield_summary.get("yield_n") == len(expected_yields) and matches(yield_summary.get("yield_median"), expected_median),
           "시가배당률 값이 있는 종목 수와 중앙값 재계산")
     verify_loans(check, dart_data, finance_payload.get("loans", {}), listed, snap["date"])
+    # 감정가 기준 NAV = 지배기업 소유주지분 + (공정가치 - 장부금액) × 지배지분 비율. 비지배지분이 5%를 넘으면 비움
+    fv_data = saved_json("fv.json")
+    fv_ok, fv_vals = [], []
+    for row in (page_data.get("rows", []) if codes is not None else []):
+        rec, fvr = dart_data.get(row["code"], {}), fv_data.get(row["code"], {})
+        cur = rec.get("current", {})
+        want = None
+        if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no") and (cur.get("equity") or 0) > 0:
+            owner = cur["equity_owner"] if cur.get("equity_owner") is not None else cur["equity"]
+            if abs(cur["equity"] - owner) <= 0.05 * cur["equity"]:
+                nav = owner + (fvr["fv"] - fvr["book"]) * min(1, owner / cur["equity"])
+                want = row["mktcap_eok"] * 1e8 / nav if nav > 0 and row["mktcap_eok"] else None
+        if want is not None:
+            fv_vals.append(want)
+        ok = row.get("pnav_fv") == (round(want, 2) if want is not None else None)
+        if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no"):
+            # 같은 보고서일 때만 출처를 대조한다. 새 사업보고서가 들어오고 주석을 아직 못 읽었으면 화면이 비어 있는지만 본다
+            ok &= fvr["book"] == cur.get("investment_property")
+            if fvr["method"] == "장부금액과 공정가치 표":
+                ok &= abs(fvr["table_book"] - fvr["book"]) <= 0.002 * fvr["book"]
+            elif fvr["method"] == "공정가치 모형":
+                ok &= fvr["fv"] == fvr["book"]
+            else:
+                ok &= 0.5 <= fvr["fv"] / fvr["book"] <= 2
+        fv_ok.append(ok)
+    check(all(fv_ok), f"감정가 기준 P/NAV {sum(fv_ok)}/{len(fv_ok)}종목 재계산과 공정가치 출처 대조")
+    check(yield_summary.get("pnav_fv_n") == len(fv_vals)
+          and yield_summary.get("pnav_fv_median") == (round(median(fv_vals), 2) if fv_vals else None),
+          f"감정가 기준 P/NAV 중앙값 {yield_summary.get('pnav_fv_median')}배({len(fv_vals)}개) 재계산")
     raw = b"\n".join(p.read_bytes() for p in (dart_path, DATA / "loans.json") if p.exists())
     check(not re.search(rb"[0-9a-fA-F]{40}", raw), "DART 자료 40자리 인증정보 문자열 점검")
     secret = os.environ.get("DART_API_KEY")

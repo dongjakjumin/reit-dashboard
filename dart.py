@@ -137,6 +137,7 @@ def statement(rows, term, notes):
     accounts = []
     section = None
     assets = None
+    extra = {}  # 감정가 기준 NAV 계산에 쓰는 재무상태표 줄. 처음 나온 줄만 쓴다.
     for r in bs:
         name = compact(r["account_nm"])
         amount = number(r.get(field))
@@ -145,6 +146,13 @@ def statement(rows, term, notes):
             if assets is None:
                 assets = amount
             continue
+        for key, ids, names in (("investment_property", ("ifrs-full_InvestmentProperty",), ("투자부동산",)),
+                                ("equity", ("ifrs-full_Equity",), ("자본총계",)),
+                                ("equity_owner", ("ifrs-full_EquityAttributableToOwnersOfParent",),
+                                 ("지배기업소유주지분", "지배기업의소유주에게귀속되는자본", "지배기업소유주에게귀속되는자본")),
+                                ("nci", ("ifrs-full_NoncontrollingInterests",), ("비지배지분",))):
+            if key not in extra and (r["account_id"] in ids or name in names):
+                extra[key] = amount
         if name in ("유동부채", "비유동부채", "부채총계"):
             section = {"유동부채": True, "비유동부채": False, "부채총계": None}[name]
             balances[section] = amount or 0
@@ -172,6 +180,7 @@ def statement(rows, term, notes):
         debt[key] = sum(a["amount"] or 0 for a in accounts if a["current"] == current and a.get("included", True))
     if None not in balances or True not in balances:
         raise ValueError("부채 구간 누락")
+    debt.update(extra)
     debt.update(total=debt["short"] + debt["long"], liabilities=balances[None], assets=assets,
                 current_liabilities=balances[True], noncurrent_liabilities=balances.get(False, balances[None]-balances[True]))
     if (debt["short"] > debt["current_liabilities"] or debt["long"] > debt["noncurrent_liabilities"]

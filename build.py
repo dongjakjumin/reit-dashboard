@@ -577,10 +577,43 @@ def maturity_rows(stocks, issuers, corporate_rate=None):
     return rows
 
 
+def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
+    """감정가 기준 NAV = 지배기업 소유주지분 + (투자부동산 공정가치 - 장부금액) × 지배지분 비율.
+
+    공정가치는 사업보고서 주석(dart_fv.py), 자본은 같은 보고서의 재무상태표(dart.py)에서 온다.
+    비지배지분이 자본의 5%를 넘으면 공정가치 차익을 지배지분과 나눌 근거가 없어 비운다.
+    """
+    out = dict(nav_fv_eok=None, pnav_fv=None, pnav_raw=None, fv_gain_eok=None, fv_end=None, fv_method=None, nav_fv_reason=None)
+    cur = record.get("current") or {}
+    if not record or not fv or fv.get("rcept_no") != record.get("rcept_no"):
+        out["nav_fv_reason"] = "공정가치 자료 없음"
+        return out
+    if fv.get("fv") is None:
+        out["nav_fv_reason"] = "투자부동산 없음" if not fv.get("book") else "공정가치 못 읽음"
+        return out
+    equity = cur.get("equity")
+    owner = cur["equity_owner"] if cur.get("equity_owner") is not None else equity
+    if not equity or equity <= 0 or owner is None:
+        out["nav_fv_reason"] = "자본 자료 없음"
+        return out
+    gain = fv["fv"] - fv["book"]
+    out.update(fv_gain_eok=round(gain / 1e8), fv_end=safe_date(fv["end"]), fv_method=fv["method"])
+    if abs(equity - owner) > 0.05 * equity:
+        out["nav_fv_reason"] = f"비지배지분 {abs(equity - owner) / equity * 100:.0f}%"
+        return out
+    nav = owner + gain * min(1, owner / equity)
+    out["nav_fv_eok"] = round(nav / 1e8)
+    if nav > 0 and mktcap_eok:
+        out["pnav_raw"] = mktcap_eok * 1e8 / nav
+        out["pnav_fv"] = round(out["pnav_raw"], 2)
+    return out
+
+
 def build_listed_data() -> dict:
     """상장리츠 비교판 자료. P/B(시가총액 ÷ 리츠정보시스템 NAV), P/FFO, 수익률, 지수는 여기서 계산한다."""
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
     dart = optional_data("dart.json")
+    fvdata = optional_data("fv.json")
     rates = rate_summary()
     benchmark = rates.get("ktb10", {}).get("value")
     prices = optional_data("prices.json")
@@ -639,8 +672,10 @@ def build_listed_data() -> dict:
         pnav = mktcap / (r["nav_mil"] / 100) if r.get("nav_mil") and r["nav_mil"] > 0 and mktcap else None
         pffo = mktcap / (r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") and r["ffo_mil"] > 0 and ppy and mktcap else None
         spread = market_yield - benchmark if market_yield is not None and benchmark is not None else None
-        raw[r["code"]] = {"pnav": pnav, "spread": spread}
+        fair = nav_fair(dividends, fvdata.get(r["code"]), mktcap)
+        raw[r["code"]] = {"pnav": pnav, "spread": spread, "pnav_fv": fair.pop("pnav_raw")}
         rows.append({
+            **fair,
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "has_finance": _has_finance(fin.get(str(r.get("reit_id")))),
             "homepage": safe_url(r.get("homepage")), "listed_date": safe_date(r.get("listed_date")),
@@ -757,6 +792,9 @@ def build_listed_data() -> dict:
             "index_tr_missing": [row_by[c]["name"] for c in full if c not in tr] if idx else [],
             "up_1y": sum(1 for v in changes if v > 0), "down_1y": sum(1 for v in changes if v < 0),
             "pnav_median": _median(pnav_raw, 2), "pnav_n": len(pnavs),
+            "pnav_fv_median": _median([v["pnav_fv"] for v in raw.values() if v["pnav_fv"] is not None], 2),
+            "pnav_fv_n": sum(1 for v in raw.values() if v["pnav_fv"] is not None),
+            "pnav_fv_below1": sum(1 for r in rows if r["pnav_fv"] is not None and r["pnav_fv"] < 1),
             "nav_book_n": len(nav_book), "nav_book_same": sum(ok for _, ok in nav_book),
             "nav_book_diff": [name for name, ok in nav_book if not ok],
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
