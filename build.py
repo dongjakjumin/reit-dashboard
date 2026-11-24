@@ -724,28 +724,54 @@ def build_listed_data() -> dict:
 DISCLOSURE_GROUPS = {
     "RT02100018": "위험 신호", "RT02100019": "위험 신호", "RT02100027": "위험 신호",
     "RT02100021": "자산 취득, 처분", "RT02100022": "자산 취득, 처분",
+    "RT02100006": "자산 취득, 처분",  # 실사보고서: 부동산을 취득하거나 처분할 때 작성(법 24조 ③)
     "RT02100023": "신용평가", "RT02100024": "최대주주 변경",
-    "RT02100028": "이해관계자 거래", "RT02100029": "대출 실행",
-    "RT02100020": "기타 공시", "RT02100002": "기타 공시",
+    "RT02100028": "이해관계자 거래", "RT02100029": "차입, 사채",
 }
-GROUP_ORDER = ["위험 신호", "해산, 청산", "자산 취득, 처분", "신용평가", "최대주주 변경", "이해관계자 거래", "대출 실행", "기타 공시"]
+# 유형 코드가 '기타'이거나 투자설명서인 공시는 본문의 말로 다시 나눈다(앞의 규칙이 먼저).
+TEXT_CODES = {"RT02100020", "RT02100002", "RT02100005"}
+TEXT_RULES = [
+    ("위반, 제재", re.compile(r"기한\s?내\s?공시\s?하지|공시\s?기한.{0,6}(?:미준수|위반|경과)|지연\s?공시|위반\s?하였|위반했"
+                          r"|과태료|과징금|기관\s?(?:경고|주의)|영업\s?정지|시정\s?명령|제재")),
+    ("소송, 분쟁", re.compile(r"소송|판결|중재|가압류|가처분")),
+    ("이해관계자 거래", re.compile(r"주요\s?주주인|이해관계인|이해관계자와")),
+    ("자산 취득, 처분", re.compile(r"실사\s?보고서|본\s?계약\s?체결|(?:토지|부동산|자산|건물|사전)\s?매매\s?계약"
+                                r"|(?:부동산|자산)의?\s?(?:취득|매각|처분)|양수도\s?계약|기부\s?채납")),
+    ("인가 신청, 기금 출자", re.compile(r"(?:영업\s?인가|영업\s?등록|변경\s?인가|변경\s?등록|설립\s?신고)\s?(?:신청|신고)|기금\s?출자")),
+    ("차입, 사채", re.compile(r"대출\s?약정|차입\s?(?:계약|약정)|사채|리파이낸싱|대환")),
+    ("자본 변동", re.compile(r"유상\s?증자|무상\s?증자|신주의?\s?발행|현물\s?출자|자본금?\s?감소|감자|투자설명서|증권신고서|투자자\s?모집")),
+    ("기타 공시", re.compile(r"무산|부결")),  # 주주총회 무산이나 안건 부결은 의사록이어도 목록에 둔다
+]
+# 규칙에 걸리지 않고 의사록, 정기 보고서, 정관, 임원 변경으로만 보이는 '기타' 공시는 정기, 일반 공시로 센다.
+ROUTINE_WORDS = re.compile(r"의사록|주주\s?총회|감사\s?보고서|투자\s?보고서|영업\s?보고서|재무제표|정관|조문|내부\s?통제|위탁\s?계약"
+                           r"|이사.{0,12}(?:선임|사임|중임|해임)|\((?:사임|취임|선임|중임|해임)\)")
+GROUP_ORDER = ["위험 신호", "해산, 청산", "위반, 제재", "소송, 분쟁", "자산 취득, 처분", "인가 신청, 기금 출자",
+               "자본 변동", "차입, 사채", "신용평가", "최대주주 변경", "이해관계자 거래", "기타 공시"]
 # 유형 코드가 '기타'이거나 정기 공시여도 제목과 본문에 아래 말이 있으면 따로 묶는다.
 # (회생절차나 사채권자집회 공시가 '기타'로 올라와 위험 신호에서 빠지던 것을 바로잡는다.)
-RISK_WORDS = re.compile(r"회생절차|회생법원|사채권자\s?집회|기한의?\s?이익.{0,6}상실|미상환|부도|파산|자율\s?구조조정")
+RISK_WORDS = re.compile(r"회생절차|회생법원|사채권자\s?집회|기한의?\s?이익.{0,6}상실|미상환|부도|파산|채무\s?불이행|자율\s?(?:구조조정|협약)"
+                        r"|캐시\s?트랩(?!.{0,6}(?:해제|해소|종료))")
 WIND_UP_WORDS = re.compile(r"해산|청산")
 
 
 def dis_group(x: dict) -> str | None:
     """수시공시 한 건의 화면 묶음. 없으면 정기, 일반 공시(None)."""
-    grp = DISCLOSURE_GROUPS.get(x.get("matter_code"))
-    if grp not in (None, "기타 공시"):
+    code = x.get("matter_code")
+    grp = DISCLOSURE_GROUPS.get(code)
+    if grp:
         return grp
-    words = f"{x.get('matter') or ''} {x.get('text') or ''}"
+    text = x.get("text") or ""
+    words = f"{x.get('matter') or ''} {text}"
     if RISK_WORDS.search(words):
         return "위험 신호"
     if WIND_UP_WORDS.search(words):
         return "해산, 청산"
-    return grp
+    if code not in TEXT_CODES:
+        return None
+    for name, rx in TEXT_RULES:
+        if rx.search(text):
+            return name
+    return None if ROUTINE_WORDS.search(text) else "기타 공시"
 
 
 def _norm_company(name: str) -> str:
@@ -908,7 +934,8 @@ def weekly_digest(data: dict, listed: dict, finance: dict) -> dict:
     dis = [x for x in finance["disclosures"] if start <= x["date"] <= end]
     groups = Counter(x["group"] for x in dis)
     notable = [{k: x[k] for k in ("date", "group", "matter", "company_s", "timeline_code")}
-               for x in dis if x["group"] in ("위험 신호", "해산, 청산", "자산 취득, 처분", "신용평가", "최대주주 변경")]
+               for x in dis if x["group"] in ("위험 신호", "해산, 청산", "위반, 제재", "소송, 분쟁", "자산 취득, 처분",
+                                              "인가 신청, 기금 출자", "신용평가", "최대주주 변경")]
 
     # 상장리츠: 지수와 종목 수익률은 마지막 종가일과 그 7일 전(그날이나 그 앞의 마지막 거래일)을 견준다
     idx = list(zip(listed["index"]["dates"], listed["index"]["values"]))

@@ -467,9 +467,30 @@ def main() -> int:
     group_cases = [({"matter_code": "RT02100020", "matter": "기타", "text": "서울회생법원 회생절차 개시"}, "위험 신호"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "무보증사채 사채권자집회 소집"}, "위험 신호"),
                    ({"matter_code": "RT02100004", "matter": "재무제표 및 감사보고서", "text": "청산일 기준 재무제표"}, "해산, 청산"),
-                   ({"matter_code": "RT02100029", "matter": "대출 실행", "text": "기한의 이익 상실 사유 약정"}, "대출 실행"),
+                   ({"matter_code": "RT02100029", "matter": "대출 실행", "text": "기한의 이익 상실 사유 약정"}, "차입, 사채"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "자산관리회사 변경"}, "기타 공시"),
-                   ({"matter_code": "RT02100004", "matter": "재무제표 및 감사보고서", "text": ""}, None)]
+                   ({"matter_code": "RT02100004", "matter": "재무제표 및 감사보고서", "text": ""}, None),
+                   # 유형이 '기타'나 투자설명서인 공시의 본문 규칙
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "2026년 제5차 이사회 의사록"}, None),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "(사임) 대표이사 (이름 생략) (취임) 대표이사 (이름 생략)"}, None),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "제2기 재무제표 및 이익잉여금처분계산서(안) 승인의 건"}, None),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "임시주주총회는 출석주식수 미달로 무산되었음"}, "기타 공시"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "이사회 의사록을 기한 내 공시하지 않았음"}, "위반, 제재"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "광고자료 배포로 내부통제기준을 위반하였음"}, "위반, 제재"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "영국 상사법원 소송 판결 결과(캐시트랩 지속)"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "대주단 자율협약서 체결의 건"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "손해배상 청구 소송 1심 판결"}, "소송, 분쟁"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "캐시트랩 해소"}, "기타 공시"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "주요주주인 A사와 PM계약 변경계약 체결"}, "이해관계자 거래"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "자산의 처분 결정(공공사업에 따른 기부채납)"}, "자산 취득, 처분"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "제3호 의안 : 부동산투자회사 영업인가 신청의 건"}, "인가 신청, 기금 출자"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "주택도시기금 출자 신청의 건"}, "인가 신청, 기금 출자"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "제 1호 의안 : 대출약정서 체결의 건"}, "차입, 사채"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "현물출자(대토보상권)에 의한 신주 발행의 건"}, "자본 변동"),
+                   ({"matter_code": "RT02100005", "matter": "투자설명서", "text": "담보부사채 투자설명서(예비)"}, "차입, 사채"),
+                   ({"matter_code": "RT02100005", "matter": "투자설명서", "text": "영업인가에 따른 투자설명서 공시"}, "자본 변동"),
+                   ({"matter_code": "RT02100005", "matter": "투자설명서", "text": "자회사의 환헷지 조기종료"}, "기타 공시"),
+                   ({"matter_code": "RT02100006", "matter": "실사보고서", "text": ""}, "자산 취득, 처분")]
     for case, expected in group_cases:
         check(build.dis_group(case) == expected, f"공시 묶음 가상 입력 {case['text'] or case['matter']} → {expected or '정기, 일반'}")
     since = build.since(build.d(snap["date"]))
