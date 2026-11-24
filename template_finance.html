@@ -23,7 +23,7 @@
 
 <header>
   <h1>상장리츠 재무 구조와 리츠 주요 공시</h1>
-  <p>상장리츠의 자산, 부채, 자본을 직전 분기 투자보고서 기준으로 비교하고, 전체 리츠의 수시공시 가운데 자산 취득과 처분, 신용평가, 최대주주 변경, 부실 발생 같은 주요 공시를 날짜순으로 모았습니다.</p>
+  <p>전체 리츠의 수시공시 가운데 위험 신호, 자산 취득과 처분, 인가 신청, 자본 변동, 이해관계자 거래 같은 주요 공시를 날짜순으로 모았습니다. 상장리츠의 자산, 부채, 자본과 차입 만기는 직전 분기 투자보고서 기준으로 비교합니다.</p>
   <div class="stamp" id="stamp"></div>
 </header>
 
@@ -31,6 +31,23 @@
   <h2 id="h-sum">요약</h2>
   <p class="sub">리츠 한 곳의 별도 재무 수치입니다. 자리츠나 펀드를 거쳐 부동산을 보유하는 리츠는 차입이 자리츠 쪽에 있어 부채가 작게 나옵니다. 부채총계에는 차입금, 사채, 임대보증금 등이 포함됩니다. 대출 건별 만기와 약정금리는 각 리츠의 보고서에서 확인할 수 있습니다.</p>
   <div class="tiles" id="tiles"></div>
+</section>
+
+<section aria-labelledby="h-dis">
+  <h2 id="h-dis">리츠 주요 공시</h2>
+  <p class="sub" id="dis-sub"></p>
+  <div class="row">
+    <div class="seg" id="dis-seg" role="group" aria-label="공시 유형"></div>
+  </div>
+  <div class="row">
+    <input type="search" id="dis-q" placeholder="리츠, 공시 내용 검색" aria-label="검색">
+    <label style="font-size:13px;color:var(--ink2)"><input type="checkbox" id="dis-listed"> 상장리츠만</label>
+    <span class="sp"></span>
+    <span class="count" id="dis-count"></span>
+    <button class="btn" id="dis-csv">엑셀(CSV) 내려받기</button>
+  </div>
+  <div class="tw"><table id="dis-table"></table></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="dis-more">50건 더 보기</button></div>
 </section>
 
 <section aria-labelledby="h-lev">
@@ -106,22 +123,6 @@
   </table></div>
 </section>
 
-<section aria-labelledby="h-dis">
-  <h2 id="h-dis">리츠 주요 공시</h2>
-  <p class="sub" id="dis-sub"></p>
-  <div class="row">
-    <div class="seg" id="dis-seg" role="group" aria-label="공시 유형"></div>
-  </div>
-  <div class="row">
-    <input type="search" id="dis-q" placeholder="리츠, 공시 내용 검색" aria-label="검색">
-    <label style="font-size:13px;color:var(--ink2)"><input type="checkbox" id="dis-listed"> 상장리츠만</label>
-    <span class="sp"></span>
-    <span class="count" id="dis-count"></span>
-    <button class="btn" id="dis-csv">엑셀(CSV) 내려받기</button>
-  </div>
-  <div class="tw"><table id="dis-table"></table></div>
-  <div class="row" style="margin-top:10px"><button class="btn" id="dis-more">50건 더 보기</button></div>
-</section>
 
 <section aria-labelledby="h-read">
   <h2 id="h-read">읽는 법</h2>
@@ -528,7 +529,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
 
 /* 주요 공시 */
 (function(){
-  let grp = '전체', shown = 50;
+  let grp = '전체', shown = 15;  // 화면 위쪽에 있으므로 처음에는 15건만 보여 준다
   const groups = ['전체', ...D.groups.map(g => g.name)];
   $('#dis-seg').innerHTML = groups.map((g, i) => `<button data-v="${esc(g)}" aria-pressed="${i === 0}">${esc(g)}${g === '전체' ? '' : ' ' + D.groups.find(x => x.name === g).n}</button>`).join('');
   const rows = () => { const q = $('#dis-q').value.trim().toLowerCase(), only = $('#dis-listed').checked;
@@ -541,8 +542,8 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
     $('#dis-more').style.display = r.length > shown ? '' : 'none';
   }
   $('#dis-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
-    $('#dis-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); grp = b.dataset.v; shown = 50; draw(); });
-  ['input', 'change'].forEach(ev => ['#dis-q', '#dis-listed'].forEach(id => $(id).addEventListener(ev, () => { shown = 50; draw(); })));
+    $('#dis-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); grp = b.dataset.v; shown = 15; draw(); });
+  ['input', 'change'].forEach(ev => ['#dis-q', '#dis-listed'].forEach(id => $(id).addEventListener(ev, () => { shown = 15; draw(); })));
   $('#dis-more').onclick = () => { shown += 50; draw(); };
   $('#dis-csv').onclick = () => csv('리츠_주요공시', ['공시일','유형','리츠','상장 종목','공시 제목','내용'], rows().map(x => [x.date, x.group, x.company_s, x.listed || '', x.matter, x.text]));
   draw();
