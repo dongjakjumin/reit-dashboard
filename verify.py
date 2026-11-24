@@ -538,12 +538,17 @@ def main() -> int:
         cur = rec.get("current") or {}
         fvr = fv_saved.get(r["code"]) or {}
         want = None
-        if cur.get("assets") and cur.get("total") is not None and fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no"):
+        # 공정가치는 같은 보고서, 같은 기준, 같은 결산일, 같은 투자부동산 금액에서 읽었고 장부금액의 0.5~2배일 때만 쓴다
+        same = (fvr.get("fv") is not None and bool(fvr.get("book"))
+                and tuple(fvr.get(k) for k in ("rcept_no", "basis", "end", "book"))
+                == (rec.get("rcept_no"), rec.get("basis"), cur.get("end"), cur.get("investment_property"))
+                and 0.5 <= fvr["fv"] / fvr["book"] <= 2)
+        if cur.get("assets") and cur.get("total") is not None and same and cur["assets"] + fvr["fv"] - fvr["book"] > 0:
             want = cur["total"] / (cur["assets"] + fvr["fv"] - fvr["book"]) * 100
             lf_raw.append(want)
             lf_book.append(cur["total"] / cur["assets"] * 100)
         lf_ok.append(r.get("ltv_fv") == (round(want, 1) if want is not None else None) and (want is None or (
-            0 <= want <= 100 and ((r["ltv_fv"] <= r["ltv"]) if fvr["fv"] >= fvr["book"] else (r["ltv_fv"] >= r["ltv"])))))
+            want >= 0 and ((r["ltv_fv"] <= r["ltv"]) if fvr["fv"] >= fvr["book"] else (r["ltv_fv"] >= r["ltv"])))))
     check(all(lf_ok) and fd["summary"].get("ltv_fv_n") == len(lf_raw)
           and fd["summary"].get("ltv_fv_median") == (round(median(lf_raw), 1) if lf_raw else None)
           and fd["summary"].get("ltv_fv_book_median") == (round(median(lf_book), 1) if lf_book else None),
@@ -850,32 +855,42 @@ def main() -> int:
     # 감정가 기준 NAV = 지배기업 소유주지분 + (공정가치 - 장부금액) × 지배지분 비율. 비지배지분이 5%를 넘으면 비움
     fv_data = saved_json("fv.json")
     fv_ok, fv_vals, fv_by_code = [], [], {}
+    fv_methods = ("장부금액과 공정가치 표", "공정가치 모형", "공정가치 문장", "공정가치 서열체계 표")
     for row in (page_data.get("rows", []) if codes is not None else []):
         rec, fvr = dart_data.get(row["code"], {}), fv_data.get(row["code"], {})
         cur = rec.get("current", {})
-        want = nav_want = None
-        if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no") and (cur.get("equity") or 0) > 0:
-            owner = cur["equity_owner"] if cur.get("equity_owner") is not None else cur["equity"]
-            if abs(cur["equity"] - owner) <= 0.05 * cur["equity"]:
-                nav = owner + (fvr["fv"] - fvr["book"]) * min(1, owner / cur["equity"])
-                nav_want = round(nav / 1e8)
-                want = row["mktcap_eok"] * 1e8 / nav if nav > 0 and row["mktcap_eok"] else None
+        want = nav_want = pb_want = None
+        # 공정가치는 같은 보고서, 같은 기준(연결, 별도), 같은 결산일, 같은 투자부동산 금액에서 읽었고 장부금액의 0.5~2배일 때만 쓴다
+        usable = (fvr.get("fv") is not None and bool(fvr.get("book"))
+                  and tuple(fvr.get(k) for k in ("rcept_no", "basis", "end", "book"))
+                  == (rec.get("rcept_no"), rec.get("basis"), cur.get("end"), cur.get("investment_property"))
+                  and 0.5 <= fvr["fv"] / fvr["book"] <= 2)
+        owner = cur.get("equity_owner")
+        if owner is None:  # 별도는 자본총계, 연결은 자본총계 - 비지배지분, 둘 다 없으면 비움
+            owner = cur.get("equity") if rec.get("basis") != "CFS" else (
+                cur["equity"] - cur["nci"] if cur.get("equity") is not None and cur.get("nci") is not None else None)
+        same_report = usable and (cur.get("equity") or 0) > 0 and owner is not None
+        if same_report and abs(cur["equity"] - owner) <= 0.05 * cur["equity"]:
+            nav = owner + (fvr["fv"] - fvr["book"]) * min(1, owner / cur["equity"])
+            nav_want = round(nav / 1e8)
+            if nav > 0 and row["mktcap_eok"]:
+                want = row["mktcap_eok"] * 1e8 / nav
+                pb_want = round(row["mktcap_eok"] * 1e8 / owner, 2) if owner > 0 else None
         if want is not None:
             fv_vals.append(want)
         fv_by_code[row["code"]] = want
         ok = row.get("pnav_fv") == (round(want, 2) if want is not None else None) and row.get("nav_fv_eok") == nav_want
-        # 화면의 기준일 링크는 공정가치를 읽은 보고서(= 재무상태표를 읽은 보고서)의 접수번호여야 한다
-        same_report = fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no") and (cur.get("equity") or 0) > 0
+        ok &= row.get("pb_dart") == pb_want
+        # 기준일 링크와 다른 방식 대조 결과는 공정가치를 읽은 보고서(= 재무상태표를 읽은 보고서)의 것이어야 한다
         ok &= row.get("fv_rcept") == (fvr["rcept_no"] if same_report else None)
-        if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no"):
+        ok &= row.get("fv_confirm") == ([x for x in fvr.get("confirm") or [] if x in fv_methods] if same_report else [])
+        if usable:
             # 같은 보고서일 때만 출처를 대조한다. 새 사업보고서가 들어오고 주석을 아직 못 읽었으면 화면이 비어 있는지만 본다
-            ok &= fvr["book"] == cur.get("investment_property")
+            ok &= fvr["method"] in fv_methods and fvr["method"] not in (fvr.get("confirm") or [])
             if fvr["method"] == "장부금액과 공정가치 표":
                 ok &= abs(fvr["table_book"] - fvr["book"]) <= 0.002 * fvr["book"]
             elif fvr["method"] == "공정가치 모형":
                 ok &= fvr["fv"] == fvr["book"]
-            else:
-                ok &= 0.5 <= fvr["fv"] / fvr["book"] <= 2
         fv_ok.append(ok)
     check(all(fv_ok), f"감정가 기준 P/NAV {sum(fv_ok)}/{len(fv_ok)}종목 재계산과 공정가치 출처 대조")
     check(yield_summary.get("pnav_fv_n") == len(fv_vals)

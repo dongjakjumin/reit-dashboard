@@ -45,7 +45,7 @@
     <div class="card">
       <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">P/B와 감정가 기준 P/NAV, P/B 낮은 순</strong><span class="sp"></span><div class="legend" id="pnav-legend" style="margin:0"></div></div>
       <div class="chart" id="pnav-chart"></div>
-      <p class="note">세로 선은 1.0배(시가총액 = NAV)입니다. NAV는 직전 결산기 값이라 그 뒤의 자산 편입, 증자, 감정평가 변동은 들어 있지 않습니다. 검은 눈금은 투자부동산 감정가를 반영한 P/NAV(감정가)이고, 값이 있는 종목에만 그렸습니다.</p>
+      <p class="note">세로 선은 1.0배(시가총액 = NAV)입니다. NAV는 직전 결산기 값이라 그 뒤의 자산 편입, 증자, 감정평가 변동은 들어 있지 않습니다. 검은 눈금은 투자부동산 감정가를 반영한 P/NAV(감정가)이고, 값이 있는 종목에만 그렸습니다. 막대의 NAV는 리츠정보시스템 값이고 눈금의 NAV는 DART 사업보고서 자본에 감정차익을 더한 값이라, 둘의 차이에는 출처와 기준일 차이도 섞여 있습니다. 감정차익만의 효과는 툴팁의 DART 자본 기준 P/B와 견주어 보면 됩니다.</p>
     </div>
   </div>
 </section>
@@ -84,7 +84,7 @@
       <li><b>NAV</b>는 리츠정보시스템에 공시된 값을 그대로 썼습니다. <span id="nav-book"></span>감정평가 차익을 반영한 NAV가 아니므로 시가총액 ÷ NAV를 P/NAV가 아니라 P/B(장부가 기준)로 적었습니다.</li>
       <li><b>FFO</b>: 당기순이익에 감가상각비를 더하고 평가손익, 매각손익, 손상차손과 환입, 판매손익을 조정한 값입니다(리츠정보시스템 정의). 결산기 한 번의 금액입니다.</li>
       <li><b>P/B</b>: 현재 시가총액 ÷ 직전 결산기 NAV로 이 화면에서 계산했습니다. 리츠정보시스템 화면의 P/NAV는 결산월 말 주가(원)를 NAV 총액(백만원)으로 나눈 값으로 보여 배수로 읽기 어려워 쓰지 않았습니다.</li>
-      <li><b>P/NAV(감정가)</b>: 현재 시가총액 ÷ 감정가 기준 NAV입니다. 감정가 기준 NAV는 DART 사업보고서의 지배기업 소유주지분에, 주석에 적힌 투자부동산 공정가치(감정평가액)와 장부금액의 차이를 지배지분 비율만큼 더한 값입니다. 공정가치 모형을 쓰는 리츠는 장부금액이 곧 공정가치라 차이가 0입니다. 주석 표는 장부금액 합계가 재무상태표와 맞을 때만 쓰고, 비지배지분이 자본의 5%를 넘거나 재무상태표에 투자부동산이 없는 종목은 비웠습니다. 기준일은 최근 사업보고서의 결산기 말입니다.<span id="fv-cross"></span></li>
+      <li><b>P/NAV(감정가)</b>: 현재 시가총액 ÷ 감정가 기준 NAV입니다. 감정가 기준 NAV는 DART 사업보고서의 지배기업 소유주지분에, 주석에 적힌 투자부동산 공정가치(감정평가액)와 장부금액의 차이를 지배지분 비율만큼 더한 값입니다. 공정가치 모형을 쓰는 리츠는 장부금액이 곧 공정가치라 차이가 0입니다. 주석 표는 장부금액 합계가 재무상태표와 맞을 때만 쓰고, 어느 방식으로 읽었든 공정가치가 장부금액의 0.5~2배를 벗어나면 쓰지 않습니다. 다른 주석 표에서도 같은 값이 나오면 툴팁에 적었습니다. 비지배지분이 자본의 5%를 넘거나 재무상태표에 투자부동산이 없는 종목은 비웠습니다. 기준일은 최근 사업보고서의 결산기 말입니다.<span id="fv-cross"></span></li>
       <li><b>P/FFO</b>: 현재 시가총액 ÷ 연환산 FFO입니다. 직전 결산기 FFO에 365를 곱하고 해당 결산기의 일수로 나눕니다. 연속된 두 결산기 말일을 확인할 수 없으면 연환산 배당률과 배당수익률로 연간 결산 횟수를 추정합니다. FFO가 0 이하이거나 결산 횟수를 추정할 수 없으면 비워 두었습니다.</li>
       <li><b>WALE</b>: 임차인별 잔여 임대기간을 임대면적으로 가중평균한 값입니다(리츠정보시스템 정의, 단위 년). 직전 결산기 값이라 칸 아래에 결산월을 적었습니다. 리츠가 IR 자료에 내는 WALE은 임대료로 가중하거나 기준일이 달라 값이 다를 수 있어, 숫자를 인용할 때는 IR 자료와 대조해야 합니다.</li>
       <li><b>LTV</b>: 재무 화면과 같은 값으로, DART 사업보고서의 차입금과 사채 합계를 자산총계로 나눴습니다. 연결 재무제표가 있으면 연결 기준입니다.</li>
@@ -153,7 +153,7 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   const lcTxt = [...LC.removed.map(x => `${esc(x.name)} 목록에서 빠짐(${dshort(x.missing_from)}${why(x)})`), ...LC.added.map(x => `${esc(x.name)} 새로 들어옴(${dshort(x.first_seen)})`)].join(', ');
   const tiles = [
     {lab: '상장 리츠', val: n0(S.n), unit: '개', det: `시가총액 합계 <b>${eok(S.mktcap_eok)}원</b>. ${secTxt}${lcTxt ? `<br>최근 90일 상장 목록 변동: ${lcTxt}` : ''}`},
-    {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 시가총액 가중 <b>${pct(S.index_cap_ret)}</b>. 단순평균에 배당 1년치를 더하면 <b>${pct(S.index_tr)}</b>.<br>오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>. 제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
+    {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 시가총액 가중 <b>${pct(S.index_cap_ret)}</b>. 단순평균에 배당 1년치를 더하면 <b>${pct(S.index_tr)}</b>${S.index_tr_n !== S.index_n ? `(배당을 확인한 ${S.index_tr_n}개 기준)` : ''}.<br>오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>. 제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
     {lab: 'P/B 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배. 분모는 리츠정보시스템 NAV이며 ${S.nav_book_n}개 중 ${S.nav_book_same}개 종목에서 결산기 자본총계와 같은 장부가입니다. 투자부동산 감정가를 반영한 P/NAV 중앙값은 <b>${S.pnav_fv_median?.toFixed(2) ?? '–'}배</b>(${S.pnav_fv_n}개)입니다.`},
     {lab: '시가배당률, 시가총액 가중', val: S.yield_wavg?.toFixed(2) ?? '자료 없음', unit: S.yield_n ? '%' : '', det: `최근 12개월 주당배당금 ÷ 현재가를 시가총액으로 가중 평균했습니다(${S.yield_n}개 종목). 중앙값은 <b>${S.yield_median?.toFixed(2) ?? '–'}%</b>, 최근 결산기 배당만 연환산한 현재 배당 수준의 중앙값은 <b>${S.run_median?.toFixed(2) ?? '–'}%</b>입니다. 주가가 많이 내린 소형 종목의 배당률이 높아 중앙값이 가중 평균보다 높습니다.${S.jump.length ? ` 직전 결산기의 1.5배가 넘는 배당이 최근 12개월에 들어간 종목: ${S.jump.map(esc).join(', ')}.` : ''}`},
     {lab: '국고채 10년', val: bond?.value.toFixed(3) ?? '자료 없음', unit: bond ? '%' : '', det: `${sharedBondDate ? '기준일' : '10년 기준일'} ${bond?.date ?? '자료 없음'}, 3년 ${rateText(S.rates.ktb3)}, 5년 ${rateText(S.rates.ktb5)}`},
@@ -244,8 +244,10 @@ function drawPnav(){
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="종목별 P/B와 감정가 기준 P/NAV">${g}</svg>`;
   $('#pnav-legend').innerHTML = `<span><i class="dot" style="background:var(--s1)"></i>P/B(장부가)</span><span><i style="display:inline-block;width:2px;height:12px;background:var(--ink);vertical-align:-1px;margin-right:5px"></i>P/NAV(감정가)</span>`;
   el.querySelectorAll('rect[data-i]').forEach(x => { const r = rows[+x.dataset.i];
-    x.addEventListener('mouseenter', e => showTip(`<b>${esc(r.name)}</b><div class="tr"><span>시가총액</span><span>${eok(r.mktcap_eok)}원</span></div><div class="tr"><span>NAV(${esc(r.fiscal_end)})</span><span>${eok(r.nav_eok)}원</span></div><div class="tr"><span>P/B</span><span>${r.pnav.toFixed(2)}배</span></div>` + (r.pnav_fv != null
-      ? `<div class="tr"><span>감정가 NAV(${esc(r.fv_end)})</span><span>${eok(r.nav_fv_eok)}원</span></div><div class="tr"><span>P/NAV(감정가)</span><span>${r.pnav_fv.toFixed(2)}배</span></div>`
+    x.addEventListener('mouseenter', e => showTip(`<b>${esc(r.name)}</b><div class="tr"><span>시가총액</span><span>${eok(r.mktcap_eok)}원</span></div><div class="tr"><span>리츠정보시스템 NAV(${esc(r.fiscal_end)})</span><span>${eok(r.nav_eok)}원</span></div><div class="tr"><span>P/B</span><span>${r.pnav.toFixed(2)}배</span></div>` + (r.pnav_fv != null
+      ? (r.pb_dart != null ? `<div class="tr"><span>DART 자본 기준 P/B(${esc(r.fv_end)})</span><span>${r.pb_dart.toFixed(2)}배</span></div>` : '')
+        + `<div class="tr"><span>감정가 NAV(${esc(r.fv_end)})</span><span>${eok(r.nav_fv_eok)}원</span></div><div class="tr"><span>P/NAV(감정가)</span><span>${r.pnav_fv.toFixed(2)}배</span></div>`
+        + (r.fv_confirm?.length ? `<div class="tr"><span>공정가치 대조</span><span>${esc(r.fv_confirm.join(', '))}와 일치</span></div>` : '')
       : `<div class="tr"><span>P/NAV(감정가)</span><span>${esc(r.nav_fv_reason || '자료 없음')}</span></div>`), e));
     x.addEventListener('mousemove', moveTip); x.addEventListener('mouseleave', hideTip); });
 }
@@ -333,7 +335,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
       cell(g.ltv_median, g.ltv_n, g, v => v.toFixed(1) + '%') +
       cell(g.ret_1y_median, g.ret_1y_n, g, pct, cls(g.ret_1y_median)) + '</tr>').join('') + '</tbody>';
   const ns = D.sectors.map(g => g.n), halted = R.filter(x => x.halted).map(x => x.name);
-  $('#sec-note').textContent = `투자대상마다 종목이 ${Math.min(...ns)}~${Math.max(...ns)}개뿐이라 한두 종목에 따라 값이 크게 바뀝니다. 시가배당률은 위 요약처럼 시가총액 가중 평균이고 칸 아래에 중앙값을 적었으며, 나머지 칸은 중앙값입니다. 값이 없는 종목은 빼고 셌고, 일부 종목만 값이 있으면 그 수를 적고 1개뿐이면 비웠습니다. LTV는 재무 화면과 같은 기준`
+  $('#sec-note').textContent = `투자대상마다 종목이 ${Math.min(...ns)}~${Math.max(...ns)}개뿐이라 한두 종목에 따라 값이 크게 바뀝니다. 시가배당률은 위 요약처럼 시가총액 가중 평균이고 칸 아래에 중앙값을 적었으며, 나머지 칸은 중앙값입니다. P/B는 리츠정보시스템 NAV, P/NAV(감정가)는 DART 사업보고서 자본이 분모라 두 칸의 차이가 모두 감정차익은 아닙니다. 값이 없는 종목은 빼고 셌고, 일부 종목만 값이 있으면 그 수를 적고 1개뿐이면 비웠습니다. LTV는 재무 화면과 같은 기준`
     + (halted.length ? `이고, 1년 수익률은 주가 지수처럼 거래가 멈춘 종목(${halted.join(', ')})을 뺐습니다.` : '입니다.');
   const seg = () => [...$('#sec-seg').querySelectorAll('button')];
   const mark = () => { const v = seg().find(x => x.getAttribute('aria-pressed') === 'true')?.dataset.v;

@@ -577,37 +577,63 @@ def maturity_rows(stocks, issuers, corporate_rate=None):
     return rows
 
 
+FV_METHODS = ("장부금액과 공정가치 표", "공정가치 모형", "공정가치 문장", "공정가치 서열체계 표")
+
+
+def fv_usable(record: dict, fv: dict | None) -> bool:
+    """fv.json 값이 이 재무상태표와 같은 보고서, 같은 기준, 같은 결산일, 같은 투자부동산 금액에서 읽은 것이고
+    장부금액의 0.5~2배 안인지. 하나라도 어긋나면(그날 주석 읽기가 실패해 옛 기록이 남은 경우 등) 감정가 계산을 비운다."""
+    cur = (record or {}).get("current") or {}
+    return bool(fv) and fv.get("fv") is not None and bool(fv.get("book")) and (
+        tuple(fv.get(k) for k in ("rcept_no", "basis", "end", "book"))
+        == (record.get("rcept_no"), record.get("basis"), cur.get("end"), cur.get("investment_property"))
+        and 0.5 <= fv["fv"] / fv["book"] <= 2)
+
+
 def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
     """감정가 기준 NAV = 지배기업 소유주지분 + (투자부동산 공정가치 - 장부금액) × 지배지분 비율.
 
     공정가치는 사업보고서 주석(dart_fv.py), 자본은 같은 보고서의 재무상태표(dart.py)에서 온다.
     비지배지분이 자본의 5%를 넘으면 공정가치 차익을 지배지분과 나눌 근거가 없어 비운다.
     """
-    out = dict(nav_fv_eok=None, pnav_fv=None, pnav_raw=None, fv_gain_eok=None, fv_end=None, fv_method=None, fv_rcept=None,
-               nav_fv_reason=None)
-    cur = record.get("current") or {}
-    if not record or not fv or fv.get("rcept_no") != record.get("rcept_no"):
+    out = dict(nav_fv_eok=None, pnav_fv=None, pnav_raw=None, pb_dart=None, fv_gain_eok=None, fv_end=None, fv_method=None,
+               fv_rcept=None, fv_confirm=[], nav_fv_reason=None)
+    cur = (record or {}).get("current") or {}
+    if not record or not fv or tuple(fv.get(k) for k in ("rcept_no", "basis", "end", "book")) != (
+            record.get("rcept_no"), record.get("basis"), cur.get("end"), cur.get("investment_property")):
         out["nav_fv_reason"] = "공정가치 자료 없음"
         return out
     if fv.get("fv") is None:
         out["nav_fv_reason"] = "투자부동산 없음" if not fv.get("book") else "공정가치 못 읽음"
         return out
+    if not fv_usable(record, fv):
+        out["nav_fv_reason"] = "공정가치가 장부금액의 0.5~2배 밖"
+        return out
     equity = cur.get("equity")
-    owner = cur["equity_owner"] if cur.get("equity_owner") is not None else equity
+    owner = cur.get("equity_owner")
+    if owner is None:
+        # 별도 재무제표에는 비지배지분이 없다. 연결인데 지배지분 줄을 못 읽었으면 자본총계 - 비지배지분, 그것도 없으면 비운다
+        owner = equity if record.get("basis") != "CFS" else (
+            equity - cur["nci"] if equity is not None and cur.get("nci") is not None else None)
     if not equity or equity <= 0 or owner is None:
-        out["nav_fv_reason"] = "자본 자료 없음"
+        out["nav_fv_reason"] = "자본 자료 없음" if not equity or equity <= 0 else "지배지분 자료 없음"
         return out
     gain = fv["fv"] - fv["book"]
     out.update(fv_gain_eok=round(gain / 1e8), fv_end=safe_date(fv["end"]), fv_method=fv["method"],
-               fv_rcept=fv["rcept_no"] if re.fullmatch(r"\d{14}", str(fv.get("rcept_no") or "")) else None)
+               fv_rcept=fv["rcept_no"] if re.fullmatch(r"\d{14}", str(fv.get("rcept_no") or "")) else None,
+               fv_confirm=[x for x in fv.get("confirm") or [] if x in FV_METHODS])
     if abs(equity - owner) > 0.05 * equity:
         out["nav_fv_reason"] = f"비지배지분 {abs(equity - owner) / equity * 100:.0f}%"
         return out
     nav = owner + gain * min(1, owner / equity)
     out["nav_fv_eok"] = round(nav / 1e8)
-    if nav > 0 and mktcap_eok:
+    if nav <= 0:
+        out["nav_fv_reason"] = "감정가 NAV 0 이하"
+    elif mktcap_eok:
         out["pnav_raw"] = mktcap_eok * 1e8 / nav
         out["pnav_fv"] = round(out["pnav_raw"], 2)
+        # 같은 DART 자본으로 낸 P/B. P/NAV(감정가)와의 차이가 곧 감정차익의 효과다(막대 P/B는 리츠정보시스템 NAV 기준)
+        out["pb_dart"] = round(mktcap_eok * 1e8 / owner, 2) if owner > 0 else None
     return out
 
 
@@ -955,7 +981,7 @@ def build_finance_data() -> dict:
         # 감정가 LTV: 분모의 투자부동산을 같은 사업보고서 주석의 공정가치로 바꾼다(자산총계 + 공정가치 - 장부금액)
         fvr = fv_fs.get(r["code"]) or {}
         ltv_fv = (dcur["total"] / (dcur["assets"] + fvr["fv"] - fvr["book"]) * 100
-                  if ltv is not None and fvr.get("fv") is not None and fvr.get("rcept_no") == drec.get("rcept_no") else None)
+                  if ltv is not None and fv_usable(drec, fvr) and dcur["assets"] + fvr["fv"] - fvr["book"] > 0 else None)
         if ltv_fv is not None:
             raw_ltv_fv.append(ltv_fv)
             raw_ltv_fv_book.append(ltv)
