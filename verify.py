@@ -655,7 +655,7 @@ def main() -> int:
     check(set(maturity) == set(market) == {r["code"] for r in listed}, "DART 표와 상장 종목 목록 일치")
     if dart_data:
         check(any(r.get("total") is not None for r in maturity.values()), "저장한 DART 차입 합계의 화면 표시")
-    expected_yields = []
+    expected_yields, yield_by_code = [], {}
     weighted_yields, expected_runs = [], []  # (시가배당률, 시가총액), 현재 배당 수준
     print("[6-1] ECOS 시장금리")
     rate_data = saved_json("rates.json")
@@ -784,6 +784,7 @@ def main() -> int:
         if not yield_reason and annual_dps is not None and price and price > 0:
             expected = annual_dps / price * 100
             expected_yields.append(expected)
+        yield_by_code[code] = expected
         benchmark = latest_rates.get("ktb10")
         spread = round(expected - benchmark, 2) if expected is not None and benchmark is not None else None
         if spread is not None:
@@ -837,7 +838,7 @@ def main() -> int:
     verify_loans(check, dart_data, finance_payload.get("loans", {}), listed, snap["date"])
     # 감정가 기준 NAV = 지배기업 소유주지분 + (공정가치 - 장부금액) × 지배지분 비율. 비지배지분이 5%를 넘으면 비움
     fv_data = saved_json("fv.json")
-    fv_ok, fv_vals = [], []
+    fv_ok, fv_vals, fv_by_code = [], [], {}
     for row in (page_data.get("rows", []) if codes is not None else []):
         rec, fvr = dart_data.get(row["code"], {}), fv_data.get(row["code"], {})
         cur = rec.get("current", {})
@@ -850,6 +851,7 @@ def main() -> int:
                 want = row["mktcap_eok"] * 1e8 / nav if nav > 0 and row["mktcap_eok"] else None
         if want is not None:
             fv_vals.append(want)
+        fv_by_code[row["code"]] = want
         ok = row.get("pnav_fv") == (round(want, 2) if want is not None else None) and row.get("nav_fv_eok") == nav_want
         if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no"):
             # 같은 보고서일 때만 출처를 대조한다. 새 사업보고서가 들어오고 주석을 아직 못 읽었으면 화면이 비어 있는지만 본다
@@ -865,6 +867,33 @@ def main() -> int:
     check(yield_summary.get("pnav_fv_n") == len(fv_vals)
           and yield_summary.get("pnav_fv_median") == (round(median(fv_vals), 2) if fv_vals else None),
           f"감정가 기준 P/NAV 중앙값 {yield_summary.get('pnav_fv_median')}배({len(fv_vals)}개) 재계산")
+    # 투자대상별 중앙값: 수집 목록의 투자대상으로 다시 묶고 종목별 원값(P/B, 감정가 P/NAV, 시가배당률, LTV)으로 다시 낸다.
+    # 1년 수익률은 화면 값을 쓰되 거래가 멈춘 종목은 뺀다
+    if codes is not None:
+        rows_by = {r["code"]: r for r in page_data["rows"]}
+
+        def group_want(name, members):
+            med = lambda xs, k: round(median(xs), k) if xs else None
+            bs = lambda s: (dart_data.get(s["code"]) or {}).get("current") or {}
+            pb = [s["mktcap_eok"] / (s["nav_mil"] / 100) for s in members
+                  if s.get("nav_mil") and s["nav_mil"] > 0 and s.get("mktcap_eok")]
+            fv = [fv_by_code[s["code"]] for s in members if fv_by_code.get(s["code"]) is not None]
+            yl = [yield_by_code[s["code"]] for s in members if yield_by_code.get(s["code"]) is not None]
+            lt = [bs(s)["total"] / bs(s)["assets"] * 100 for s in members
+                  if bs(s).get("assets") and bs(s).get("total") is not None]
+            rt = [rows_by[s["code"]]["ret_1y"] for s in members
+                  if rows_by[s["code"]]["ret_1y"] is not None and not rows_by[s["code"]]["halted"]]
+            return {"name": name, "n": len(members), "mktcap_eok": sum(s["mktcap_eok"] or 0 for s in members),
+                    "pnav_median": med(pb, 2), "pnav_n": len(pb), "pnav_fv_median": med(fv, 2), "pnav_fv_n": len(fv),
+                    "yield_median": med(yl, 2), "yield_n": len(yl), "ltv_median": med(lt, 1), "ltv_n": len(lt),
+                    "ret_1y_median": med(rt, 1), "ret_1y_n": len(rt)}
+
+        names = {s.get("sector") or "기타" for s in listed}
+        want_groups = sorted((group_want(nm, [s for s in listed if (s.get("sector") or "기타") == nm]) for nm in names),
+                             key=lambda x: (-x["mktcap_eok"], x["name"]))
+        check(page_data.get("sectors") == want_groups and page_data.get("sector_all") == group_want("전체", listed),
+              "투자대상별 P/B, 감정가 P/NAV, 시가배당률, LTV, 1년 수익률 중앙값 재계산"
+              + "".join(f" · {g['name']} P/B {g['pnav_median']}배" for g in want_groups))
     raw = b"\n".join(p.read_bytes() for p in (dart_path, DATA / "loans.json") if p.exists())
     check(not re.search(rb"[0-9a-fA-F]{40}", raw), "DART 자료 40자리 인증정보 문자열 점검")
     secret = os.environ.get("DART_API_KEY")

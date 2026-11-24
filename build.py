@@ -673,7 +673,10 @@ def build_listed_data() -> dict:
         pffo = mktcap / (r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") and r["ffo_mil"] > 0 and ppy and mktcap else None
         spread = market_yield - benchmark if market_yield is not None and benchmark is not None else None
         fair = nav_fair(dividends, fvdata.get(r["code"]), mktcap)
-        raw[r["code"]] = {"pnav": pnav, "spread": spread, "pnav_fv": fair.pop("pnav_raw")}
+        # 재무 화면과 같은 LTV(DART 사업보고서 차입금과 사채 ÷ 자산총계, 연결 우선)
+        cur_bs = dividends.get("current") or {}
+        ltv = cur_bs["total"] / cur_bs["assets"] * 100 if cur_bs.get("assets") and cur_bs.get("total") is not None else None
+        raw[r["code"]] = {"pnav": pnav, "spread": spread, "pnav_fv": fair.pop("pnav_raw"), "ltv": ltv}
         rows.append({
             **fair,
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
@@ -693,9 +696,7 @@ def build_listed_data() -> dict:
             "pnav": round(pnav, 2) if pnav is not None else None,
             "pffo": round(pffo, 1) if pffo is not None else None,
             "wale_years": r.get("wale_years") or None,
-            # 재무 화면과 같은 LTV(DART 사업보고서 차입금과 사채 ÷ 자산총계, 연결 우선)
-            "ltv": (round(dividends["current"]["total"] / dividends["current"]["assets"] * 100, 1)
-                    if (dividends.get("current") or {}).get("assets") and dividends["current"].get("total") is not None else None),
+            "ltv": round(ltv, 1) if ltv is not None else None,
             "price_break": price_break, "halted": halted,
             "fiscal_end": safe_date(r.get("fiscal_end")), "fiscal_period": r.get("fiscal_period"),
             "spark": [hist[x] for x in dates[::5]] + ([last] if dates and (len(dates) - 1) % 5 else []),
@@ -757,10 +758,22 @@ def build_listed_data() -> dict:
                                         for c in current if first_seen.get(c, snap_days[0]) > snap_days[0]),
                                        key=lambda x: x["first_seen"], reverse=True)
 
+    def group_stats(name: str, members: list[dict]) -> dict:
+        """투자대상별 중앙값. P/B, 감정가 P/NAV, LTV는 반올림 전 값으로, 시가배당률은 요약 칸과 같은 값으로 낸다.
+        1년 수익률은 주가 지수처럼 거래가 멈춘 종목을 뺀다."""
+        vals = {k: [raw[r["code"]][k] for r in members if raw[r["code"]][k] is not None] for k in ("pnav", "pnav_fv", "ltv")}
+        ylds = [r["market_yield"] for r in members if r["market_yield"] is not None]
+        rets = [r["ret_1y"] for r in members if r["ret_1y"] is not None and not r["halted"]]
+        return {"name": name, "n": len(members), "mktcap_eok": sum(r["mktcap_eok"] for r in members),
+                "pnav_median": _median(vals["pnav"], 2), "pnav_n": len(vals["pnav"]),
+                "pnav_fv_median": _median(vals["pnav_fv"], 2), "pnav_fv_n": len(vals["pnav_fv"]),
+                "yield_median": _median(ylds, 2), "yield_n": len(ylds),
+                "ltv_median": _median(vals["ltv"], 1), "ltv_n": len(vals["ltv"]),
+                "ret_1y_median": _median(rets, 1), "ret_1y_n": len(rets)}
+
     sec_names = sorted({r["sector"] for r in rows})
-    sectors = sorted(({"name": s, "n": sum(1 for r in rows if r["sector"] == s),
-                       "mktcap_eok": sum(r["mktcap_eok"] for r in rows if r["sector"] == s)} for s in sec_names),
-                     key=lambda x: -x["mktcap_eok"])
+    sectors = sorted((group_stats(s, [r for r in rows if r["sector"] == s]) for s in sec_names),
+                     key=lambda x: (-x["mktcap_eok"], x["name"]))
     # 리츠정보시스템 NAV가 결산기 재무상태표의 자본총계와 같은지(같으면 감정평가 차익이 빠진 장부가 기준)
     nav_book = []
     for r in snap["listed"]:
@@ -812,7 +825,7 @@ def build_listed_data() -> dict:
             "dvd_median": _median(dvds, 2), "dvd_n": len(dvds),
         },
         "index": {"dates": common, "values": idx, "cap": idx_cap, "excluded": sorted(skip.values()), "exclusion_counts": excluded},
-        "sectors": sectors, "rows": rows, "list_changes": list_changes,
+        "sectors": sectors, "sector_all": group_stats("전체", rows), "rows": rows, "list_changes": list_changes,
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
     }
 
