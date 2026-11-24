@@ -32,6 +32,16 @@ from textutil import CHANGE_REQUEST, PRIVATE_LABEL, mask_officer_names, mask_per
 DATA = Path(__file__).parent / "data"
 
 
+def fv_stale_of(fvr):
+    """감정 시점 신호(build.appraisal_age와 같은 규칙): 주석의 '공정가치 평가를 다시 하지 않음' 문장이 먼저, 없으면 같은 주석 표의
+    전기말 공정가치가 당기와 같은지 본다."""
+    if fvr.get("not_reappraised"):
+        return "skipped"
+    if fvr.get("method") == "장부금액과 공정가치 표" and fvr.get("fv_prior") and fvr["fv_prior"] == fvr["fv"]:
+        return "same"
+    return None
+
+
 def saved_json(filename):
     path = DATA / filename
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
@@ -558,7 +568,8 @@ def main() -> int:
             want = cur["total"] / (cur["assets"] + fvr["fv"] - fvr["book"]) * 100
             lf_raw.append(want)
             lf_book.append(cur["total"] / cur["assets"] * 100)
-        lf_ok.append(r.get("ltv_fv") == (round(want, 1) if want is not None else None) and (want is None or (
+        lf_ok.append(r.get("fv_stale") == (fv_stale_of(fvr) if want is not None else None)
+                     and r.get("ltv_fv") == (round(want, 1) if want is not None else None) and (want is None or (
             want >= 0 and ((r["ltv_fv"] <= r["ltv"]) if fvr["fv"] >= fvr["book"] else (r["ltv_fv"] >= r["ltv"])))))
     check(all(lf_ok) and fd["summary"].get("ltv_fv_n") == len(lf_raw)
           and fd["summary"].get("ltv_fv_median") == (round(median(lf_raw), 1) if lf_raw else None)
@@ -896,8 +907,7 @@ def main() -> int:
         ok &= row.get("fv_rcept") == (fvr["rcept_no"] if same_report else None)
         ok &= row.get("fv_confirm") == ([x for x in fvr.get("confirm") or [] if x in fv_methods] if same_report else [])
         # 감정 시점 신호: 주석의 '공정가치 평가를 다시 하지 않음' 문장이 먼저, 없으면 같은 주석 표의 전기말 공정가치가 당기와 같은지
-        stale = ("skipped" if fvr.get("not_reappraised") else "same" if fvr.get("method") == "장부금액과 공정가치 표"
-                 and fvr.get("fv_prior") and fvr["fv_prior"] == fvr["fv"] else None) if same_report else None
+        stale = fv_stale_of(fvr) if same_report else None
         dates = [d for d in fvr.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(d))] if stale == "skipped" else []
         # 평가기준일은 결산일 전 날짜이고, 전기말 공정가치는 표 방식일 때만 있다
         stale_ok.append(row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates

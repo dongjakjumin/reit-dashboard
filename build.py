@@ -1023,6 +1023,7 @@ def build_finance_data() -> dict:
                           else None),
             "borrow_eok": eok(dcur["total"]) if ltv is not None else None,
             "ltv_fv": round(ltv_fv, 1) if ltv_fv is not None else None,
+            "fv_stale": appraisal_age(fvr)["fv_stale"] if ltv_fv is not None else None,
             "revenue_eok": round(rev / 1e8, 1) if rev is not None else None,
             "ffo_y_eok": round(r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") is not None and ppy else None,
             "ffo_end": safe_date(r.get("fiscal_end")) if r.get("ffo_mil") is not None and ppy else None,
