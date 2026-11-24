@@ -48,6 +48,8 @@ HYPOTHETICAL = re.compile(r"\s*(?:을|던|다면|더라면)")
 # [review5] '투자부동산' 표지를 붙이지 않을 표: 다른 자산, 부채, 다른 회사 줄이 함께 있는 표
 OTHER_ASSET = re.compile(r"금융자산|금융상품|금융부채|차입금|임대보증금|현금|수익증권|지분증권|관계기업|공동기업|유형자산|사용권자산")
 COST_MODEL = re.compile(r"원가\s*모형")
+# 뒤 문장이 이번 결산에 평가를 다시 했다고 적는 말('당기에는 ~ 감정평가를 다시 수행하였습니다'). 부정문과 신규 취득 자산 이야기는 뺀다
+CURRENT_REDONE = re.compile(r"당기(?:말|에는|에|중|중에)?.{0,200}?평가.{0,60}?(?:다시|새로)?\s*(?:수행|실시)(?:하였|했)")
 # 문장 끝: '~다.'와 마침표 없는 각주 끝('~하였음', '~없음')
 SENT_END = re.compile(r"다\.|(?:였|했|았|었|없)음(?=[\s.,]|$)")
 # 날짜 나열: 'A 및 B', 'A, B', '지배기업은 A, 종속기업은 B'의 이음말과 날짜(DATE에서 앞쪽 경계 조건을 뺀 본체)
@@ -258,6 +260,11 @@ def reappraisal_skipped(text, end):
                 or PRIOR_PERIOD.search(sentence[cut:m.end()]) or not past
                 or (PRIOR_ANY.search(sentence[:m.end()]) and "당기" not in sentence[cut:m.end()])
                 or HYPOTHETICAL.match(sentence, m.end())):
+            continue
+        # 앞에 전기 서술이 있고 바로 뒤 문장이 당기에 다시 평가했다고 적으면 생략 문장은 전기 이야기다
+        nxt = sents[i + 1][:400] if i + 1 < len(sents) else ""
+        if (PRIOR_ANY.search(prev + sentence[:m.start()]) and CURRENT_REDONE.search(nxt)
+                and not re.search(r"하지\s*(?:않|아니)|취득|신규|편입", nxt)):
             continue
         pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
         # 근거 글은 자르지 않는다(verify.py가 날짜마다 근거 글에 있는지 본다)
