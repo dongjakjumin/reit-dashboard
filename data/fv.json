@@ -12,6 +12,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표의 투자부동산이 공정가치"
   },
   "330590": {
@@ -25,6 +28,9 @@
     "method": "장부금액과 공정가치 표",
     "table": 44,
     "confirm": [],
+    "fv_prior": 3204700000000,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 2785956573000,
     "note": "표 장부금액 2,785,956,573,000원, 재무상태표와 차이 -481원"
   },
@@ -41,6 +47,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": 1747000000000,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 1513037000000,
     "note": "표 장부금액 1,513,037,000,000원, 재무상태표와 차이 -410,823원"
   },
@@ -55,6 +64,9 @@
     "method": "장부금액과 공정가치 표",
     "table": 40,
     "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 2416509835000,
     "note": "표 장부금액 2,416,509,835,000원, 재무상태표와 차이 -416원"
   },
@@ -69,6 +81,9 @@
     "method": "공정가치 서열체계 표",
     "table": 68,
     "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용"
   },
   "448730": {
@@ -84,6 +99,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": 1050770000000,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 1045626171000,
     "note": "표 장부금액 1,045,626,171,000원, 재무상태표와 차이 1,192원"
   },
@@ -100,6 +118,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 1706560063000,
     "note": "표 장부금액 1,706,560,063,000원, 재무상태표와 차이 -286,186,580원"
   },
@@ -116,6 +137,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표의 투자부동산이 공정가치"
   },
   "0030R0": {
@@ -129,6 +153,9 @@
     "method": "장부금액과 공정가치 표",
     "table": 69,
     "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 692475519000,
     "note": "표 장부금액 692,475,519,000원, 재무상태표와 차이 505원"
   },
@@ -143,6 +170,9 @@
     "method": "공정가치 서열체계 표",
     "table": 46,
     "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용"
   },
   "334890": {
@@ -155,6 +185,10 @@
     "fv": null,
     "method": null,
     "table": null,
+    "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표에 투자부동산 없음"
   },
   "088260": {
@@ -170,6 +204,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": 1024831000000,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 643681156283,
     "note": "표 장부금액 643,681,156,283원, 재무상태표와 차이 0원"
   },
@@ -186,6 +223,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": 861664568700,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 801984333280,
     "note": "표 장부금액 801,984,333,280원, 재무상태표와 차이 0원"
   },
@@ -200,6 +240,13 @@
     "method": "장부금액과 공정가치 표",
     "table": 85,
     "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": true,
+    "appraisal_dates": [
+      "2021-05-17",
+      "2024-07-04",
+      "2025-03-26"
+    ],
     "table_book": 355990221000,
     "note": "표 장부금액 355,990,221,000원, 재무상태표와 차이 177원"
   },
@@ -214,6 +261,9 @@
     "method": "장부금액과 공정가치 표",
     "table": 46,
     "confirm": [],
+    "fv_prior": 1126928000000,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 844243553000,
     "note": "표 장부금액 844,243,553,000원, 재무상태표와 차이 -328원"
   },
@@ -227,6 +277,10 @@
     "fv": null,
     "method": null,
     "table": null,
+    "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표에 투자부동산 없음"
   },
   "417310": {
@@ -239,6 +293,10 @@
     "fv": null,
     "method": null,
     "table": null,
+    "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표에 투자부동산 없음"
   },
   "338100": {
@@ -251,6 +309,10 @@
     "fv": null,
     "method": null,
     "table": null,
+    "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표에 투자부동산 없음"
   },
   "145270": {
@@ -264,6 +326,9 @@
     "method": "공정가치 모형",
     "table": null,
     "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표의 투자부동산이 공정가치"
   },
   "357250": {
@@ -279,6 +344,11 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": null,
+    "not_reappraised": true,
+    "appraisal_dates": [
+      "2025-01-13"
+    ],
     "note": "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용"
   },
   "481850": {
@@ -291,6 +361,10 @@
     "fv": null,
     "method": null,
     "table": null,
+    "confirm": [],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "note": "재무상태표에 투자부동산 없음"
   },
   "396690": {
@@ -306,6 +380,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": 298388160000,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 322527254000,
     "note": "표 장부금액 322,527,254,000원, 재무상태표와 차이 -263원"
   },
@@ -322,6 +399,9 @@
     "confirm": [
       "공정가치 서열체계 표"
     ],
+    "fv_prior": null,
+    "not_reappraised": false,
+    "appraisal_dates": [],
     "table_book": 65140045000,
     "note": "표 장부금액 65,140,045,000원, 재무상태표와 차이 -63,082,136원"
   }

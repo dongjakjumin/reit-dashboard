@@ -865,7 +865,7 @@ def main() -> int:
     verify_loans(check, dart_data, finance_payload.get("loans", {}), listed, snap["date"])
     # 감정가 기준 NAV = 지배기업 소유주지분 + (공정가치 - 장부금액) × 지배지분 비율. 비지배지분이 5%를 넘으면 비움
     fv_data = saved_json("fv.json")
-    fv_ok, fv_vals, fv_by_code = [], [], {}
+    fv_ok, fv_vals, fv_by_code, stale_ok, stale_kind = [], [], {}, [], Counter()
     fv_methods = ("장부금액과 공정가치 표", "공정가치 모형", "공정가치 문장", "공정가치 서열체계 표")
     for row in (page_data.get("rows", []) if codes is not None else []):
         rec, fvr = dart_data.get(row["code"], {}), fv_data.get(row["code"], {})
@@ -895,6 +895,16 @@ def main() -> int:
         # 기준일 링크와 다른 방식 대조 결과는 공정가치를 읽은 보고서(= 재무상태표를 읽은 보고서)의 것이어야 한다
         ok &= row.get("fv_rcept") == (fvr["rcept_no"] if same_report else None)
         ok &= row.get("fv_confirm") == ([x for x in fvr.get("confirm") or [] if x in fv_methods] if same_report else [])
+        # 감정 시점 신호: 주석의 '공정가치 평가를 다시 하지 않음' 문장이 먼저, 없으면 같은 주석 표의 전기말 공정가치가 당기와 같은지
+        stale = ("skipped" if fvr.get("not_reappraised") else "same" if fvr.get("method") == "장부금액과 공정가치 표"
+                 and fvr.get("fv_prior") and fvr["fv_prior"] == fvr["fv"] else None) if same_report else None
+        dates = [d for d in fvr.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(d))] if stale == "skipped" else []
+        # 평가기준일은 결산일 전 날짜이고, 전기말 공정가치는 표 방식일 때만 있다
+        stale_ok.append(row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
+                        and all(d < fvr["end"] for d in dates)
+                        and (fvr.get("fv_prior") is None or fvr.get("method") == "장부금액과 공정가치 표"))
+        if stale:
+            stale_kind[stale] += 1
         if usable:
             # 같은 보고서일 때만 출처를 대조한다. 새 사업보고서가 들어오고 주석을 아직 못 읽었으면 화면이 비어 있는지만 본다
             ok &= fvr["method"] in fv_methods and fvr["method"] not in (fvr.get("confirm") or [])
@@ -904,6 +914,7 @@ def main() -> int:
                 ok &= fvr["fv"] == fvr["book"]
         fv_ok.append(ok)
     check(all(fv_ok), f"감정가 기준 P/NAV {sum(fv_ok)}/{len(fv_ok)}종목 재계산과 공정가치 출처 대조")
+    check(all(stale_ok), f"감정 시점 신호 {sum(stale_kind.values())}종목(평가 생략 문장 {stale_kind['skipped']}, 전기말과 같음 {stale_kind['same']}) 재계산")
     check(yield_summary.get("pnav_fv_n") == len(fv_vals)
           and yield_summary.get("pnav_fv_median") == (round(median(fv_vals), 2) if fv_vals else None),
           f"감정가 기준 P/NAV 중앙값 {yield_summary.get('pnav_fv_median')}배({len(fv_vals)}개) 재계산")

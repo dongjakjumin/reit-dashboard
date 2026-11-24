@@ -603,6 +603,16 @@ def fv_usable(record: dict, fv: dict | None) -> bool:
         and 0.5 <= fv["fv"] / fv["book"] <= 2)
 
 
+def appraisal_age(fv: dict) -> dict:
+    """감정평가를 새로 하지 않았을 수 있다는 신호. 주석이 공정가치 평가를 다시 하지 않았다고 적었으면 skipped(그 문장의
+    평가기준일 포함), 그렇지 않고 같은 주석 표의 전기말 공정가치가 당기와 같으면 same."""
+    if fv.get("not_reappraised"):
+        return dict(fv_stale="skipped", fv_appraisal_dates=[d for d in fv.get("appraisal_dates") or [] if safe_date(d)])
+    if fv.get("method") == "장부금액과 공정가치 표" and fv.get("fv_prior") and fv["fv_prior"] == fv["fv"]:
+        return dict(fv_stale="same", fv_appraisal_dates=[])
+    return dict(fv_stale=None, fv_appraisal_dates=[])
+
+
 def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
     """감정가 기준 NAV = 지배기업 소유주지분 + (투자부동산 공정가치 - 장부금액) × 지배지분 비율.
 
@@ -610,7 +620,7 @@ def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
     비지배지분이 자본의 5%를 넘으면 공정가치 차익을 지배지분과 나눌 근거가 없어 비운다.
     """
     out = dict(nav_fv_eok=None, pnav_fv=None, pnav_raw=None, pb_dart=None, fv_gain_eok=None, fv_end=None, fv_method=None,
-               fv_rcept=None, fv_confirm=[], nav_fv_reason=None)
+               fv_rcept=None, fv_confirm=[], fv_stale=None, fv_appraisal_dates=[], nav_fv_reason=None)
     cur = (record or {}).get("current") or {}
     if not record or not fv or tuple(fv.get(k) for k in ("rcept_no", "basis", "end", "book")) != (
             record.get("rcept_no"), record.get("basis"), cur.get("end"), cur.get("investment_property")):
@@ -634,7 +644,7 @@ def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
     gain = fv["fv"] - fv["book"]
     out.update(fv_gain_eok=round(gain / 1e8), fv_end=safe_date(fv["end"]), fv_method=fv["method"],
                fv_rcept=fv["rcept_no"] if re.fullmatch(r"\d{14}", str(fv.get("rcept_no") or "")) else None,
-               fv_confirm=[x for x in fv.get("confirm") or [] if x in FV_METHODS])
+               fv_confirm=[x for x in fv.get("confirm") or [] if x in FV_METHODS], **appraisal_age(fv))
     if abs(equity - owner) > 0.05 * equity:
         out["nav_fv_reason"] = f"비지배지분 {abs(equity - owner) / equity * 100:.0f}%"
         return out

@@ -7,6 +7,8 @@
 4. 공정가치 서열체계 표의 '투자부동산' 줄. 없으면 바로 앞 문장이 투자부동산 서열체계를 말하는 표의 합계 줄(당기말 열).
 어느 방식이든 공정가치가 장부금액의 0.5배에서 2배 사이일 때만 쓴다(열을 잘못 읽어 0이나 몇 배가 된 값을 거른다).
 다른 방식도 값을 내면 장부금액의 0.5% 안에서 같은지 대조해 confirm에 적는다.
+감정 시점 신호도 남긴다. 표 방식이면 같은 표의 전기말 공정가치(fv_prior)를 적고, 어느 방식이든 주석이 '최근 평가기준일 대비
+변동이 작아 공정가치 평가를 다시 하지 않았다'고 적었으면 not_reappraised와 그 문장의 평가기준일(appraisal_dates)을 적는다.
 사업보고서 본문 파일에는 연결과 별도 주석이 함께 있어, 재무제표 기준에 맞는 주석 구역만 읽는다.
 """
 import argparse
@@ -30,6 +32,8 @@ NEGATION = re.compile(r"않|원가\s*모형|관계기업|공동기업")
 TOTAL = re.compile(r"^(합계|총계|계)|합계$")
 TOTAL_HEAD = re.compile(r"(?:^|\s)(?:합\s*계|총\s*계|계)\s*$")
 SECTION = re.compile(r'<TITLE[^>]*AASSOCNOTE="D-0-[^"]*"[^>]*>(.*?)</TITLE>', re.S)
+NO_REAPPRAISAL = re.compile(r"(?:공정가치\s*평가|감정\s*평가)를?\s*(?:재수행|재실시|다시\s*(?:수행|실시))하지\s*(?:아니|않)")
+DATE = re.compile(r"(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일")
 
 
 def num(cell):
@@ -108,6 +112,9 @@ def book_fv_table(xml, book):
         book_j = next((j for j in range(1, len(heads)) if "장부" in heads[j] and "전기" not in heads[j] and amount(j)), None)
         fv_j = next((j for j in range(1, len(heads)) if "공정가치" in heads[j] and "전기" not in heads[j]
                      and "수준" not in heads[j] and "서열" not in heads[j] and j != book_j and amount(j)), None)
+        # 같은 표에 전기말 공정가치 열이 있으면 함께 읽는다(당기와 같으면 감정평가를 새로 하지 않았을 수 있다)
+        prior_j = next((j for j in range(1, len(heads)) if "공정가치" in heads[j] and "전기" in heads[j] and "장부" not in heads[j]
+                        and "수준" not in heads[j] and "서열" not in heads[j] and amount(j)), None)
         unit = unit_of(heads, before)
         if book_j is None or fv_j is None or not unit:
             continue
@@ -119,16 +126,33 @@ def book_fv_table(xml, book):
         # 합계 줄을 앞에서부터 하나씩 대 보고(당기 블록 아래 전기 블록이 붙은 표는 앞 합계가 당기다), 맞는 합계가 없으면
         # 본문 줄을 더한다. 본문을 더할 때 여러 줄에 걸친 칸(토지와 건물에 감정가 하나)은 한 번만 센다
         for group, skip in [([t], set()) for t in totals] + ([(body, copies)] if body else []):
-            total = lambda j: round(sum(num(r[j]) or 0 for i, r in group if (i, j) not in skip) * unit)
+            total = lambda j: round(sum(num(r[j]) or 0 for i, r in group if (i, j) not in skip and j < len(r)) * unit)
             table_book = total(book_j)
             if abs(table_book - book) <= 0.002 * book:
-                return dict(table=index, table_book=table_book, fv=total(fv_j))
+                return dict(table=index, table_book=table_book, fv=total(fv_j),
+                            fv_prior=(total(prior_j) or None) if prior_j is not None else None)
     return None
 
 
 def sentence_fv(text):
     m = SENTENCE.search(text)
     return round(float(m[1].replace(",", "")) * UNITS[m[2]]) if m else None
+
+
+def reappraisal_skipped(text, end):
+    """주석이 '최근 평가기준일 대비 공정가치 변동이 작아 평가를 다시 하지 않았다'고 적었으면 그 문장의 결산일 전 날짜를 돌려준다.
+    문장에 날짜가 없으면 바로 앞 문장이 평가기준일을 말할 때 그 날짜를 쓴다. 그런 문장이 없으면 None."""
+    for m in NO_REAPPRAISAL.finditer(text):
+        p = text.rfind("다.", 0, m.start())
+        start = p + 2 if p >= 0 else 0
+        q = text.rfind("다.", 0, p) if p > 0 else -1
+        prev = text[q + 2 if q >= 0 else 0:start] if p >= 0 else ""
+        sentence = text[start:m.end()]
+        if "투자부동산" not in prev + sentence or "유형자산" in sentence:
+            continue
+        pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
+        return sorted(d for d in {f"{y}-{int(mo):02d}-{int(dd):02d}" for y, mo, dd in DATE.findall(pick)} if d < end)
+    return None
 
 
 def amount_in(row, heads):
@@ -198,16 +222,18 @@ def extract(r, doc, xml):
     cur = r["current"]
     book = cur.get("investment_property")
     base = dict(name=r["name"], rcept_no=r["rcept_no"], basis=r["basis"], end=cur["end"], doc=doc, book=book,
-                fv=None, method=None, table=None, confirm=[])
+                fv=None, method=None, table=None, confirm=[], fv_prior=None, not_reappraised=False, appraisal_dates=[])
     if not book:
         return dict(base, note="재무상태표에 투자부동산 없음")
     if doc == r["rcept_no"] + ".xml":
         xml = notes_section(xml, r["basis"])
     text = clean(xml)
+    skipped = reappraisal_skipped(text, cur["end"])
+    base.update(not_reappraised=skipped is not None, appraisal_dates=skipped or [])
     found = []  # (방식, 공정가치, 표 번호, 더 남길 항목)
     hit = book_fv_table(xml, book)
     if hit:
-        found.append(("장부금액과 공정가치 표", hit["fv"], hit["table"], dict(table_book=hit["table_book"])))
+        found.append(("장부금액과 공정가치 표", hit["fv"], hit["table"], dict(table_book=hit["table_book"], fv_prior=hit["fv_prior"])))
     if fair_value_model(text):
         found.append(("공정가치 모형", book, None, {}))
     if sentence_fv(text):
@@ -264,7 +290,9 @@ def explain():
         book, fv = r.get("book"), r.get("fv")
         gap = f"차익 {(fv - book) / 1e8:,.0f}억원" if book and fv else ""
         same = f" | 대조 일치: {', '.join(r['confirm'])}" if r.get("confirm") else ""
-        print(f"{r['name']} ({code}) | {r['end']} | {r.get('method') or '없음'} | 장부 {book or 0:,}원 | 공정가치 {fv or 0:,}원 {gap} | {r['note']}{same}")
+        age = (f" | 주석에 평가 생략 {', '.join(r.get('appraisal_dates') or [])}" if r.get("not_reappraised")
+               else " | 전기말 공정가치와 같음" if fv and r.get("fv_prior") == fv else "")
+        print(f"{r['name']} ({code}) | {r['end']} | {r.get('method') or '없음'} | 장부 {book or 0:,}원 | 공정가치 {fv or 0:,}원 {gap} | {r['note']}{same}{age}")
 
 
 if __name__ == "__main__":
