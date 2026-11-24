@@ -768,6 +768,11 @@ def build_listed_data() -> dict:
         same_end = next((x for x in series if x.get("end") == r.get("fiscal_end")), None)
         if r.get("nav_mil") and same_end and same_end.get("equity") is not None:
             nav_book.append((r["name"], abs(r["nav_mil"] * 1e6 - same_end["equity"]) < 1e6))
+    # 리츠정보시스템 NAV가 장부 자본과 다른 종목은 DART 주석으로 계산한 감정가 NAV와 견준다(계산 방식 검산)
+    nav_diff = {name for name, ok in nav_book if not ok}
+    fv_cross = sorted(({"name": r["name"], "nav_eok": r["nav_eok"], "nav_end": r["fiscal_end"],
+                        "nav_fv_eok": r["nav_fv_eok"], "fv_end": r["fv_end"]}
+                       for r in rows if r["name"] in nav_diff and r["nav_fv_eok"] is not None), key=lambda x: x["name"])
     pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]  # 1배 미만 개수와 최저, 최고는 화면에 보이는 값으로 센다
     pnav_raw = [v["pnav"] for v in raw.values() if v["pnav"] is not None]
     yields = [r["market_yield"] for r in rows if r["market_yield"] is not None]
@@ -796,7 +801,7 @@ def build_listed_data() -> dict:
             "pnav_fv_n": sum(1 for v in raw.values() if v["pnav_fv"] is not None),
             "pnav_fv_below1": sum(1 for r in rows if r["pnav_fv"] is not None and r["pnav_fv"] < 1),
             "nav_book_n": len(nav_book), "nav_book_same": sum(ok for _, ok in nav_book),
-            "nav_book_diff": [name for name, ok in nav_book if not ok],
+            "nav_book_diff": [name for name, ok in nav_book if not ok], "fv_cross": fv_cross,
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
             "yield_median": _median(yields, 2), "yield_n": len(yields),
             "yield_wavg": round(yield_wavg, 2) if yield_wavg is not None else None,

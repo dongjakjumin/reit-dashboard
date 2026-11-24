@@ -399,6 +399,14 @@ def main() -> int:
     check(ls.get("nav_book_n") == len(pairs) and ls.get("nav_book_same") == sum(ok for _, ok in pairs)
           and ls.get("nav_book_diff") == [n for n, ok in pairs if not ok],
           f"NAV와 결산기 자본총계가 같은 종목 {sum(ok for _, ok in pairs)}개 / {len(pairs)}개")
+    # NAV가 장부 자본과 다른 종목은 감정가 NAV 계산값과 나란히 보여 준다(값이 다르면 화면에 차이를 적으므로 일치는 요구하지 않음)
+    by_name = {r["name"]: r for r in ld["rows"]}
+    cross = sorted(({"name": n, "nav_eok": by_name[n]["nav_eok"], "nav_end": by_name[n]["fiscal_end"],
+                     "nav_fv_eok": by_name[n]["nav_fv_eok"], "fv_end": by_name[n]["fv_end"]}
+                    for n, ok in pairs if not ok and n in by_name and by_name[n].get("nav_fv_eok") is not None),
+                   key=lambda x: x["name"])
+    check(ls.get("fv_cross") == cross, f"장부 자본과 다른 NAV와 감정가 NAV 계산값 대조 {len(cross)}건"
+          + "".join(f" · {x['name']} 리츠정보시스템 {x['nav_eok']:,}억원, 계산 {x['nav_fv_eok']:,}억원" for x in cross))
     # 상장 목록 변동: 빠진 종목은 지금 목록에 없고 그 전 원자료에는 있으며, 들어온 종목은 지금 목록에 있음
     lc = ld["list_changes"]
     now_codes = {str(r["code"]) for r in listed}
@@ -815,15 +823,16 @@ def main() -> int:
     for row in (page_data.get("rows", []) if codes is not None else []):
         rec, fvr = dart_data.get(row["code"], {}), fv_data.get(row["code"], {})
         cur = rec.get("current", {})
-        want = None
+        want = nav_want = None
         if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no") and (cur.get("equity") or 0) > 0:
             owner = cur["equity_owner"] if cur.get("equity_owner") is not None else cur["equity"]
             if abs(cur["equity"] - owner) <= 0.05 * cur["equity"]:
                 nav = owner + (fvr["fv"] - fvr["book"]) * min(1, owner / cur["equity"])
+                nav_want = round(nav / 1e8)
                 want = row["mktcap_eok"] * 1e8 / nav if nav > 0 and row["mktcap_eok"] else None
         if want is not None:
             fv_vals.append(want)
-        ok = row.get("pnav_fv") == (round(want, 2) if want is not None else None)
+        ok = row.get("pnav_fv") == (round(want, 2) if want is not None else None) and row.get("nav_fv_eok") == nav_want
         if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no"):
             # 같은 보고서일 때만 출처를 대조한다. 새 사업보고서가 들어오고 주석을 아직 못 읽었으면 화면이 비어 있는지만 본다
             ok &= fvr["book"] == cur.get("investment_property")
