@@ -526,7 +526,8 @@ def main() -> int:
             ltv_raw.append(want)
         ltv_ok.append(r.get("ltv") == (round(want, 1) if want is not None else None) and (want is None or (
             0 <= want <= 100 and r.get("ltv_basis") == ("연결" if rec["basis"] == "CFS" else "별도")
-            and r.get("ltv_end") == cur["end"] and r.get("borrow_eok") == round(cur["total"] / 1e8))))
+            and r.get("ltv_end") == cur["end"] and r.get("borrow_eok") == round(cur["total"] / 1e8)))
+            and r.get("ltv_rcept") == (rec.get("rcept_no") if want is not None else None))
     check(all(ltv_ok) and len(ltv_raw) >= len(fd["rows"]) - 2,
           f"LTV(차입금과 사채 ÷ 자산총계) {sum(ltv_ok)}/{len(ltv_ok)}종목 재계산 일치")
     # 감정가 LTV = 차입 ÷ (자산총계 + 공정가치 - 장부금액). 같은 보고서의 주석일 때만 계산하고, 공정가치가 장부금액보다 크면 장부 LTV보다 낮아야 한다

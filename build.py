@@ -970,6 +970,8 @@ def build_finance_data() -> dict:
             "ltv": round(ltv, 1) if ltv is not None else None,
             "ltv_basis": ("연결" if drec.get("basis") == "CFS" else "별도") if ltv is not None else None,
             "ltv_end": safe_date(dcur.get("end")) if ltv is not None else None,
+            "ltv_rcept": (drec["rcept_no"] if ltv is not None and re.fullmatch(r"\d{14}", str(drec.get("rcept_no") or ""))
+                          else None),
             "borrow_eok": eok(dcur["total"]) if ltv is not None else None,
             "ltv_fv": round(ltv_fv, 1) if ltv_fv is not None else None,
             "revenue_eok": round(rev / 1e8, 1) if rev is not None else None,
