@@ -194,11 +194,15 @@ def reappraisal_skipped(text, end):
         prev = text[q + 2 if q >= 0 else 0:start] if p >= 0 else ""
         stop = text.find("다.", m.end())
         sentence = text[start:stop + 2 if stop >= 0 else m.end()]
+        # 앞 문장은 끝 800자만 본다. 문장이 1,500자를 넘으면 문장 나누기가 어긋난 글이라 쓰지 않는다
+        prev = prev[-800:]
         # 회계정책 조건문('~할 수 있습니다')이나 전기 서술('전기에는 ~')은 이번 결산의 사실이 아니다
-        if "투자부동산" not in prev + sentence or "유형자산" in sentence or CONDITIONAL.search(sentence):
+        if (len(sentence) > 1500 or "투자부동산" not in prev + sentence or "유형자산" in sentence
+                or CONDITIONAL.search(sentence)):
             continue
         pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
-        return before_end(iso_dates(pick), end), (prev + sentence).strip()[-600:]
+        # 근거 글은 자르지 않는다(verify.py가 날짜마다 근거 글에 있는지 본다)
+        return before_end(iso_dates(pick), end), (prev + sentence).strip()
     return None
 
 
@@ -324,7 +328,7 @@ def extract(r, doc, xml):
         cited, proof = cited_dates(prose(xml[start:start + 20000])[:2500])
         at_end = any(d[:7] >= cur["end"][:7] for d in cited)
         dates = [] if at_end else before_end(cited, cur["end"])
-        age = dict(appraised_at_end=at_end, appraisal_text=proof[:400])
+        age = dict(appraised_at_end=at_end, appraisal_text=proof)
     return dict(base, fv=fv, method=method, table=table, **extra, **age, note=note, appraisal_dates=dates,
                 confirm=[x[0] for x in usable[1:] if abs(x[1] - fv) <= 0.005 * book])
 

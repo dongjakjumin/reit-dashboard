@@ -914,8 +914,10 @@ def main() -> int:
         # 평가기준일은 결산일 전 날짜이고 신호가 있는 종목에만 있다. 전기말 공정가치는 표 방식일 때만 있다
         # 근거 글로 다른 규칙 대조: 생략 문장은 과거형이고 조건문이나 전기 서술이 아니며, 날짜마다 연도와 월이 근거 글에 있다
         proof = (fvr.get("reappraisal_text") if stale == "skipped" else fvr.get("appraisal_text") if stale == "same" else "") or ""
-        proof_ok = stale != "skipped" or (bool(re.search(r"재수행|재실시|다시\s*(?:수행|실시)", proof))
-                                          and bool(re.search(r"하였|했|았", proof)) and not re.search(r"수\s*있|경우|전기에는|전기에도", proof))
+        # 생략 문장(근거 글 가운데 '재수행' 등이 든 마지막 문장)만 과거형인지, 조건문이나 전기 서술이 아닌지 본다. 앞 문장은 날짜 대조에만 쓴다
+        core = ([x for x in re.split(r"(?<=다\.)", proof) if re.search(r"재수행|재실시|다시\s*(?:수행|실시)", x)] or [""])[-1]
+        proof_ok = stale != "skipped" or (bool(core) and bool(re.search(r"하였|했|았", core))
+                                          and not re.search(r"수\s*있|경우|전기에는|전기에도", core))
         proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof)
                                     for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
         stale_ok.append(proof_ok and row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
