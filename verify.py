@@ -16,6 +16,7 @@ import os
 import random
 import re
 import sys
+import unicodedata
 from calendar import monthrange
 from collections import Counter
 from datetime import date, timedelta
@@ -56,10 +57,11 @@ def stale_row_ok(fvr, row, same_report):
     # [review5] '~하지 않고 ... 결정되었습니다'처럼 '었'으로 끝나는 과거형도 받고, 생략 문장의 일치 구절 앞에 전기 서술만 있으면 막는다
     last = core[-1] if core else ""
     pre = last[:re.search(r"재수행|재실시|다시\s*(?:수행|실시)", last).start()] if last else ""
-    # '재수행하지 않고 ~ 감정평가액을 공정가치로 사용하고 있습니다'(지금도 옛 감정가를 쓴다는 현재 진행형)도 사실 문장으로 받는다
-    proof_ok = stale != "skipped" or (any(re.search(r"하였|했|았|였|었|(?:사용|적용|이용|간주)하고\s*있(?:습니다|다)", x) for x in core)
+    proof_ok = stale != "skipped" or (any(re.search(r"하였|했|았|였|었", x) for x in core)
                                       and not (re.search(r"전기(?:말)?\s*(?:에는|에도|의\s*경우|중(?!\s*(?:에\s*)?(?:취득|처분|매각|대체|신규|증가|감소|완공|준공|편입|발생)))", pre) and "당기" not in last))
-    proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof)
+    # dart_fv는 전각 숫자 날짜('２０２５년 １２월')도 읽으므로, 날짜 대조는 전각을 보통 숫자로 바꾼 글에서 한다
+    proof_n = unicodedata.normalize("NFKC", proof)
+    proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof_n)
                                 for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
     ok = (proof_ok and row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
           and all(d[:7] < fvr["end"][:7] for d in dates) and (not same_report or stale or not fvr.get("appraisal_dates"))
@@ -639,6 +641,10 @@ def main() -> int:
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "담보대출 원리금 미상환 발생"}, "위험 신호"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "영등포 부도심 소재 부동산 매매계약 체결"}, "자산 취득, 처분"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "제3회 무보증사채 발행(미상환 사채 잔액 500억원)"}, "차입, 사채"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "원금 미상환 잔액 연체 발생"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "대출 만기 미상환 잔액 300억원 발생"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "제2회 사채 발행(미상환 사채 원금 잔액 500억원)"}, "차입, 사채"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "대출 원리금 미상환 현황 보고"}, "위험 신호"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "주요주주인 A사와 PM계약 변경계약 체결"}, "이해관계자 거래"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "자산의 처분 결정(공공사업에 따른 기부채납)"}, "자산 취득, 처분"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "제3호 의안 : 부동산투자회사 영업인가 신청의 건"}, "인가 신청, 기금 출자"),
@@ -651,12 +657,17 @@ def main() -> int:
                    ({"matter_code": "RT02100006", "matter": "실사보고서", "text": ""}, "자산 취득, 처분")]
     for case, expected in group_cases:
         check(build.dis_group(case) == expected, f"공시 묶음 가상 입력 {case['text'] or case['matter']} → {expected or '정기, 일반'}")
-    # 감정평가 생략 문장 가상 사례: 과거형과 현재 진행형(옛 감정가를 지금도 씀)은 신호, 원가모형 정책 문장과 조건문은 신호 아님
+    # 감정평가 생략 문장 가상 사례: 과거형은 신호. 현재 진행형은 오탐 위험이 커서 미탐으로 남기고(7차 검토),
+    # 원가모형 정책 문장, 감정 주기 정책 문장, 조건문은 신호 아님
     skip_cases = [("과거형", "투자부동산의 공정가치는 최근 평가기준일(2025년 12월 31일) 대비 변동이 중요하지 않아 "
                    "당기말 현재 공정가치평가를 재수행하지 아니하였습니다.", True),
-                  ("현재 진행형, 평가기준일 있음", "투자부동산 공정가치평가를 재수행하지 않고, 최근 평가기준일(2025년 12월 31일)의 "
-                   "감정평가액을 공정가치로 사용하고 있습니다.", True),
+                  ("현재 진행형, 미탐으로 남김", "투자부동산 공정가치평가를 재수행하지 않고, 최근 평가기준일(2025년 12월 31일)의 "
+                   "감정평가액을 공정가치로 사용하고 있습니다.", False),
                   ("원가모형 정책", "투자부동산은 공정가치평가를 재수행하지 않고 원가모형을 적용하고 있습니다.", False),
+                  ("일부 자산만 미평가", "투자부동산 중 A빌딩과 B빌딩은 당기말(2026년 6월 30일)을 평가기준일로 감정평가를 실시하였으며, "
+                   "당기 중 신규 취득한 C빌딩(취득 시 평가기준일: 2026년 4월 30일)은 공정가치평가를 재수행하지 아니하였습니다.", False),
+                  ("매 결산 감정 정책 뒤 당기 생략", "투자부동산은 매 보고기간 말을 평가기준일로 감정평가를 실시하였으나, "
+                   "당기에는 최근 평가기준일(2025년 12월 31일) 대비 변동이 중요하지 않아 공정가치평가를 재수행하지 아니하였습니다.", True),
                   ("감정 주기 정책", "투자부동산 공정가치평가를 재수행하지 않고 3년 주기로 감정평가를 실시하며, 그 사이에는 "
                    "최근 감정평가액을 공정가치로 사용하고 있습니다.", False),
                   ("조건문", "변동이 중요하지 않은 경우 투자부동산 공정가치평가를 재수행하지 아니할 수 있습니다.", False)]
