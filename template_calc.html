@@ -39,7 +39,7 @@ table.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:
 .err{color:#d03b3b;font-size:13px;margin:0 0 8px}
 #results.stale{opacity:.45}
 #reg td:nth-child(3){min-width:150px}
-#reg td:nth-child(4){min-width:230px}
+#reg td:nth-child(4){min-width:200px}
 #reg td:nth-child(5){min-width:96px;color:var(--ink2)}
 </style>
 </head>
@@ -326,12 +326,12 @@ function render(){
   drawInverse(p, r, solve);
 
   const st = (c, t) => `<span class="st ${c}">${t}</span>`;
-  const lev = v => v == null ? st('', '해당 없음') : v <= 2 ? st('ok', '2배 이내') : v <= 10 ? st('warn', '2배 초과(어림값), 주주총회 특별결의 필요') : st('no', '한도 초과');
+  const lev = v => v == null ? st('', '해당 없음') : v <= 2 ? st('ok', '2배 이내') : v <= 10 ? st('warn', '특별결의 필요') : st('no', '한도 초과');
   const pubDue = r.Tc + 60, licDue = r.Tc + 18;
   $('#reg').innerHTML = `<thead><tr><th>항목</th><th>판정</th><th>이 가정에서는</th><th>기준</th><th>근거</th></tr></thead><tbody>` + [
     ['설립신고 자본금', '50억원 이상. 설립등기일부터 6개월 안에 신고', '법 26조의4 ①, ②', `설립 시 납입자본금은 이 계산에 없습니다. 사업 전체 자기자본은 ${eok(r.equity)}원입니다.`, st('', '안내')],
-    ['개발 단계 차입', '차입과 사채의 합계가 자기자본의 2배, 주주총회 특별결의 시 10배까지. 설립신고만으로 차입 가능', '법 29조 ②, 26조의4 ⑥', `준공부터 안정화까지 최고 차입 잔액 ${eok(r.dev_debt_peak)}원 ÷ 최초 출자액 = ${r.debt_to_equity == null ? '–' : r.debt_to_equity.toFixed(2) + '배'}. 법정 자기자본 기준은 계산 방법과 한계에서 확인합니다.`, lev(r.debt_to_equity)],
-    ['운영 단계 차입', '같은 한도', '법 29조 ②', `담보대출 ÷ 전환까지 넣은 자기자본(${eok(r.b.paid_in)}원) = ${r.b.loan_to_equity == null ? '–' : r.b.loan_to_equity.toFixed(2) + '배'}`, lev(r.b.loan_to_equity)],
+    ['개발 단계 차입', '차입과 사채의 합계가 자기자본의 2배, 주주총회 특별결의 시 10배까지. 설립신고만으로 차입 가능', '법 29조 ②, 26조의4 ⑥', `준공부터 안정화까지 최고 차입 잔액 ${eok(r.dev_debt_peak)}원 ÷ 최초 출자액 = ${r.debt_to_equity == null ? '–' : r.debt_to_equity.toFixed(2) + '배(어림값)'}. 법정 자기자본 기준은 계산 방법과 한계에서 확인합니다.`, lev(r.debt_to_equity)],
+    ['운영 단계 차입', '같은 한도', '법 29조 ②', `담보대출 ÷ 전환까지 넣은 자기자본(${eok(r.b.paid_in)}원) = ${r.b.loan_to_equity == null ? '–' : r.b.loan_to_equity.toFixed(2) + '배(어림값)'}`, lev(r.b.loan_to_equity)],
     ['영업인가 또는 등록', '사용승인이나 준공검사일부터 18개월 안. 국토교통부장관이 6개월 안에서 연장 가능', '법 26조의4 ④, 영 30조의2 ②', `준공 ${ym(start, r.Tc)}, 기한 ${ym(start, licDue)}`, st('', '일정 확인')],
     ['공모', '준공일부터 5년 안에 발행주식의 30% 이상을 일반 청약에 제공. 연기금 등이 50% 이상 인수하거나 임대주택이 총자산의 70% 이상이면 예외', '법 14조의8 ②, ③', `기한 ${ym(start, pubDue)}, B안 매각 ${ym(start, r.Tend)}`, r.Tend > pubDue ? st('warn', '보유 중 공모 기한 도래') : r.Tend === pubDue ? st('warn', '같은 달, 실제 일자 확인') : st('ok', '기한 전 매각')],
     ['설립신고 후 신주 발행', '주주가 아닌 자에게 신주를 발행할 때는 일반 청약 없이, 발행 후 총 주주 수 49인 이하', '법 26조의4 ⑤, 영 30조의2 ③(자본시장법 시행령 6조 ③)', '주주 구성은 이 계산에 없음', st('', '안내')],
