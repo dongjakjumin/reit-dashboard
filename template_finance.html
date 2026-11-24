@@ -135,7 +135,7 @@
       <li><b>부채 ÷ 자산</b>: 부채총계를 자산총계로 나눈 비율입니다. 담보인정비율(LTV)은 담보가치에 대한 담보대출금의 비율입니다. 두 지표는 분자와 분모에 넣는 항목의 범위가 다릅니다.</li>
       <li><b>부채 ÷ 자본</b>: 부채총계를 자본총계로 나눈 배수입니다. 부동산투자회사법은 차입금과 사채의 합계를 자기자본의 2배(주주총회 특별결의 시 10배)까지로 정하는데, 이 한도는 차입금과 사채만 따지므로 표의 배수와 바로 비교할 수 없습니다.</li>
       <li><b>자산 추이</b>: 최근 결산기와 분기 말의 자산총계를 이은 선입니다.</li>
-      <li><b>영업수익, 영업이익률</b>: 가장 최근 결산기 한 번의 영업수익과, 같은 기간의 영업이익 ÷ 영업수익입니다. 자산과 부채의 기준일(최근 분기 말)과 다를 수 있어 영업수익 아래에 결산기 말일을 적었습니다.</li>
+      <li><b>영업수익, FFO(연환산)</b>: 영업수익은 가장 최근 결산기 한 번의 값입니다. FFO는 리츠정보시스템 성과지표의 최근 결산기 값에 연간 결산 횟수를 곱한 값으로, 상장리츠 화면의 P/FFO와 같은 기준입니다. 재간접 리츠와 모리츠는 자리츠 배당과 평가손익이 영업수익에 섞여 영업이익률로는 비교하기 어려워 FFO를 실었습니다. 자산과 부채의 기준일(최근 분기 말)과 다를 수 있어 결산기 말일을 함께 적었습니다.</li>
       <li><b>최대주주</b>: 리츠정보시스템에 적힌 값입니다. 개인 이름으로 보이는 값은 이름을 적지 않았습니다.</li>
       <li><b>주요 공시</b>: 리츠정보시스템 수시공시를 유형 코드로 먼저 나눴습니다. 위험 신호는 금융사고나 부실채권 발생, 부실자산 발생, 법 제39조제2항의 조치입니다. 실사보고서는 부동산을 취득하거나 처분할 때 작성하므로(법 24조 ③) '자산 취득, 처분'에 넣었습니다. 유형이 '기타'이거나 투자설명서인 공시는 제목과 본문의 말로 다시 나눴습니다. 회생절차, 사채권자집회, 기한이익 상실, 미상환, 부도, 파산, 채무불이행, 대주단 자율협약, 캐시트랩이 있으면 위험 신호로, 해산이나 청산이 있으면 '해산, 청산'으로 묶었습니다. 나머지는 공시 기한 미준수와 제재, 소송, 주요주주와의 거래, 자산 매매계약, 영업인가 신청과 주택도시기금 출자 신청, 대출약정과 사채, 증자와 감자, 현물출자, 투자설명서 순서로 찾아 묶었습니다. 이사회의사록, 투자보고서와 영업보고서 제출, 재무제표, 위탁계약서, 정관, 주주총회 의사록, 임원과 자산운용전문인력 변경은 정기, 일반 공시로 보고 목록에서 뺐습니다. '기타'로 올라온 공시도 이런 내용으로만 보이면 같이 뺐고, 주주총회 무산이나 안건 부결은 남겼습니다.</li>
       <li><b>공시 내용</b>: 공시 제목 아래 요약 문구를 300자까지 옮겼습니다. 전문과 첨부 파일은 리츠정보시스템에서 확인해야 합니다.</li>
@@ -228,7 +228,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
     {k: 'debt_to_equity', t: '부채 ÷ 자본', f: r => r.debt_to_equity != null ? r.debt_to_equity.toFixed(2) + '배' : '–'},
     {k: null, t: '자산 추이'},
     {k: 'revenue_eok', t: '영업수익(결산기)', f: r => r.revenue_eok != null ? n0(Math.round(r.revenue_eok)) + '억' : '–'},
-    {k: 'op_margin', t: '영업이익률(결산기)', f: r => r.op_margin != null ? r.op_margin.toFixed(1) + '%' : '–'},
+    {k: 'ffo_y_eok', t: 'FFO(연환산)', f: r => r.ffo_y_eok != null ? n0(r.ffo_y_eok) + '억' : '–'},
     {k: 'top_shareholder', t: '최대주주', txt: true},
   ];
   let sortK = 'debt_to_assets', asc = false;
@@ -247,11 +247,12 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
         if (c.k === null) return `<td>${spark(x)}</td>`;
         if (c.txt) return `<td>${esc(x[c.k] || '')}</td>`;
         if (c.k === 'revenue_eok') return `<td class="num">${c.f(x)}${x.fy_end ? `<span class="s">${esc(x.fy_end)}</span>` : ''}</td>`;
+        if (c.k === 'ffo_y_eok') return `<td class="num">${c.f(x)}${x.ffo_end ? `<span class="s">${esc(x.ffo_end)} 결산기</span>` : ''}</td>`;
         return `<td class="num">${c.f(x)}</td>`; }).join('') + '</tr>').join('') + '</tbody>';
     $('#lev-table').querySelectorAll('th.sortable').forEach(th => th.onclick = () => { const k = th.dataset.k; if (sortK === k) asc = !asc; else { sortK = k; asc = !!cols.find(c => c.k === k).txt; } draw(); $('#lev-table').querySelector(`[data-k="${k}"] button`).focus(); });
   }
-  $('#lev-csv').onclick = () => csv('상장리츠_재무구조', ['종목','종목코드','투자대상','기준일','자산총계(억원)','부채총계(억원)','자본총계(억원)','부채÷자산(%)','부채÷자본(배)','결산기 말일','영업수익(억원)','영업이익률(%)','최대주주'],
-    rows().map(x => [x.name, x.code, x.sector, x.as_of, x.assets_eok, x.debt_eok, x.equity_eok, x.debt_to_assets, x.debt_to_equity, x.fy_end, x.revenue_eok, x.op_margin, x.top_shareholder]));
+  $('#lev-csv').onclick = () => csv('상장리츠_재무구조', ['종목','종목코드','투자대상','기준일','자산총계(억원)','부채총계(억원)','자본총계(억원)','부채÷자산(%)','부채÷자본(배)','결산기 말일','영업수익(억원)','FFO 결산기 말일','FFO 연환산(억원)','최대주주'],
+    rows().map(x => [x.name, x.code, x.sector, x.as_of, x.assets_eok, x.debt_eok, x.equity_eok, x.debt_to_assets, x.debt_to_equity, x.fy_end, x.revenue_eok, x.ffo_end, x.ffo_y_eok, x.top_shareholder]));
   draw();
 })();
 

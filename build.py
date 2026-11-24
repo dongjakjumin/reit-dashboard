@@ -402,6 +402,16 @@ def fiscal_days(series, end):
     return None
 
 
+def periods_per_year(r: dict, series: list) -> float | None:
+    """연간 결산 횟수: FFO 기준 결산기의 일수로 정하고, 없으면 연환산 배당률 ÷ 배당률로 추정한다."""
+    days = fiscal_days(series, r.get("fiscal_end"))
+    if days:
+        return 365 / days
+    if r.get("dvd_pct") and r.get("annual_dvd_pct"):
+        return min(4, max(1, round(r["annual_dvd_pct"] / r["dvd_pct"])))
+    return None
+
+
 def optional_data(name):
     path = DATA / name
     content = path.read_text(encoding="utf-8") if path.exists() else ""
@@ -589,12 +599,7 @@ def build_listed_data() -> dict:
         mktcap = r["mktcap_eok"] or 0
         nav_eok = round(r["nav_mil"] / 100) if r.get("nav_mil") else None
         ffo_eok = round(r["ffo_mil"] / 100, 1) if r.get("ffo_mil") is not None else None
-        ppy = None  # 연간 결산 횟수: 연환산 배당률 / 배당수익률로 추정
-        days = fiscal_days(fin.get(str(r.get("reit_id")), {}).get("series", []), r.get("fiscal_end"))
-        if days:
-            ppy = 365 / days
-        elif r.get("dvd_pct") and r.get("annual_dvd_pct"):
-            ppy = min(4, max(1, round(r["annual_dvd_pct"] / r["dvd_pct"])))
+        ppy = periods_per_year(r, fin.get(str(r.get("reit_id")), {}).get("series", []))
         market_yield = dps / last * 100 if not yield_blocked and dps is not None and last and last > 0 else None
         # 현재 배당 수준: 가장 최근 결산기 주당배당금 × 연간 결산 횟수 ÷ 현재가. 최근 12개월 합계에 섞인 특별배당과 감액을 덜어 낸다
         prof = dividend_profile(dividends)
@@ -823,7 +828,9 @@ def build_finance_data() -> dict:
         m = re.search(r"(\d+기)\s*(결산기|\d분기|반기)?", (last.get("label") or "").replace("\\n", " "))
         # 추이의 마지막 줄은 분기 말일 수 있다. 영업수익과 영업이익은 가장 최근 '결산기' 줄에서 가져온다.
         fy = next((x for x in reversed(ser) if "결산기" in (x.get("label") or "") and x.get("revenue") is not None), None)
-        rev, op = (fy or {}).get("revenue"), (fy or {}).get("op_profit")
+        rev = (fy or {}).get("revenue")
+        # FFO는 리츠정보시스템 성과지표의 최근 결산기 값 × 연간 결산 횟수(상장리츠 화면의 P/FFO와 같은 기준)
+        ppy = periods_per_year(r, f["series"])
         rows.append({
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "homepage": safe_url(r.get("homepage")), "mktcap_eok": r.get("mktcap_eok"),
@@ -833,7 +840,8 @@ def build_finance_data() -> dict:
             "debt_to_assets": round(f["debt"] / f["assets"] * 100, 1),
             "debt_to_equity": round(f["debt"] / f["equity"], 2) if f.get("equity") and f["equity"] > 0 else None,
             "revenue_eok": round(rev / 1e8, 1) if rev is not None else None,
-            "op_margin": round(op / rev * 100, 1) if rev and op is not None else None,
+            "ffo_y_eok": round(r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") is not None and ppy else None,
+            "ffo_end": safe_date(r.get("fiscal_end")) if r.get("ffo_mil") is not None and ppy else None,
             "top_shareholder": shareholder_label(f.get("top_shareholder")),
             "series": [{"end": safe_date(x["end"]), "assets_eok": eok(x["assets"]), "debt_eok": eok(x["debt"]),
                         "debt_to_assets": round(x["debt"] / x["assets"] * 100, 1)} for x in ser],

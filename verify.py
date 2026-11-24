@@ -463,6 +463,15 @@ def main() -> int:
     check(all(abs(r["debt_eok"] / r["assets_eok"] * 100 - r["debt_to_assets"]) < 0.2 for r in fd["rows"]),
           "부채 ÷ 자산 재계산 일치")
     check(sum(g["n"] for g in fd["groups"]) == fd["summary"]["dis_major"], "공시 유형별 건수 합 = 주요 공시 건수")
+    # 재무 구조 표의 FFO(연환산) = 리츠정보시스템 FFO(백만원) ÷ 100 × 연간 결산 횟수(상장리츠 화면과 같은 기준)
+    listed_src = {r["code"]: r for r in snap["listed"]}
+    ffo_ok = []
+    for r in fd["rows"]:
+        src = listed_src[r["code"]]
+        ppy = build.periods_per_year(src, fin.get(str(src.get("reit_id")), {}).get("series", []))
+        want = round(src["ffo_mil"] / 100 * ppy) if src.get("ffo_mil") is not None and ppy else None
+        ffo_ok.append(r.get("ffo_y_eok") == want and "op_margin" not in r)
+    check(all(ffo_ok), f"재무 구조 표 FFO(연환산) {sum(ffo_ok)}/{len(ffo_ok)}종목 재계산 일치, 영업이익률 열 없음")
     # 유형 코드가 '기타'여도 회생절차, 사채권자집회 공시는 위험 신호로, 해산, 청산 공시는 따로 묶는다
     group_cases = [({"matter_code": "RT02100020", "matter": "기타", "text": "서울회생법원 회생절차 개시"}, "위험 신호"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "무보증사채 사채권자집회 소집"}, "위험 신호"),
