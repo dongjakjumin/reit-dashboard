@@ -49,8 +49,14 @@ def stale_row_ok(fvr, row, same_report):
     stale = fv_stale_of(fvr) if same_report else None
     dates = [d for d in fvr.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}(?:-\d{2})?", str(d))] if stale else []
     proof = (fvr.get("reappraisal_text") if stale == "skipped" else fvr.get("appraisal_text") if stale == "same" else "") or ""
-    core = [x for x in re.split(r"(?<=다\.)", proof) if re.search(r"재수행|재실시|다시\s*(?:수행|실시)", x)]
-    proof_ok = stale != "skipped" or any(re.search(r"하였|했|았|였", x) for x in core)
+    # [review5] 문장은 dart_fv.sentences와 같이 '다.'와 마침표 없는 각주 끝('~하였음')에서 나눈다
+    core = [x for x in re.split(r"(?<=다\.)|(?<=[였했았었없]음)(?=[\s.,]|$)", proof)
+            if re.search(r"재수행|재실시|다시\s*(?:수행|실시)", x)]
+    # [review5] '~하지 않고 ... 결정되었습니다'처럼 '었'으로 끝나는 과거형도 받고, 생략 문장의 일치 구절 앞에 전기 서술만 있으면 막는다
+    last = core[-1] if core else ""
+    pre = last[:re.search(r"재수행|재실시|다시\s*(?:수행|실시)", last).start()] if last else ""
+    proof_ok = stale != "skipped" or (any(re.search(r"하였|했|았|였|었", x) for x in core)
+                                      and not (re.search(r"전기(?:말)?\s*(?:에는|에도|의\s*경우|중(?!\s*(?:에\s*)?(?:취득|처분|매각|대체|신규|증가|감소|완공|준공|편입|발생)))", pre) and "당기" not in last))
     proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof)
                                 for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
     ok = (proof_ok and row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates

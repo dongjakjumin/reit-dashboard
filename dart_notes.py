@@ -62,7 +62,10 @@ def lead(context):
 def asset_note(context):
     """표 바로 앞 글이 보유 금융상품(단기금융상품의 전자단기사채 등)을 말하고, 차입이나 발행 사채는 말하지 않으면 True."""
     near = lead(context)
-    return bool(ASSET_NOTE.search(near)) and not re.search(r"차입|(?<!전자단기)사채", near)
+    # [review5] '회사채', '단기사채', '전자단기사채'처럼 앞에 다른 글자가 붙은 '사채'는 보유 상품 이름이라 발행 사채로 보지 않는다
+    # 다만 '무보증사채', '공모사채', '전환사채'처럼 발행 사채의 종류를 앞에 붙인 말은 발행 사채로 본다
+    return bool(ASSET_NOTE.search(near)) and not re.search(
+        r"차입|발행|(?<![가-힣])사채|(?:무보증|보증|담보부|공모|사모|전환|신주인수권부?|교환)사채", near)
 
 
 def candidates(xml, basis, body):
