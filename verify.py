@@ -889,19 +889,24 @@ def main() -> int:
                   if s.get("nav_mil") and s["nav_mil"] > 0 and s.get("mktcap_eok")]
             fv = [fv_by_code[s["code"]] for s in members if fv_by_code.get(s["code"]) is not None]
             yl = [yield_by_code[s["code"]] for s in members if yield_by_code.get(s["code"]) is not None]
+            yw = [(yield_by_code[s["code"]], s["mktcap_eok"]) for s in members
+                  if yield_by_code.get(s["code"]) is not None and s.get("mktcap_eok")]
             lt = [bs(s)["total"] / bs(s)["assets"] * 100 for s in members
                   if bs(s).get("assets") and bs(s).get("total") is not None]
             rt = [rows_by[s["code"]]["ret_1y"] for s in members
                   if rows_by[s["code"]]["ret_1y"] is not None and not rows_by[s["code"]]["halted"]]
             return {"name": name, "n": len(members), "mktcap_eok": sum(s["mktcap_eok"] or 0 for s in members),
                     "pnav_median": med(pb, 2), "pnav_n": len(pb), "pnav_fv_median": med(fv, 2), "pnav_fv_n": len(fv),
-                    "yield_median": med(yl, 2), "yield_n": len(yl), "ltv_median": med(lt, 1), "ltv_n": len(lt),
+                    "yield_median": med(yl, 2), "yield_n": len(yl),
+                    "yield_wavg": round(sum(y * w for y, w in yw) / sum(w for _, w in yw), 2) if yw else None,
+                    "ltv_median": med(lt, 1), "ltv_n": len(lt),
                     "ret_1y_median": med(rt, 1), "ret_1y_n": len(rt)}
 
         names = {s.get("sector") or "기타" for s in listed}
         want_groups = sorted((group_want(nm, [s for s in listed if (s.get("sector") or "기타") == nm]) for nm in names),
                              key=lambda x: (-x["mktcap_eok"], x["name"]))
-        check(page_data.get("sectors") == want_groups and page_data.get("sector_all") == group_want("전체", listed),
+        check(page_data.get("sectors") == want_groups and page_data.get("sector_all") == group_want("전체", listed)
+              and page_data["sector_all"]["yield_wavg"] == page_data["summary"]["yield_wavg"],
               "투자대상별 P/B, 감정가 P/NAV, 시가배당률, LTV, 1년 수익률 중앙값 재계산"
               + "".join(f" · {g['name']} P/B {g['pnav_median']}배" for g in want_groups))
     raw = b"\n".join(p.read_bytes() for p in (dart_path, DATA / "loans.json") if p.exists())

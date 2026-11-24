@@ -764,15 +764,17 @@ def build_listed_data() -> dict:
         x["exit"] = found[0] if found else None
 
     def group_stats(name: str, members: list[dict]) -> dict:
-        """투자대상별 중앙값. P/B, 감정가 P/NAV, LTV는 반올림 전 값으로, 시가배당률은 요약 칸과 같은 값으로 낸다.
+        """투자대상별 중앙값. P/B, 감정가 P/NAV, LTV는 반올림 전 값으로 낸다. 시가배당률은 요약 칸처럼 시가총액 가중 평균도 낸다.
         1년 수익률은 주가 지수처럼 거래가 멈춘 종목을 뺀다."""
         vals = {k: [raw[r["code"]][k] for r in members if raw[r["code"]][k] is not None] for k in ("pnav", "pnav_fv", "ltv")}
         ylds = [r["market_yield"] for r in members if r["market_yield"] is not None]
+        wts = [(r["market_yield"], r["mktcap_eok"]) for r in members if r["market_yield"] is not None and r["mktcap_eok"]]
         rets = [r["ret_1y"] for r in members if r["ret_1y"] is not None and not r["halted"]]
         return {"name": name, "n": len(members), "mktcap_eok": sum(r["mktcap_eok"] for r in members),
                 "pnav_median": _median(vals["pnav"], 2), "pnav_n": len(vals["pnav"]),
                 "pnav_fv_median": _median(vals["pnav_fv"], 2), "pnav_fv_n": len(vals["pnav_fv"]),
                 "yield_median": _median(ylds, 2), "yield_n": len(ylds),
+                "yield_wavg": round(sum(y * w for y, w in wts) / sum(w for _, w in wts), 2) if wts else None,
                 "ltv_median": _median(vals["ltv"], 1), "ltv_n": len(vals["ltv"]),
                 "ret_1y_median": _median(rets, 1), "ret_1y_n": len(rets)}
 
