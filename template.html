@@ -448,7 +448,7 @@ const pickAmc = (function(){
   const listOf = (o, order) => (order || Object.keys(o).sort((x, y) => o[y] - o[x] || x.localeCompare(y, 'ko'))).filter(k => o[k]).map(k => `${esc(k)} ${o[k]}`).join(', ');
   const mixBar = a => D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
   pick.innerHTML = byAssets.map(a => `<option value="${esc(a.name)}">${a.rank_assets}위 ${esc(a.name)} (리츠 ${a.n}개)</option>`).join('');
-  $('#amc-detail-sub').textContent = `표에서 관리주체 이름을 누르거나 아래 목록에서 고르면 그 회사가 관리하는 리츠, 처리 중인 신청, 최근 90일 주요 공시(${D.amc_dis_from} 이후), 자산총계 순위가 앞뒤인 관리주체를 한 번에 봅니다.`;
+  $('#amc-detail-sub').textContent = `표에서 관리주체 이름을 누르거나 아래 목록에서 고르면 그 회사가 관리하는 리츠, 처리 중인 신청, 최근 90일 주요 공시(${D.amc_dis_from}부터), 자산총계 순위가 앞뒤인 관리주체를 한 번에 봅니다.`;
   function render(name){
     const a = D.amc.find(x => x.name === name) || byAssets[0];
     pick.value = a.name;

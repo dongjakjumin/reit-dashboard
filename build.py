@@ -43,6 +43,11 @@ def d(s: str) -> date:
     return date.fromisoformat(s)
 
 
+def since(today: date, days: int = 90) -> str:
+    """오늘을 넣어 센 최근 days일의 첫날. 화면의 '최근 90일'은 모두 이 날부터 오늘까지다."""
+    return (today - timedelta(days=days - 1)).isoformat()
+
+
 def safe_date(s) -> str:
     """YYYY-MM-DD 모양일 때만 돌려준다. 화면에 그대로 들어가는 값이라 형식이 다르면 비운다."""
     s = str(s or "")
@@ -253,7 +258,7 @@ def build_data() -> dict:
     # 최근 변동(접수와 인가, 등록, 신고를 날짜순으로)
     events = []
     for r in reits:
-        if d(r["date"]) > today - timedelta(days=90):
+        if r["date"] >= since(today):
             events.append({"date": safe_date(r["date"]), "what": r["kind"], "name_s": r["name_s"],
                            "who": r["amc_s"], "note": r["sector"]})
     for f in frows:
@@ -275,11 +280,11 @@ def build_data() -> dict:
     # 본문은 싣지 않는다(주주 관련 공시의 개인 정보가 섞이지 않게 제목과 유형만 쓴다).
     reit_by_norm = {_norm_company(r["name"]): r for r in reits}
     amc_by_norm = {_norm_company(r["amc"]): r["amc_s"] for r in reits}
-    dis_from = (today - timedelta(days=90)).isoformat()
+    dis_from = since(today)
     amc_dis: dict[str, list] = defaultdict(list)
     dis_unmatched = 0
     for no, x in optional_data("disclosures.json").items():
-        grp = DISCLOSURE_GROUPS.get(x.get("matter_code"))
+        grp = dis_group(x)
         day = safe_date(x.get("date"))
         if not grp or not day or day < dis_from:
             continue
@@ -563,7 +568,7 @@ def build_listed_data() -> dict:
 
     # 상장 목록 변동: 최근 90일의 날짜별 수집 원자료에서 종목이 처음과 마지막으로 보인 날.
     # 그날 상장 목록을 받지 못한 원자료(빈 목록)는 건너뛴다.
-    list_from = (d(snap["date"]) - timedelta(days=90)).isoformat()
+    list_from = since(d(snap["date"]))
     first_seen, last_seen, seen_name = {}, {}, {}
     snap_days = []
     for p in sorted((DATA / "snapshots").glob("*.json")):
@@ -634,7 +639,24 @@ DISCLOSURE_GROUPS = {
     "RT02100028": "특수관계 거래", "RT02100029": "대출 실행",
     "RT02100020": "기타 공시", "RT02100002": "기타 공시",
 }
-GROUP_ORDER = ["위험 신호", "자산 취득, 처분", "신용평가", "최대주주 변경", "특수관계 거래", "대출 실행", "기타 공시"]
+GROUP_ORDER = ["위험 신호", "해산, 청산", "자산 취득, 처분", "신용평가", "최대주주 변경", "특수관계 거래", "대출 실행", "기타 공시"]
+# 유형 코드가 '기타'이거나 정기 공시여도 제목과 본문에 아래 말이 있으면 따로 묶는다.
+# (회생절차나 사채권자집회 공시가 '기타'로 올라와 위험 신호에서 빠지던 것을 바로잡는다.)
+RISK_WORDS = re.compile(r"회생절차|회생법원|사채권자\s?집회|기한의?\s?이익.{0,6}상실|미상환|부도|파산|자율\s?구조조정")
+WIND_UP_WORDS = re.compile(r"해산|청산")
+
+
+def dis_group(x: dict) -> str | None:
+    """수시공시 한 건의 화면 묶음. 없으면 정기, 일반 공시(None)."""
+    grp = DISCLOSURE_GROUPS.get(x.get("matter_code"))
+    if grp not in (None, "기타 공시"):
+        return grp
+    words = f"{x.get('matter') or ''} {x.get('text') or ''}"
+    if RISK_WORDS.search(words):
+        return "위험 신호"
+    if WIND_UP_WORDS.search(words):
+        return "해산, 청산"
+    return grp
 
 
 def _norm_company(name: str) -> str:
@@ -711,10 +733,10 @@ def build_finance_data() -> dict:
         for nm in (r.get("company"), reit_name_by_id.get(r.get("reit_id"))):
             if nm:
                 listed_names[_norm_company(nm)] = r
-    cut90 = (today - timedelta(days=90)).isoformat()
+    cut90 = since(today)
     items, routine90 = [], 0
     for no, x in dis.items():
-        grp = DISCLOSURE_GROUPS.get(x.get("matter_code"))
+        grp = dis_group(x)
         stock = listed_names.get(_norm_company(x["company"]))
         code = stock["code"] if stock else None
         day = safe_date(x.get("date"))
@@ -794,7 +816,7 @@ def weekly_digest(data: dict, listed: dict, finance: dict) -> dict:
     dis = [x for x in finance["disclosures"] if start <= x["date"] <= end]
     groups = Counter(x["group"] for x in dis)
     notable = [{k: x[k] for k in ("date", "group", "matter", "company_s", "timeline_code")}
-               for x in dis if x["group"] in ("위험 신호", "자산 취득, 처분", "신용평가", "최대주주 변경")]
+               for x in dis if x["group"] in ("위험 신호", "해산, 청산", "자산 취득, 처분", "신용평가", "최대주주 변경")]
 
     # 상장리츠: 지수와 종목 수익률은 마지막 종가일과 그 7일 전(그날이나 그 앞의 마지막 거래일)을 견준다
     idx = list(zip(listed["index"]["dates"], listed["index"]["values"]))

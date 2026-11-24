@@ -289,7 +289,7 @@ def main() -> int:
     amc_dis = d["amc_dis"]
     dis_saved = json.loads((DATA / "disclosures.json").read_text(encoding="utf-8")) if (DATA / "disclosures.json").is_file() else {}
     major90 = {no for no, x in dis_saved.items()
-               if build.DISCLOSURE_GROUPS.get(x.get("matter_code")) and build.safe_date(x.get("date"))
+               if build.dis_group(x) and build.safe_date(x.get("date"))
                and x["date"] >= d["amc_dis_from"]}
     linked = [x["no"] for rows in amc_dis.values() for x in rows]
     check(set(amc_dis) <= amc_names, "관리주체 상세 공시의 회사가 모두 관리주체 목록에 있음")
@@ -429,6 +429,23 @@ def main() -> int:
     check(all(abs(r["debt_eok"] / r["assets_eok"] * 100 - r["debt_to_assets"]) < 0.2 for r in fd["rows"]),
           "부채 ÷ 자산 재계산 일치")
     check(sum(g["n"] for g in fd["groups"]) == fd["summary"]["dis_major"], "공시 유형별 건수 합 = 주요 공시 건수")
+    # 유형 코드가 '기타'여도 회생절차, 사채권자집회 공시는 위험 신호로, 해산, 청산 공시는 따로 묶는다
+    group_cases = [({"matter_code": "RT02100020", "matter": "기타", "text": "서울회생법원 회생절차 개시"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "무보증사채 사채권자집회 소집"}, "위험 신호"),
+                   ({"matter_code": "RT02100004", "matter": "재무제표 및 감사보고서", "text": "청산일 기준 재무제표"}, "해산, 청산"),
+                   ({"matter_code": "RT02100029", "matter": "대출 실행", "text": "기한의 이익 상실 사유 약정"}, "대출 실행"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "자산관리회사 변경"}, "기타 공시"),
+                   ({"matter_code": "RT02100004", "matter": "재무제표 및 감사보고서", "text": ""}, None)]
+    for case, expected in group_cases:
+        check(build.dis_group(case) == expected, f"공시 묶음 가상 입력 {case['text'] or case['matter']} → {expected or '정기, 일반'}")
+    since = build.since(build.d(snap["date"]))
+    risky = [no for no, x in dis.items() if (x.get("date") or "") >= since
+             and re.search(r"회생절차|사채권자\s?집회", (x.get("matter") or "") + (x.get("text") or ""))]
+    shown = {x["no"]: x["group"] for x in fd["disclosures"]}
+    check(all(shown.get(no) == "위험 신호" for no in risky), f"최근 90일 회생절차, 사채권자집회 공시 {len(risky)}건이 모두 위험 신호")
+    check(fd["summary"]["dis_from"] == (build.d(snap["date"]) - timedelta(days=89)).isoformat()
+          and all(x["date"] >= fd["summary"]["dis_from"] for x in fd["disclosures"]),
+          f"주요 공시 구간은 오늘을 넣어 90일({fd['summary']['dis_from']}부터)")
     timelines = fd["timelines"]
     finance_codes = [r["code"] for r in fd["rows"]]
     check(set(timelines) == set(finance_codes) and len(timelines) == len(finance_codes),
@@ -700,8 +717,8 @@ def main() -> int:
           f"최근 1주 상태가 바뀐 신청 {len(status_moves)}건(접수 기록의 상태 이력 기준)")
     gone_week = sorted(rec["gone_on"] for rec in flog.values() if rec.get("gone_on") and start <= rec["gone_on"] <= end)
     check(sorted(x["date"] for x in week.get("gone", [])) == gone_week, f"최근 1주 접수 목록에서 빠진 신청 {len(gone_week)}건")
-    week_groups = Counter(build.DISCLOSURE_GROUPS[x["matter_code"]] for x in dis_saved.values()
-                          if build.DISCLOSURE_GROUPS.get(x.get("matter_code")) and start <= (x.get("date") or "") <= end)
+    week_groups = Counter(build.dis_group(x) for x in dis_saved.values()
+                          if build.dis_group(x) and start <= (x.get("date") or "") <= end)
     check(week.get("dis_n") == sum(week_groups.values())
           and week.get("dis_groups") == {g: week_groups[g] for g in build.GROUP_ORDER if week_groups[g]},
           f"최근 1주 주요 공시 {sum(week_groups.values())}건과 유형별 건수(저장한 공시에서 다시 셈)")
