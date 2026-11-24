@@ -583,7 +583,8 @@ def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
     공정가치는 사업보고서 주석(dart_fv.py), 자본은 같은 보고서의 재무상태표(dart.py)에서 온다.
     비지배지분이 자본의 5%를 넘으면 공정가치 차익을 지배지분과 나눌 근거가 없어 비운다.
     """
-    out = dict(nav_fv_eok=None, pnav_fv=None, pnav_raw=None, fv_gain_eok=None, fv_end=None, fv_method=None, nav_fv_reason=None)
+    out = dict(nav_fv_eok=None, pnav_fv=None, pnav_raw=None, fv_gain_eok=None, fv_end=None, fv_method=None, fv_rcept=None,
+               nav_fv_reason=None)
     cur = record.get("current") or {}
     if not record or not fv or fv.get("rcept_no") != record.get("rcept_no"):
         out["nav_fv_reason"] = "공정가치 자료 없음"
@@ -597,7 +598,8 @@ def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
         out["nav_fv_reason"] = "자본 자료 없음"
         return out
     gain = fv["fv"] - fv["book"]
-    out.update(fv_gain_eok=round(gain / 1e8), fv_end=safe_date(fv["end"]), fv_method=fv["method"])
+    out.update(fv_gain_eok=round(gain / 1e8), fv_end=safe_date(fv["end"]), fv_method=fv["method"],
+               fv_rcept=fv["rcept_no"] if re.fullmatch(r"\d{14}", str(fv.get("rcept_no") or "")) else None)
     if abs(equity - owner) > 0.05 * equity:
         out["nav_fv_reason"] = f"비지배지분 {abs(equity - owner) / equity * 100:.0f}%"
         return out

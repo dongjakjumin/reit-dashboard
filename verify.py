@@ -863,6 +863,9 @@ def main() -> int:
             fv_vals.append(want)
         fv_by_code[row["code"]] = want
         ok = row.get("pnav_fv") == (round(want, 2) if want is not None else None) and row.get("nav_fv_eok") == nav_want
+        # 화면의 기준일 링크는 공정가치를 읽은 보고서(= 재무상태표를 읽은 보고서)의 접수번호여야 한다
+        same_report = fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no") and (cur.get("equity") or 0) > 0
+        ok &= row.get("fv_rcept") == (fvr["rcept_no"] if same_report else None)
         if fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no"):
             # 같은 보고서일 때만 출처를 대조한다. 새 사업보고서가 들어오고 주석을 아직 못 읽었으면 화면이 비어 있는지만 본다
             ok &= fvr["book"] == cur.get("investment_property")

@@ -251,7 +251,9 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     {k: 'name', t: '종목', txt: true},
     {k: 'mktcap_eok', t: '시가총액', f: r => eok(r.mktcap_eok)},
     {k: 'pnav', t: 'P/B', f: r => r.pnav != null ? r.pnav.toFixed(2) + '배' : '–'},
-    {k: 'pnav_fv', t: 'P/NAV(감정가)', f: r => r.pnav_fv != null ? r.pnav_fv.toFixed(2) + '배' + (r.fv_end ? `<span class="s">${esc(r.fv_end.slice(2, 7).replace('-', '.'))} 기준</span>` : '')
+    {k: 'pnav_fv', t: 'P/NAV(감정가)', f: r => r.pnav_fv != null ? r.pnav_fv.toFixed(2) + '배' + (r.fv_end ? `<span class="s">${r.fv_rcept
+      ? `<a class="ext" href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${encodeURIComponent(r.fv_rcept)}" title="공정가치를 읽은 DART 사업보고서">${esc(r.fv_end.slice(2, 7).replace('-', '.'))} 기준</a>`
+      : esc(r.fv_end.slice(2, 7).replace('-', '.')) + ' 기준'}</span>` : '')
       : '–' + (r.nav_fv_reason ? `<span class="s">${esc(r.nav_fv_reason)}</span>` : '')},
     {k: 'pffo', t: 'P/FFO(연환산)', f: r => r.pffo != null ? r.pffo.toFixed(1) + '배' : '–'},
     {k: 'market_yield', t: '시가배당률', f: r => (r.market_yield != null ? r.market_yield.toFixed(2) + '%' :
