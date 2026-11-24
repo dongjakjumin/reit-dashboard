@@ -59,8 +59,8 @@ def stale_row_ok(fvr, row, same_report):
     pre = last[:re.search(r"재수행|재실시|다시\s*(?:수행|실시)", last).start()] if last else ""
     proof_ok = stale != "skipped" or (any(re.search(r"하였|했|았|였|었", x) for x in core)
                                       and not (re.search(r"전기(?:말)?\s*(?:에는|에도|의\s*경우|중(?!\s*(?:에\s*)?(?:취득|처분|매각|대체|신규|증가|감소|완공|준공|편입|발생)))", pre) and "당기" not in last))
-    # dart_fv는 전각 숫자 날짜('２０２５년 １２월')도 읽으므로, 날짜 대조는 전각을 보통 숫자로 바꾼 글에서 한다
-    proof_n = unicodedata.normalize("NFKC", proof)
+    # dart_fv는 전각 숫자('２０２５년 １２월') 같은 유니코드 10진 숫자 날짜도 읽으므로, 날짜 대조는 보통 숫자로 바꾼 글에서 한다
+    proof_n = re.sub(r"\d", lambda x: str(unicodedata.decimal(x[0])), unicodedata.normalize("NFKC", proof))
     proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof_n)
                                 for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
     ok = (proof_ok and row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
@@ -645,6 +645,8 @@ def main() -> int:
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "대출 만기 미상환 잔액 300억원 발생"}, "위험 신호"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "제2회 사채 발행(미상환 사채 원금 잔액 500억원)"}, "차입, 사채"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "대출 원리금 미상환 현황 보고"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "미상환 원리금 잔액 30,000,000,000원 연체 발생"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "미상환 사채 잔액 500억원(연체 사실 없음)"}, "차입, 사채"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "주요주주인 A사와 PM계약 변경계약 체결"}, "이해관계자 거래"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "자산의 처분 결정(공공사업에 따른 기부채납)"}, "자산 취득, 처분"),
                    ({"matter_code": "RT02100020", "matter": "기타", "text": "제3호 의안 : 부동산투자회사 영업인가 신청의 건"}, "인가 신청, 기금 출자"),
@@ -666,7 +668,9 @@ def main() -> int:
                   ("원가모형 정책", "투자부동산은 공정가치평가를 재수행하지 않고 원가모형을 적용하고 있습니다.", False),
                   ("일부 자산만 미평가", "투자부동산 중 A빌딩과 B빌딩은 당기말(2026년 6월 30일)을 평가기준일로 감정평가를 실시하였으며, "
                    "당기 중 신규 취득한 C빌딩(취득 시 평가기준일: 2026년 4월 30일)은 공정가치평가를 재수행하지 아니하였습니다.", False),
-                  ("매 결산 감정 정책 뒤 당기 생략", "투자부동산은 매 보고기간 말을 평가기준일로 감정평가를 실시하였으나, "
+                  ("'당기말 현재'로 시작하는 생략 문장", "당기말 현재 투자부동산의 공정가치는 2025년 12월 31일을 평가기준일로 하여 "
+                   "감정평가를 실시하였으며, 이후 공정가치의 유의적인 변동이 없어 공정가치평가를 재수행하지 아니하였습니다.", True),
+                  ("매 결산 감정 정책 뒤 당기 생략","투자부동산은 매 보고기간 말을 평가기준일로 감정평가를 실시하였으나, "
                    "당기에는 최근 평가기준일(2025년 12월 31일) 대비 변동이 중요하지 않아 공정가치평가를 재수행하지 아니하였습니다.", True),
                   ("감정 주기 정책", "투자부동산 공정가치평가를 재수행하지 않고 3년 주기로 감정평가를 실시하며, 그 사이에는 "
                    "최근 감정평가액을 공정가치로 사용하고 있습니다.", False),
