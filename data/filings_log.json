@@ -6,13 +6,13 @@
   "req_type": "프로젝트리츠 설립신고",
   "name": "주식회사 코람코개발앵커제1호프로젝트위탁관리자부동산투자회사",
   "applicant": "(주)코람코자산신탁",
-  "status": "보완요청",
+  "status": "검토완료",
   "project_name": "마포 상수동 역세권장기전세주택 개발사업",
   "biz_type": "개발",
   "founding_capital": 10300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -21,6 +21,10 @@
    [
     "2026-11-23",
     "보완요청"
+   ],
+   [
+    "2026-11-24",
+    "검토완료"
    ]
   ],
   "gone_on": null
@@ -38,7 +42,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -60,7 +64,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -82,7 +86,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -104,7 +108,7 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -120,17 +124,21 @@
   "req_type": "프로젝트리츠 설립신고",
   "name": "주식회사 신세계동서울프로젝트위탁관리부동산투자회사",
   "applicant": "주식회사 신세계프라퍼티투자운용",
-  "status": "보완완료",
+  "status": "보완요청",
   "project_name": "신세계동서울터미널 개발사업",
   "biz_type": "개발",
   "founding_capital": 6081500000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
     "보완완료"
+   ],
+   [
+    "2026-11-24",
+    "보완요청"
    ]
   ],
   "gone_on": null
@@ -148,7 +156,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -170,7 +178,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -192,7 +200,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -212,17 +220,21 @@
   "req_type": "변경인가/등록/신고",
   "name": "(주)서울리츠임대주택제3호위탁관리부동산투자회사",
   "applicant": "서울투자운용주식회사",
-  "status": "보완요청",
+  "status": "검토완료",
   "project_name": "(주)서울리츠임대주택제3호위탁관리부동산투자회사",
   "biz_type": "매입(일반)",
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
     "보완요청"
+   ],
+   [
+    "2026-11-24",
+    "검토완료"
    ]
   ],
   "gone_on": null
@@ -240,7 +252,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -262,7 +274,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -284,7 +296,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -306,7 +318,7 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -328,7 +340,7 @@
   "founding_capital": 750000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -350,7 +362,7 @@
   "founding_capital": 4580000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -372,7 +384,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -394,7 +406,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -416,7 +428,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -438,7 +450,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -460,7 +472,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -482,7 +494,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -504,7 +516,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-21",
@@ -526,10 +538,32 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-23",
-  "last_seen": "2026-11-23",
+  "last_seen": "2026-11-24",
   "status_history": [
    [
     "2026-11-23",
+    "접수"
+   ]
+  ],
+  "gone_on": null
+ },
+ "11914": {
+  "id": 11914,
+  "reit_id": 1246,
+  "date": "2026-11-24",
+  "req_type": "영업인가",
+  "name": "주식회사 하남교산대한대토제74호위탁관리부동산투자회사",
+  "applicant": "대한토지신탁(주)",
+  "status": "접수",
+  "project_name": "하남교산 공공주택지구 자족 1-4BL",
+  "biz_type": "개발",
+  "founding_capital": 300000000,
+  "public_duty": "N",
+  "first_seen": "2026-11-24",
+  "last_seen": "2026-11-24",
+  "status_history": [
+   [
+    "2026-11-24",
     "접수"
    ]
   ],
