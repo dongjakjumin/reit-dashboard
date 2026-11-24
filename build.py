@@ -871,6 +871,7 @@ def build_listed_data() -> dict:
             "pnav_fv_median": _median([v["pnav_fv"] for v in raw.values() if v["pnav_fv"] is not None], 2),
             "pnav_fv_n": sum(1 for v in raw.values() if v["pnav_fv"] is not None),
             "pnav_fv_below1": sum(1 for r in rows if r["pnav_fv"] is not None and r["pnav_fv"] < 1),
+            "pnav_fv_stale": sum(1 for r in rows if r["pnav_fv"] is not None and r.get("fv_stale")),
             "nav_book_n": len(nav_book), "nav_book_same": sum(ok for _, ok in nav_book),
             "nav_book_diff": [name for name, ok in nav_book if not ok], "fv_cross": fv_cross,
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
