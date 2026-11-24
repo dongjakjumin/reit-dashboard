@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from dart import previous_year
-from textutil import CHANGE_REQUEST, filing_result, mask_person
+from textutil import CHANGE_REQUEST, filing_result, mask_officer_names, mask_person
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
@@ -718,7 +718,7 @@ def build_finance_data() -> dict:
         stock = listed_names.get(_norm_company(x["company"]))
         code = stock["code"] if stock else None
         day = safe_date(x.get("date"))
-        body = "" if "주주" in x["matter"] else (x.get("text") or "")
+        body = "" if "주주" in x["matter"] else (mask_officer_names(x.get("text")) or "")
         if code in timelines and day:
             event = {"kind": "disclosure", "date": day, "no": no, "group": grp}
             if grp:

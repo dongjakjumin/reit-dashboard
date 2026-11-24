@@ -29,6 +29,29 @@ def mask_person(name: str | None) -> str | None:
     return PRIVATE_LABEL if is_person else name
 
 
+# 공시 본문의 임원 선임, 사임 문구에서 사람 이름을 지운다. 임원 변경 공시는 본문을 저장하지 않는 원칙을
+# '기타' 공시에 섞여 들어온 같은 내용에도 적용한다. 예: "사내이사 홍길동 선임", "(사임) 대표이사 홍길동, 이사 김철수"
+OFFICER_LABEL = "(이름 생략)"
+_TITLES = r"(?:대표이사|사내이사|사외이사|기타비상무이사|비상무이사|상근감사|감사위원|감사|이사)"
+_ACTIONS = r"(?:재선임|선임|사임|해임|중임|연임|퇴임|취임)"
+_NOT_NAMES = {"보수", "선임", "사임", "해임", "중임", "연임", "퇴임", "취임", "재선임", "후보", "전원", "변경",
+              "승인", "신규", "선출", "등", "및", "각", "선임의", "사임의", "해임의"}
+OFFICER_NAME_RE = re.compile(rf"({_TITLES})\s+([가-힣]{{2,4}})(?=\s*(?:,|\(|{_ACTIONS}|$)|\s+{_TITLES}|\s+-)")
+
+
+def mask_officer_names(text: str | None) -> str | None:
+    if not text or not re.search(_ACTIONS, text):
+        return text
+    return OFFICER_NAME_RE.sub(lambda m: m.group(0) if m.group(2) in _NOT_NAMES else f"{m.group(1)} {OFFICER_LABEL}", text)
+
+
+def officer_names(text: str | None) -> list[str]:
+    """가리지 않고 남은 임원 이름 후보(점검용). mask_officer_names를 거친 글에서는 빈 목록이어야 한다."""
+    if not text or not re.search(_ACTIONS, text):
+        return []
+    return [m.group(2) for m in OFFICER_NAME_RE.finditer(text) if m.group(2) not in _NOT_NAMES]
+
+
 def redact_phones(value):
     if isinstance(value, dict):
         return {k: redact_phones(v) for k, v in value.items()}

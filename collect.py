@@ -24,7 +24,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import reits_api
-from textutil import CHANGE_REQUEST, PHONE_RE, filing_result, mask_person, phone_files, redact_phones
+from textutil import CHANGE_REQUEST, PHONE_RE, filing_result, mask_officer_names, mask_person, phone_files, redact_phones
 
 KST = timezone(timedelta(hours=9))
 DATA = Path(__file__).parent / "data"
@@ -294,7 +294,7 @@ def update_disclosures(snap: dict):
         code = x.get("matterCode")
         matter = " ".join(str(x.get("matterNm") or "").split())
         text = "" if code in DISCLOSURE_NO_TEXT or "주주" in matter else " ".join(str(x.get("changeCn") or "").split())[:300]
-        text = re.sub(PHONE_RE, "(번호 생략)", text)
+        text = mask_officer_names(re.sub(PHONE_RE, "(번호 생략)", text))
         log[str(int(no))] = {
             "date": x.get("pblntfDe"), "company": (x.get("cmpnyNm") or "").strip(),
             "company_type": x.get("cmpnySeNm"), "matter_code": code,

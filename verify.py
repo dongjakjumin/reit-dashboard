@@ -26,7 +26,7 @@ import build
 import ecos
 import reits_api
 from dart import previous_year
-from textutil import PRIVATE_LABEL, mask_person, phone_files
+from textutil import PRIVATE_LABEL, mask_officer_names, mask_person, officer_names, phone_files
 
 DATA = Path(__file__).parent / "data"
 
@@ -655,6 +655,15 @@ def main() -> int:
     leaks = phone_files(DATA.rglob("*.json")) + phone_files(build.SITE.glob("*.html"))
     check(not leaks, "저장 파일과 화면 전화번호 점검" + " ".join(str(p) for p in leaks))
     check(all(not v.get("text") for v in dis.values() if "주주" in v["matter"]), "주주 공시 본문 없음")
+    named = [no for no, v in dis.items() if officer_names(v.get("text"))]
+    named_pages = [p.name for p in build.SITE.glob("*.html") if officer_names(p.read_text(encoding="utf-8"))]
+    check(not named and not named_pages, "공시 본문과 화면에 임원 이름 없음(선임, 사임 문구)"
+          + (f" 공시번호 {', '.join(named[:5])}" if named else "") + (f" 화면 {', '.join(named_pages)}" if named_pages else ""))
+    officer_cases = [("(사임) 대표이사 홍길동, 사내이사 김철수", "(사임) 대표이사 (이름 생략), 사내이사 (이름 생략)"),
+                     ("감사 박하늘 선임", "감사 (이름 생략) 선임"),
+                     ("이사 보수 한도 승인", "이사 보수 한도 승인"), ("사외이사 선임의 건", "사외이사 선임의 건")]
+    for text, expected in officer_cases:
+        check(mask_officer_names(text) == expected, f"임원 이름 가상 입력 {expected}")
     cases = [(name, PRIVATE_LABEL) for name in ("홍길동(개인)", "홍길동 (본인)", "남궁민수", "김솔", "박하늘 외 2인")]
     cases += [(name, name) for name in ("㈜에스원", "주식회사 케이탑", "롯데쇼핑", "(주)한빛", "한솔 유한회사")]
     for name, expected in cases:
