@@ -430,7 +430,7 @@ def main() -> int:
     histories = {r["code"]: {day: price for day, price in prices.get(str(r["code"]), {}).items()
                              if day >= window_start and price} for r in listed}
     trading_days = sorted({day for h in histories.values() if len(h) >= 2 for day in h if day >= index_start})
-    members = []
+    members, member_codes = [], []
     for stock in listed:
         h = histories[stock["code"]]
         series = [h[day] for day in sorted(h)]
@@ -439,6 +439,7 @@ def main() -> int:
         if (len(h) >= 2 and any(day in h for day in trading_days[:6])
                 and not changed and not (flat and not stock.get("volume"))):
             members.append(h)
+            member_codes.append(stock["code"])
     dates = [day for day in trading_days if members and all(day in h for h in members)]
     moves = []
     for history in members if dates else []:
@@ -450,6 +451,24 @@ def main() -> int:
     summary = page_data.get("summary", {}) if codes is not None else {}
     check((len(members) if dates else 0, sum(v > 0 for v in moves), sum(v < 0 for v in moves)) ==
           tuple(summary.get(k) for k in ("index_n", "up_1y", "down_1y")), "지수 표본과 상승·하락 종목 수 재계산")
+    # 시가총액 가중 지수(주식 수 = 시가총액 ÷ 현재가)와 배당 1년치 포함 근사(최근 12개월 주당배당금 ÷ 첫날 종가)
+    if dates and codes is not None:
+        page_rows = {r["code"]: r for r in page_data["rows"]}
+        shares = {c: page_rows[c]["mktcap_eok"] * 1e8 / page_rows[c]["price"] for c in member_codes
+                  if page_rows.get(c, {}).get("mktcap_eok") and page_rows[c].get("price")}
+        cap = []
+        if len(shares) == len(member_codes):
+            base = sum(shares[c] * histories[c][dates[0]] for c in member_codes)
+            cap = [sum(shares[c] * histories[c][x] for c in member_codes) / base * 100 for x in dates]
+        shown = page_data["index"].get("cap") or []
+        check(len(shown) == len(cap) and all(abs(a - b) < 0.006 for a, b in zip(shown, cap))
+              and summary.get("index_cap_ret") == (round(shown[-1] - 100, 1) if shown else None),
+              f"시가총액 가중 지수 {summary.get('index_cap_ret')}% 재계산")
+        dart_div = build.optional_data("dart.json")
+        tr = [(histories[c][dates[-1]] + dart_div[c]["trailing_dps"]) / histories[c][dates[0]] - 1
+              for c in member_codes if (dart_div.get(c) or {}).get("trailing_dps") is not None]
+        check(summary.get("index_tr_n") == len(tr) and tr and abs(summary.get("index_tr") - sum(tr) / len(tr) * 100) < 0.051,
+              f"배당 1년치 포함 근사 {summary.get('index_tr')}%({len(tr)}개) 재계산")
     expected_dvd = {r["code"]: r.get("annual_dvd_pct") or None for r in listed}
     dividends = [v for v in expected_dvd.values() if v is not None]
     check(codes is not None and {r["code"]: r["annual_dvd_pct"] for r in page_data["rows"]} == expected_dvd

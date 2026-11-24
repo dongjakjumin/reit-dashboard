@@ -672,6 +672,19 @@ def build_listed_data() -> dict:
     full = [c for c in codes if c not in skip and any(start_day <= x <= first_week for x in window[c])]
     common = [day for day in all_days if all(day in window[c] for c in full)] if full else []
     idx = [round(sum(window[c][x] / window[c][common[0]] for c in full) / len(full) * 100, 2) for x in common]
+    # 시가총액 가중 지수: 지금의 상장주식 수(시가총액 ÷ 현재가)가 1년 내내 같다고 보고 종가에 곱한다.
+    # 그 사이 유상증자나 감자로 주식 수가 바뀐 종목이 있으면 근사다.
+    row_by = {str(r["code"]): r for r in rows}
+    shares = {c: row_by[c]["mktcap_eok"] * 1e8 / row_by[c]["price"] for c in full
+              if row_by[c].get("mktcap_eok") and row_by[c].get("price")}
+    idx_cap = []
+    if common and len(shares) == len(full):
+        cap_base = sum(shares[c] * window[c][common[0]] for c in full)
+        idx_cap = [round(sum(shares[c] * window[c][x] for c in full) / cap_base * 100, 2) for x in common]
+    # 배당 1년치 포함 근사: 종목별 (마지막 날 종가 + 최근 12개월 주당배당금) ÷ 첫날 종가 - 1의 단순평균.
+    # 주당배당금은 DART 사업보고서 기준이라 마지막 결산기가 지수 기간보다 몇 달 앞설 수 있다.
+    tr = {c: (window[c][common[-1]] + dart[c]["trailing_dps"]) / window[c][common[0]] - 1
+          for c in full if common and (dart.get(c) or {}).get("trailing_dps") is not None}
 
     # 상장 목록 변동: 최근 90일의 날짜별 수집 원자료에서 종목이 처음과 마지막으로 보인 날.
     # 그날 상장 목록을 받지 못한 원자료(빈 목록)는 건너뛴다.
@@ -736,6 +749,9 @@ def build_listed_data() -> dict:
         "summary": {
             "n": len(rows), "mktcap_eok": sum(r["mktcap_eok"] for r in rows),
             "index_ret": round(idx[-1] - 100, 1) if idx else None, "index_n": len(full) if idx else 0,
+            "index_cap_ret": round(idx_cap[-1] - 100, 1) if idx_cap else None,
+            "index_tr": round(sum(tr.values()) / len(tr) * 100, 1) if tr else None, "index_tr_n": len(tr),
+            "index_tr_missing": [row_by[c]["name"] for c in full if c not in tr] if idx else [],
             "up_1y": sum(1 for v in changes if v > 0), "down_1y": sum(1 for v in changes if v < 0),
             "pnav_median": _median(pnav_raw, 2), "pnav_n": len(pnavs),
             "nav_book_n": len(nav_book), "nav_book_same": sum(ok for _, ok in nav_book),
@@ -749,7 +765,7 @@ def build_listed_data() -> dict:
             "rates": rates, "spread_median": _median(spreads, 2), "spread_n": len(spreads),
             "dvd_median": _median(dvds, 2), "dvd_n": len(dvds),
         },
-        "index": {"dates": common, "values": idx, "excluded": sorted(skip.values()), "exclusion_counts": excluded},
+        "index": {"dates": common, "values": idx, "cap": idx_cap, "excluded": sorted(skip.values()), "exclusion_counts": excluded},
         "sectors": sectors, "rows": rows, "list_changes": list_changes,
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
     }

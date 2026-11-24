@@ -38,7 +38,7 @@
   <p class="sub" id="chart-sub"></p>
   <div class="two">
     <div class="card">
-      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">상장리츠 주가 지수, 최근 1년</strong></div>
+      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">상장리츠 주가 지수, 최근 1년</strong><span class="sp"></span><div class="legend" id="idx-legend" style="margin:0"></div></div>
       <div class="chart" id="idx-chart" role="group" tabindex="0" aria-label="상장리츠 주가 지수. 좌우 화살표로 날짜를 옮깁니다. Home 키로 첫날, End 키로 마지막 날을 확인합니다."></div>
       <p class="note" id="idx-note"></p>
     </div>
@@ -79,7 +79,8 @@
       <li><b>P/B</b>: 현재 시가총액 ÷ 직전 결산기 NAV로 이 화면에서 계산했습니다. 리츠정보시스템 화면의 P/NAV는 결산월 말 주가(원)를 NAV 총액(백만원)으로 나눈 값으로 보여 배수로 읽기 어려워 쓰지 않았습니다.</li>
       <li><b>P/FFO</b>: 현재 시가총액 ÷ 연환산 FFO입니다. 직전 결산기 FFO에 365를 곱하고 해당 결산기의 일수로 나눕니다. 연속된 두 결산기 말일을 확인할 수 없으면 연환산 배당률과 배당수익률로 연간 결산 횟수를 추정합니다. FFO가 0 이하이거나 결산 횟수를 추정할 수 없으면 비워 두었습니다.</li>
       <li><b>WALE</b>: 임차인별 잔여 임대기간을 임대면적으로 가중평균한 값입니다(리츠정보시스템 정의, 단위 년).</li>
-      <li><b>주가 지수</b>: 1년 전 주가를 100으로 놓고 종목별 지수를 구한 뒤 단순평균했습니다. 현재 상장된 종목으로 과거 1년을 다시 계산하므로 상장폐지 종목은 포함하지 않습니다. 시가총액 가중이 아니므로 거래소 리츠 지수와 다릅니다.</li>
+      <li><b>주가 지수</b>: 1년 전 주가를 100으로 놓고 종목별 지수를 구한 뒤 단순평균했습니다. 시가총액 가중선은 지금의 상장주식 수(시가총액 ÷ 현재가)가 1년 내내 같다고 보고 계산한 근사입니다. 현재 상장된 종목으로 과거 1년을 다시 계산하므로 상장폐지 종목은 포함하지 않고, 종목 구성과 주식 수 기준이 달라 거래소 리츠 지수와 값이 다를 수 있습니다.</li>
+      <li><b>배당 1년치 포함 수익률</b>: 종목별 1년 수익률에 최근 12개월 주당배당금(DART 사업보고서) ÷ 첫날 종가를 더해 단순평균한 근사입니다. 배당락일을 따로 맞추지 않았고, 마지막 결산기가 지수 기간보다 몇 달 앞설 수 있습니다. 특별배당으로 주가가 하루에 크게 빠진 종목은 이 값으로 보아야 성과가 맞게 잡힙니다.</li>
       <li><b>현재가와 전 거래일 대비</b>: 가격 이력의 마지막 종가와 그 앞 거래일 종가를 비교했습니다. 리츠정보시스템 목록의 전일가는 기준가 조정이 들어가 종가와 다른 날이 있어 쓰지 않았습니다. 종가 이력이 없는 종목은 목록에 나온 시세를 표시합니다. 시가총액은 리츠정보시스템 목록의 값입니다.</li>
       <li><b>수익률</b>: 1개월은 30일, 3개월은 91일, 1년은 365일 전(휴장일이면 그 직전 거래일) 종가와 비교했습니다. 종가는 수정주가가 아닙니다. 하루 변동이 가격제한폭(30%)을 넘은 날은 감자나 권리락으로 기준가가 바뀐 날로 보고, 그날을 사이에 둔 구간의 수익률은 비워 두었습니다.</li>
       <li><b>최근 거래 없음</b>: 최근 1년 가운데 종가가 60거래일 이상 연속으로 같고 최종 수집일 거래량이 0인 종목입니다. 주가 지수 계산에서 뺐습니다.</li>
@@ -135,7 +136,7 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   const lcTxt = [...LC.removed.map(x => `${esc(x.name)} 목록에서 빠짐(${dshort(x.missing_from)})`), ...LC.added.map(x => `${esc(x.name)} 새로 들어옴(${dshort(x.first_seen)})`)].join(', ');
   const tiles = [
     {lab: '상장 리츠', val: n0(S.n), unit: '개', det: `시가총액 합계 <b>${eok(S.mktcap_eok)}원</b>. ${secTxt}${lcTxt ? `<br>최근 90일 상장 목록 변동: ${lcTxt}` : ''}`},
-    {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>.<br>제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
+    {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 시가총액 가중 <b>${pct(S.index_cap_ret)}</b>. 단순평균에 배당 1년치를 더하면 <b>${pct(S.index_tr)}</b>.<br>오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>. 제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
     {lab: 'P/B 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배. 분모는 리츠정보시스템 NAV이며 ${S.nav_book_n}개 중 ${S.nav_book_same}개 종목에서 결산기 자본총계와 같은 장부가입니다.`},
     {lab: '시가배당률, 시가총액 가중', val: S.yield_wavg?.toFixed(2) ?? '자료 없음', unit: S.yield_n ? '%' : '', det: `최근 12개월 주당배당금 ÷ 현재가를 시가총액으로 가중 평균했습니다(${S.yield_n}개 종목). 중앙값은 <b>${S.yield_median?.toFixed(2) ?? '–'}%</b>, 최근 결산기 배당만 연환산한 현재 배당 수준의 중앙값은 <b>${S.run_median?.toFixed(2) ?? '–'}%</b>입니다. 주가가 많이 내린 소형 종목의 배당률이 높아 중앙값이 가중 평균보다 높습니다.${S.jump.length ? ` 직전 결산기의 1.5배가 넘는 배당이 최근 12개월에 들어간 종목: ${S.jump.map(esc).join(', ')}.` : ''}`},
     {lab: '국고채 10년', val: bond?.value.toFixed(3) ?? '자료 없음', unit: bond ? '%' : '', det: `${sharedBondDate ? '기준일' : '10년 기준일'} ${bond?.date ?? '자료 없음'}, 3년 ${rateText(S.rates.ktb3)}, 5년 ${rateText(S.rates.ktb5)}`},
@@ -152,7 +153,8 @@ function drawIndex(){
   const el = $('#idx-chart'), W = Math.max(320, el.clientWidth), H = 260, mL = 34, mR = 44, mT = 12, mB = 26;
   const iw = W - mL - mR, ih = H - mT - mB, xs = D.index.dates, ys = D.index.values, n = xs.length;
   if (!n) { el.textContent = "자료 없음"; return; }
-  const lo = Math.min(...ys, 100), hi = Math.max(...ys, 100), pad = (hi - lo) * .12 || 1;
+  const cs = (D.index.cap || []).length === n ? D.index.cap : [];
+  const lo = Math.min(...ys, ...cs, 100), hi = Math.max(...ys, ...cs, 100), pad = (hi - lo) * .12 || 1;
   const step = [1, 2, 5, 10, 20].find(s => (hi - lo + 2 * pad) / s <= 6) || 25;
   const y0 = Math.floor((lo - pad) / step) * step, y1 = Math.ceil((hi + pad) / step) * step;
   const X = i => mL + i / Math.max(1, n - 1) * iw, Y = v => mT + ih - (v - y0) / (y1 - y0) * ih;
@@ -161,6 +163,13 @@ function drawIndex(){
   let lastM = '';
   xs.forEach((d, i) => { const m = d.slice(0, 7); if (m !== lastM) { lastM = m; if ((+d.slice(5, 7)) % 2 === 0 && i > 8 && i < n - 8) g += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle">'${d.slice(2, 4)}.${d.slice(5, 7)}</text>`; } });
   const path = ys.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join('');
+  if (cs.length) {
+    const capPath = cs.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join('');
+    // 두 선의 끝 숫자가 겹치면 시가총액 가중 쪽을 14px 띄운다
+    const gap = Y(cs[n - 1]) - Y(ys[n - 1]), ty = Math.abs(gap) < 14 ? Y(ys[n - 1]) + (gap >= 0 ? 14 : -14) : Y(cs[n - 1]);
+    g += `<path d="${capPath}" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    g += `<circle cx="${X(n - 1)}" cy="${Y(cs[n - 1])}" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/><text class="tot" x="${X(n - 1) + 8}" y="${ty + 4}">${cs[n - 1].toFixed(1)}</text>`;
+  }
   g += `<path d="${path}" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
   g += `<circle cx="${X(n - 1)}" cy="${Y(ys[n - 1])}" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/><text class="tot" x="${X(n - 1) + 8}" y="${Y(ys[n - 1]) + 4}">${ys[n - 1].toFixed(1)}</text>`;
   g += `<g id="idx-cur" style="display:none"><line id="idx-vl" y1="${mT}" y2="${mT + ih}" stroke="var(--axis)" stroke-width="1"/><circle id="idx-dot" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/></g>`;
@@ -175,7 +184,7 @@ function drawIndex(){
     const point = pointer || {clientX: box.left + X(i) * box.width / W, clientY: box.top + Y(ys[i]) * box.height / H};
     cur.style.display = ''; el.querySelector('#idx-vl').setAttribute('x1', X(i)); el.querySelector('#idx-vl').setAttribute('x2', X(i));
     el.querySelector('#idx-dot').setAttribute('cx', X(i)); el.querySelector('#idx-dot').setAttribute('cy', Y(ys[i]));
-    showTip(`<b>${esc(xs[i])}</b><div class="tr"><span>지수</span><span>${ys[i].toFixed(1)}</span></div><div class="tr"><span>1년 전 대비</span><span>${pct(ys[i] - 100)}</span></div>`, point);
+    showTip(`<b>${esc(xs[i])}</b><div class="tr"><span><i class="dot" style="background:var(--s1)"></i>단순평균</span><span>${ys[i].toFixed(1)} (${pct(ys[i] - 100)})</span></div>` + (cs.length ? `<div class="tr"><span><i class="dot" style="background:var(--s2)"></i>시가총액 가중</span><span>${cs[i].toFixed(1)} (${pct(cs[i] - 100)})</span></div>` : ''), point);
   }
   function hide(){ cur.style.display = 'none'; hideTip(); }
   hit.addEventListener('mousemove', e => {
@@ -192,7 +201,9 @@ function drawIndex(){
     show(next[e.key]);
   };
   if (document.activeElement === el) show(i);
-  $('#idx-note').textContent = `${S.index_n}개 종목의 단순평균이고 배당은 넣지 않았습니다. 기간은 ${xs[0]}부터 ${xs[n - 1]}까지입니다.` + (D.index.excluded.length ? ` 기준가가 바뀌었거나 거래가 없던 ${D.index.excluded.join(', ')}는 뺐습니다.` : '');
+  $('#idx-legend').innerHTML = `<span><i class="dot" style="background:var(--s1)"></i>단순평균</span>` + (cs.length ? `<span><i class="dot" style="background:var(--s2)"></i>시가총액 가중</span>` : '');
+  $('#idx-note').textContent = `${S.index_n}개 종목의 주가만 본 지수이고 배당은 넣지 않았습니다. 기간은 ${xs[0]}부터 ${xs[n - 1]}까지입니다.`
+    + (S.index_tr == null ? '' : ` 최근 12개월 주당배당금을 더하면 1년 수익률은 단순평균 ${pct(S.index_tr)}입니다(배당을 확인한 ${S.index_tr_n}개 종목${S.index_tr_missing.length ? ', ' + S.index_tr_missing.join(', ') + ' 제외' : ''}).`) + (D.index.excluded.length ? ` 기준가가 바뀌었거나 거래가 없던 ${D.index.excluded.join(', ')}는 뺐습니다.` : '');
 }
 
 /* P/B 가로 막대 */
