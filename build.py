@@ -478,7 +478,7 @@ def maturity_rows(stocks, issuers, corporate_rate=None):
 
 
 def build_listed_data() -> dict:
-    """상장리츠 비교판 자료. P/NAV, P/FFO, 수익률, 지수는 여기서 계산한다."""
+    """상장리츠 비교판 자료. P/B(시가총액 ÷ 리츠정보시스템 NAV), P/FFO, 수익률, 지수는 여기서 계산한다."""
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
     dart = optional_data("dart.json")
     rates = rate_summary()
@@ -609,6 +609,13 @@ def build_listed_data() -> dict:
     sectors = sorted(({"name": s, "n": sum(1 for r in rows if r["sector"] == s),
                        "mktcap_eok": sum(r["mktcap_eok"] for r in rows if r["sector"] == s)} for s in sec_names),
                      key=lambda x: -x["mktcap_eok"])
+    # 리츠정보시스템 NAV가 결산기 재무상태표의 자본총계와 같은지(같으면 감정평가 차익이 빠진 장부가 기준)
+    nav_book = []
+    for r in snap["listed"]:
+        series = fin.get(str(r.get("reit_id")), {}).get("series", [])
+        same_end = next((x for x in series if x.get("end") == r.get("fiscal_end")), None)
+        if r.get("nav_mil") and same_end and same_end.get("equity") is not None:
+            nav_book.append((r["name"], abs(r["nav_mil"] * 1e6 - same_end["equity"]) < 1e6))
     pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]  # 1배 미만 개수와 최저, 최고는 화면에 보이는 값으로 센다
     pnav_raw = [v["pnav"] for v in raw.values() if v["pnav"] is not None]
     yields = [r["market_yield"] for r in rows if r["market_yield"] is not None]
@@ -627,6 +634,8 @@ def build_listed_data() -> dict:
             "index_ret": round(idx[-1] - 100, 1) if idx else None, "index_n": len(full) if idx else 0,
             "up_1y": sum(1 for v in changes if v > 0), "down_1y": sum(1 for v in changes if v < 0),
             "pnav_median": _median(pnav_raw, 2), "pnav_n": len(pnavs),
+            "nav_book_n": len(nav_book), "nav_book_same": sum(ok for _, ok in nav_book),
+            "nav_book_diff": [name for name, ok in nav_book if not ok],
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
             "yield_median": _median(yields, 2), "yield_n": len(yields),
             "rates": rates, "spread_median": _median(spreads, 2), "spread_n": len(spreads),
@@ -916,7 +925,7 @@ def main():
     ls = listed["summary"]
     print(f"[빌드] 상장리츠 {ls['n']}개, 시가총액 {ls['mktcap_eok']/10000:.2f}조원, "
           f"지수 1년 {ls['index_ret']}%({ls['index_n']}개), "
-          f"P/NAV 중앙값 {ls['pnav_median']}(1배 미만 {ls['pnav_below1']}/{ls['pnav_n']}), "
+          f"P/B 중앙값 {ls['pnav_median']}(1배 미만 {ls['pnav_below1']}/{ls['pnav_n']}), "
           f"연환산 배당률 중앙값 {ls['dvd_median']}% | listed.html {n_listed:,}자")
     fs = finance["summary"]
     print(f"[빌드] 재무 구조 {fs['n']}개, 부채/자산 중앙값 {fs['da_median']}%, "

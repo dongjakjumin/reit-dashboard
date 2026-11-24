@@ -29,12 +29,12 @@
 
 <section aria-labelledby="h-sum">
   <h2 id="h-sum">요약</h2>
-  <p class="sub">P/NAV는 현재 시가총액을 직전 결산기 NAV로 나눈 값입니다. P/FFO는 현재 시가총액을 연환산 FFO로 나눕니다. 수익률은 주가만 본 것이고 배당은 넣지 않았습니다.</p>
+  <p class="sub">P/B는 현재 시가총액을 직전 결산기 NAV로 나눈 값입니다. 리츠정보시스템 NAV는 대부분 장부상 자본총계와 같아 P/NAV 대신 P/B로 적었습니다. P/FFO는 현재 시가총액을 연환산 FFO로 나눕니다. 수익률은 주가만 본 것이고 배당은 넣지 않았습니다.</p>
   <div class="tiles" id="tiles"></div>
 </section>
 
 <section aria-labelledby="h-chart">
-  <h2 id="h-chart">주가 흐름과 P/NAV</h2>
+  <h2 id="h-chart">주가 흐름과 P/B</h2>
   <p class="sub" id="chart-sub"></p>
   <div class="two">
     <div class="card">
@@ -43,7 +43,7 @@
       <p class="note" id="idx-note"></p>
     </div>
     <div class="card">
-      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">P/NAV, 낮은 순</strong></div>
+      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">P/B, 낮은 순</strong></div>
       <div class="chart" id="pnav-chart"></div>
       <p class="note">세로 선은 1.0배(시가총액 = NAV)입니다. NAV는 직전 결산기 값이라 그 뒤의 자산 편입, 증자, 감정평가 변동은 들어 있지 않습니다.</p>
     </div>
@@ -71,9 +71,9 @@
       <li><b>국고채 대비</b>는 종목의 시가배당률에서 국고채 10년 금리를 뺀 값(%p)입니다. 금리 기준일은 <span id="bond-date">자료 없음</span>입니다.</li>
       <li>리츠 배당에는 자산 매각 대금 분배 같은 일회성 금액이 포함될 수 있습니다. 국고채와 달리 리츠는 원금과 배당을 보장하지 않습니다. 종목별 배당금은 DART 사업보고서에서 확인할 수 있습니다.</li>
       <li><b>배당수익률, 연환산 배당률</b>: 리츠정보시스템 정의를 그대로 옮겼습니다. 배당수익률은 배당액을 기초와 기말 납입자본금의 평균으로 나눈 값이고, 연환산 배당률은 여기에 365일을 곱하고 사업연도 일수로 나눈 값입니다. 주가로 나눈 시가배당률과는 다릅니다. 연환산 배당률이 0%인 원자료는 무배당과 자료 없음을 구별할 수 없어 화면에 ‘–’로 표시하고 CSV에서는 비웁니다.</li>
-      <li><b>NAV</b>는 리츠정보시스템에 공시된 값을 그대로 썼습니다. 감정평가액 반영 여부 등 산정 방법은 종목마다 다를 수 있어 투자보고서에서 확인해야 합니다.</li>
+      <li><b>NAV</b>는 리츠정보시스템에 공시된 값을 그대로 썼습니다. <span id="nav-book"></span>감정평가 차익을 반영한 NAV가 아니므로 시가총액 ÷ NAV를 P/NAV가 아니라 P/B(장부가 기준)로 적었습니다.</li>
       <li><b>FFO</b>: 당기순이익에 감가상각비를 더하고 평가손익, 매각손익, 손상차손과 환입, 판매손익을 조정한 값입니다(리츠정보시스템 정의). 결산기 한 번의 금액입니다.</li>
-      <li><b>P/NAV</b>: 현재 시가총액 ÷ 직전 결산기 NAV로 이 화면에서 계산했습니다. 리츠정보시스템 화면의 P/NAV는 결산월 말 주가(원)를 NAV 총액(백만원)으로 나눈 값으로 보여 배수로 읽기 어려워 쓰지 않았습니다.</li>
+      <li><b>P/B</b>: 현재 시가총액 ÷ 직전 결산기 NAV로 이 화면에서 계산했습니다. 리츠정보시스템 화면의 P/NAV는 결산월 말 주가(원)를 NAV 총액(백만원)으로 나눈 값으로 보여 배수로 읽기 어려워 쓰지 않았습니다.</li>
       <li><b>P/FFO</b>: 현재 시가총액 ÷ 연환산 FFO입니다. 직전 결산기 FFO에 365를 곱하고 해당 결산기의 일수로 나눕니다. 연속된 두 결산기 말일을 확인할 수 없으면 연환산 배당률과 배당수익률로 연간 결산 횟수를 추정합니다. FFO가 0 이하이거나 결산 횟수를 추정할 수 없으면 비워 두었습니다.</li>
       <li><b>WALE</b>: 임차인별 잔여 임대기간을 임대면적으로 가중평균한 값입니다(리츠정보시스템 정의, 단위 년).</li>
       <li><b>주가 지수</b>: 1년 전 주가를 100으로 놓고 종목별 지수를 구한 뒤 단순평균했습니다. 현재 상장된 종목으로 과거 1년을 다시 계산하므로 상장폐지 종목은 포함하지 않습니다. 시가총액 가중이 아니므로 거래소 리츠 지수와 다릅니다.</li>
@@ -133,14 +133,15 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   const tiles = [
     {lab: '상장 리츠', val: n0(S.n), unit: '개', det: `시가총액 합계 <b>${eok(S.mktcap_eok)}원</b>. ${secTxt}${lcTxt ? `<br>최근 90일 상장 목록 변동: ${lcTxt}` : ''}`},
     {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>.<br>제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
-    {lab: 'P/NAV 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배. NAV는 리츠정보시스템에 공시된 값을 그대로 썼습니다. 감정평가액 반영 여부 등 산정 방법은 종목마다 다를 수 있어 투자보고서에서 확인해야 합니다.`},
+    {lab: 'P/B 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배. 분모는 리츠정보시스템 NAV이며 ${S.nav_book_n}개 중 ${S.nav_book_same}개 종목에서 결산기 자본총계와 같은 장부가입니다.`},
     {lab: '시가배당률 중앙값', val: S.yield_median?.toFixed(2) ?? '자료 없음', unit: S.yield_n ? '%' : '', det: `DART에서 확인한 최근 결산기 말일까지 12개월 동안 끝난 결산기의 보통주 주당 현금배당금 합을 현재가로 나눕니다. ${S.yield_n}개 종목 기준입니다.`},
     {lab: '국고채 10년', val: bond?.value.toFixed(3) ?? '자료 없음', unit: bond ? '%' : '', det: `${sharedBondDate ? '기준일' : '10년 기준일'} ${bond?.date ?? '자료 없음'}, 3년 ${rateText(S.rates.ktb3)}, 5년 ${rateText(S.rates.ktb5)}`},
     {lab: '국고채 10년 대비 배당률 차이 중앙값', val: S.spread_n ? signed(S.spread_median) : '자료 없음', unit: S.spread_n ? '%p' : '', det: `시가배당률과 국고채 금리를 비교한 ${S.spread_n}개 종목 기준`},
     {lab: '연환산 배당률 중앙값', val: S.dvd_median?.toFixed(2) ?? '–', unit: '%', det: `납입자본금 기준, 직전 결산기. 배당이 있는 <b>${S.dvd_n}개</b> 종목 기준`},
   ];
   $('#tiles').innerHTML = tiles.map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
-  $('#chart-sub').textContent = !D.index.dates.length ? '주가 지수 자료 없음' : `주가 지수는 ${D.index.dates[0]}의 주가를 100으로 놓은 값입니다. P/NAV는 ${S.pnav_n}개 종목 가운데 ${S.pnav_below1}개가 1배 아래입니다.`;
+  $('#nav-book').textContent = S.nav_book_n ? `${S.nav_book_n}개 종목 중 ${S.nav_book_same}개는 결산기 재무상태표의 자본총계와 값이 같습니다${S.nav_book_diff.length ? `(다른 종목: ${S.nav_book_diff.join(', ')})` : ''}. ` : '';
+  $('#chart-sub').textContent = !D.index.dates.length ? '주가 지수 자료 없음' : `주가 지수는 ${D.index.dates[0]}의 주가를 100으로 놓은 값입니다. P/B는 ${S.pnav_n}개 종목 가운데 ${S.pnav_below1}개가 1배 아래입니다.`;
 })();
 
 /* 지수 선 그래프 */
@@ -191,7 +192,7 @@ function drawIndex(){
   $('#idx-note').textContent = `${S.index_n}개 종목의 단순평균이고 배당은 넣지 않았습니다. 기간은 ${xs[0]}부터 ${xs[n - 1]}까지입니다.` + (D.index.excluded.length ? ` 기준가가 바뀌었거나 거래가 없던 ${D.index.excluded.join(', ')}는 뺐습니다.` : '');
 }
 
-/* P/NAV 가로 막대 */
+/* P/B 가로 막대 */
 function drawPnav(){
   const el = $('#pnav-chart'), rows = R.filter(r => r.pnav != null).sort((a, b) => a.pnav - b.pnav || a.mktcap_eok / a.nav_eok - b.mktcap_eok / b.nav_eok);
   if (!rows.length) { el.textContent = "자료 없음"; return; }
@@ -205,9 +206,9 @@ function drawPnav(){
     g += `<text class="tot" x="${mL + w + 6}" y="${y + 12}">${r.pnav.toFixed(2)}</text>`;
     g += `<rect data-i="${i}" x="0" y="${y}" width="${W}" height="${rh}" fill="transparent"/>`;
   });
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="종목별 P/NAV">${g}</svg>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="종목별 P/B">${g}</svg>`;
   el.querySelectorAll('rect[data-i]').forEach(x => { const r = rows[+x.dataset.i];
-    x.addEventListener('mouseenter', e => showTip(`<b>${esc(r.name)}</b><div class="tr"><span>시가총액</span><span>${eok(r.mktcap_eok)}원</span></div><div class="tr"><span>NAV(${esc(r.fiscal_end)})</span><span>${eok(r.nav_eok)}원</span></div><div class="tr"><span>P/NAV</span><span>${r.pnav.toFixed(2)}배</span></div>`, e));
+    x.addEventListener('mouseenter', e => showTip(`<b>${esc(r.name)}</b><div class="tr"><span>시가총액</span><span>${eok(r.mktcap_eok)}원</span></div><div class="tr"><span>NAV(${esc(r.fiscal_end)})</span><span>${eok(r.nav_eok)}원</span></div><div class="tr"><span>P/B</span><span>${r.pnav.toFixed(2)}배</span></div>`, e));
     x.addEventListener('mousemove', moveTip); x.addEventListener('mouseleave', hideTip); });
 }
 drawIndex(); drawPnav();
@@ -229,7 +230,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
       (r.dividend_end ? `<span class="s">${esc(r.dividend_end.slice(2,7).replace('-', '.'))}까지</span>` : '')},
     {k: 'spread', t: '국고채 대비', f: r => r.spread == null ? '–' : signed(r.spread) + '%p'},
     {k: 'annual_dvd_pct', t: '연환산 배당률(납입자본금)', f: r => r.annual_dvd_pct != null ? r.annual_dvd_pct.toFixed(2) + '%' : '–'},
-    {k: 'pnav', t: 'P/NAV', f: r => r.pnav != null ? r.pnav.toFixed(2) + '배' : '–'},
+    {k: 'pnav', t: 'P/B', f: r => r.pnav != null ? r.pnav.toFixed(2) + '배' : '–'},
     {k: 'pffo', t: 'P/FFO(연환산)', f: r => r.pffo != null ? r.pffo.toFixed(1) + '배' : '–'},
     {k: 'wale_years', t: 'WALE', f: r => r.wale_years ? (Math.round(r.wale_years * 10) / 10).toFixed(1) + '년' : '–'},
     {k: 'fiscal_end', t: '직전 결산', txt: true},
@@ -258,7 +259,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   }
   $('#sec-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
     $('#sec-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); sec = b.dataset.v; draw(); });
-  $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','배당 집계 말일','국고채 대비(%p)','연환산 배당률(납입자본금, %)','NAV(억원)','P/NAV','FFO(억원, 결산기)','P/FFO(연환산)','WALE(년)','직전 결산','기수','상장일'],
+  $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','배당 집계 말일','국고채 대비(%p)','연환산 배당률(납입자본금, %)','NAV(억원)','P/B','FFO(억원, 결산기)','P/FFO(연환산)','WALE(년)','직전 결산','기수','상장일'],
     rows().map(x => [x.name, x.code, x.sector, x.price, x.chg_pct, x.mktcap_eok, x.ret_1m, x.ret_3m, x.ret_1y, x.dvd_pct, x.market_yield, x.dividend_end, x.spread, x.annual_dvd_pct, x.nav_eok, x.pnav, x.ffo_eok, x.pffo, x.wale_years, x.fiscal_end, x.fiscal_period, x.listed_date]));
   draw();
 })();

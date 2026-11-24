@@ -3,7 +3,7 @@
 1) 저장한 자료 안에서 합계가 서로 맞는지 본다(구분별 합 = 전체 등).
 2) 리츠정보시스템에 다시 물어 전체 건수가 저장분과 같은지 본다.
 3) 리츠 몇 건을 뽑아 상세 화면(다른 조회 경로)의 값과 목록 값을 대조한다.
-4) 상장리츠: 건수, 합계, P/NAV 재계산, 주가 이력, 첫 화면의 NAV와 FFO 대조.
+4) 상장리츠: 건수, 합계, P/B 재계산, 주가 이력, 첫 화면의 NAV와 FFO 대조.
 5) 재무 구조와 수시공시: 자산 = 부채 + 자본, 상세 화면 재조회, 공시 건수.
 6) 저장 파일에 전화번호 모양의 문자열이 없는지 본다.
 
@@ -351,7 +351,17 @@ def main() -> int:
     check(sum(x["mktcap_eok"] for x in ld["sectors"]) == ls["mktcap_eok"], "투자대상별 시가총액 합 = 전체 시가총액")
     check(sum(x["n"] for x in ld["sectors"]) == ls["n"], "투자대상별 종목 수 합 = 전체 종목 수")
     check(all(r["pnav"] is None or abs(r["mktcap_eok"] / r["nav_eok"] - r["pnav"]) < 0.006 for r in ld["rows"]),
-          "P/NAV = 시가총액 / NAV 재계산 일치")
+          "P/B = 시가총액 / NAV 재계산 일치")
+    # NAV가 결산기 자본총계와 같은 종목(장부가 기준): 재무 추이에서 결산일이 같은 줄의 자본총계와 견준다
+    fin_saved = build.optional_data("financials.json")
+    pairs = []
+    for r in listed:
+        rows_f = [x for x in fin_saved.get(str(r.get("reit_id")), {}).get("series", []) if x.get("end") == r.get("fiscal_end")]
+        if r.get("nav_mil") and rows_f and rows_f[0].get("equity") is not None:
+            pairs.append((r["name"], round(r["nav_mil"]) == round(rows_f[0]["equity"] / 1e6)))
+    check(ls.get("nav_book_n") == len(pairs) and ls.get("nav_book_same") == sum(ok for _, ok in pairs)
+          and ls.get("nav_book_diff") == [n for n, ok in pairs if not ok],
+          f"NAV와 결산기 자본총계가 같은 종목 {sum(ok for _, ok in pairs)}개 / {len(pairs)}개")
     # 상장 목록 변동: 빠진 종목은 지금 목록에 없고 그 전 원자료에는 있으며, 들어온 종목은 지금 목록에 있음
     lc = ld["list_changes"]
     now_codes = {str(r["code"]) for r in listed}
