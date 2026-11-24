@@ -310,7 +310,9 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   const A = D.sector_all; if (!A) return;
   const groups = [...D.sectors, A];
   const sub = (n, g) => n < g.n ? `<span class="s">${n}개 기준</span>` : '';
-  const cell = (v, n, g, f, c = '') => `<td class="num${c}">${v == null ? '–' : f(v) + sub(n, g)}</td>`;
+  // 값이 있는 종목이 1개뿐이면 그 종목 값이 투자대상 대표값처럼 읽히므로 비운다
+  const cell = (v, n, g, f, c = '') => v == null || n < 2 ? `<td class="num">–${n === 1 ? '<span class="s">값 있는 종목 1개</span>' : ''}</td>`
+    : `<td class="num${c}">${f(v)}${sub(n, g)}</td>`;
   $('#sec-tb').innerHTML = '<thead><tr><th>투자대상</th><th class="num">종목 수</th><th class="num">시가총액</th><th class="num">P/B</th><th class="num">P/NAV(감정가)</th><th class="num">시가배당률</th><th class="num">LTV(연결 우선)</th><th class="num">1년 수익률</th></tr></thead><tbody>' +
     groups.map(g => `<tr${g === A ? ' class="sum"' : ''}><td class="nw"><button type="button" class="sec-pick" data-v="${esc(g.name)}">${g === A ? '' : `<i class="dot" style="background:${secColor(g.name)}"></i>`}${esc(g.name)}</button></td>` +
       `<td class="num">${g.n}개</td>` +
@@ -321,7 +323,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
       cell(g.ltv_median, g.ltv_n, g, v => v.toFixed(1) + '%') +
       cell(g.ret_1y_median, g.ret_1y_n, g, pct, cls(g.ret_1y_median)) + '</tr>').join('') + '</tbody>';
   const ns = D.sectors.map(g => g.n), halted = R.filter(x => x.halted).map(x => x.name);
-  $('#sec-note').textContent = `투자대상마다 종목이 ${Math.min(...ns)}~${Math.max(...ns)}개뿐이라 한두 종목에 따라 중앙값이 크게 바뀝니다. 값이 없는 종목은 빼고 셌고, 일부 종목만 값이 있으면 칸 아래에 그 수를 적었습니다. P/B, P/NAV(감정가), 시가배당률은 위 요약과 같은 기준이고 LTV는 재무 화면과 같은 기준입니다.`
+  $('#sec-note').textContent = `투자대상마다 종목이 ${Math.min(...ns)}~${Math.max(...ns)}개뿐이라 한두 종목에 따라 중앙값이 크게 바뀝니다. 값이 없는 종목은 빼고 셌고, 일부 종목만 값이 있으면 칸 아래에 그 수를 적고, 1개뿐이면 비웠습니다. P/B, P/NAV(감정가), 시가배당률은 위 요약과 같은 기준이고 LTV는 재무 화면과 같은 기준입니다.`
     + (halted.length ? ` 1년 수익률은 주가 지수처럼 거래가 멈춘 종목(${halted.join(', ')})을 뺐습니다.` : '');
   const seg = () => [...$('#sec-seg').querySelectorAll('button')];
   const mark = () => { const v = seg().find(x => x.getAttribute('aria-pressed') === 'true')?.dataset.v;
