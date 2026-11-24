@@ -348,6 +348,17 @@ def main() -> int:
     check(sum(x["n"] for x in ld["sectors"]) == ls["n"], "투자대상별 종목 수 합 = 전체 종목 수")
     check(all(r["pnav"] is None or abs(r["mktcap_eok"] / r["nav_eok"] - r["pnav"]) < 0.006 for r in ld["rows"]),
           "P/NAV = 시가총액 / NAV 재계산 일치")
+    # 상장 목록 변동: 빠진 종목은 지금 목록에 없고 그 전 원자료에는 있으며, 들어온 종목은 지금 목록에 있음
+    lc = ld["list_changes"]
+    now_codes = {str(r["code"]) for r in listed}
+    seen_before = set()
+    for p in sorted((DATA / "snapshots").glob("*.json")):
+        if lc["from"] and lc["from"] <= p.stem < snap["date"]:
+            seen_before |= {str(x.get("code")) for x in json.loads(p.read_text(encoding="utf-8")).get("listed") or []}
+    check(all(x["code"] not in now_codes and x["code"] in seen_before for x in lc["removed"])
+          and {x["code"] for x in lc["removed"]} == (seen_before - now_codes if now_codes else set())
+          and all(x["code"] in now_codes for x in lc["added"]),
+          f"상장 목록 변동 재계산(빠짐 {len(lc['removed'])}개, 들어옴 {len(lc['added'])}개)")
     # 수익률을 가격 이력에서 따로 계산해 화면 값과 견준다(기준가가 바뀐 종목은 제외)
     from datetime import date as _date, timedelta as _td
     for row in [x for x in ld["rows"] if x["ret_1y"] is not None][:3]:

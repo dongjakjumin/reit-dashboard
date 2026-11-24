@@ -53,6 +53,7 @@
     <button class="btn" id="tb-csv">엑셀(CSV) 내려받기</button>
   </div>
   <div class="tw"><table id="tb"></table></div>
+  <p class="note" id="list-changes"></p>
 </section>
 
 <section aria-labelledby="h-read">
@@ -89,6 +90,7 @@ const D = /*__DATA__*/null;
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const n0 = v => Number(v || 0).toLocaleString('ko-KR');
+const dshort = s => s ? "'" + s.slice(2, 4) + '.' + s.slice(5, 7) + '.' + s.slice(8, 10) : '';
 const eok = v => { v = Math.round(v || 0); if (v >= 10000) { const j = Math.floor(v / 10000), r = v % 10000; return j + '조' + (r ? ' ' + n0(r) + '억' : ''); } return n0(v) + '억'; };
 const SECTOR_COLOR = {'주택':'var(--s1)','오피스':'var(--s2)','물류':'var(--s3)','복합형':'var(--s4)','리테일':'var(--s5)','호텔':'var(--s6)','기타':'var(--s0)'};
 const secColor = s => SECTOR_COLOR[s] || 'var(--s0)';
@@ -119,8 +121,10 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
 /* 요약 */
 (function(){
   const secTxt = D.sectors.slice(0, 3).map(s => `${esc(s.name)} <b>${eok(s.mktcap_eok)}</b>`).join(', ');
+  const LC = D.list_changes || {removed: [], added: []};
+  const lcTxt = [...LC.removed.map(x => `${esc(x.name)} 목록에서 빠짐(${dshort(x.missing_from)})`), ...LC.added.map(x => `${esc(x.name)} 새로 들어옴(${dshort(x.first_seen)})`)].join(', ');
   const tiles = [
-    {lab: '상장 리츠', val: n0(S.n), unit: '개', det: `시가총액 합계 <b>${eok(S.mktcap_eok)}원</b>. ${secTxt}`},
+    {lab: '상장 리츠', val: n0(S.n), unit: '개', det: `시가총액 합계 <b>${eok(S.mktcap_eok)}원</b>. ${secTxt}${lcTxt ? `<br>최근 90일 상장 목록 변동: ${lcTxt}` : ''}`},
     {lab: '주가 지수, 최근 1년', val: S.index_ret == null ? '–' : (S.index_ret > 0 ? '▲ ' : S.index_ret < 0 ? '▼ ' : '') + Math.abs(S.index_ret).toFixed(1), unit: '%', det: `${S.index_n}개 종목 단순평균, 배당 제외. 오른 종목 <b>${S.up_1y}개</b>, 내린 종목 <b>${S.down_1y}개</b>.<br>제외 ${S.n - S.index_n}개 종목${Object.entries(D.index.exclusion_counts).map(([why,n]) => `, ${why} ${n}개`).join('')}`},
     {lab: 'P/NAV 중앙값', val: S.pnav_median?.toFixed(2) ?? '–', unit: '배', det: `1배 미만 <b>${S.pnav_below1}개</b>, 1배 이상 <b>${S.pnav_n - S.pnav_below1}개</b>. 최저 ${S.pnav_min?.toFixed(2) ?? '–'}배, 최고 ${S.pnav_max?.toFixed(2) ?? '–'}배. NAV는 리츠정보시스템에 공시된 값을 그대로 썼습니다. 감정평가액 반영 여부 등 산정 방법은 종목마다 다를 수 있어 투자보고서에서 확인해야 합니다.`},
     {lab: '시가배당률 중앙값', val: S.yield_median?.toFixed(2) ?? '자료 없음', unit: S.yield_n ? '%' : '', det: `DART에서 확인한 최근 결산기 말일까지 12개월 동안 끝난 결산기의 보통주 주당 현금배당금 합을 현재가로 나눕니다. ${S.yield_n}개 종목 기준입니다.`},
@@ -250,6 +254,14 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','배당 집계 말일','국고채 대비(%p)','연환산 배당률(납입자본금, %)','NAV(억원)','P/NAV','FFO(억원, 결산기)','P/FFO(연환산)','WALE(년)','직전 결산','기수','상장일'],
     rows().map(x => [x.name, x.code, x.sector, x.price, x.chg_pct, x.mktcap_eok, x.ret_1m, x.ret_3m, x.ret_1y, x.dvd_pct, x.market_yield, x.dividend_end, x.spread, x.annual_dvd_pct, x.nav_eok, x.pnav, x.ffo_eok, x.pffo, x.wale_years, x.fiscal_end, x.fiscal_period, x.listed_date]));
   draw();
+})();
+
+/* 상장 목록 변동(날짜별 수집 원자료 기준) */
+(function(){
+  const LC = D.list_changes || {removed: [], added: []};
+  const parts = [...LC.removed.map(x => `${x.name}(${x.code}): ${x.missing_from || '다음 수집'} 수집부터 리츠정보시스템 상장리츠 목록에 없음(마지막 확인 ${x.last_seen}).`),
+                 ...LC.added.map(x => `${x.name}(${x.code}): ${x.first_seen} 수집부터 목록에 있음.`)];
+  $('#list-changes').textContent = parts.length ? `상장 목록 변동(최근 90일 수집 기록): ${parts.join(' ')} 목록에서 빠진 종목은 이 표와 주가 지수에 넣지 않았습니다. 상장폐지 여부와 사유는 거래소 공시에서 확인해야 합니다.` : '';
 })();
 </script>
 </body>

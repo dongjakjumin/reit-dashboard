@@ -561,6 +561,39 @@ def build_listed_data() -> dict:
     common = [day for day in all_days if all(day in window[c] for c in full)] if full else []
     idx = [round(sum(window[c][x] / window[c][common[0]] for c in full) / len(full) * 100, 2) for x in common]
 
+    # 상장 목록 변동: 최근 90일의 날짜별 수집 원자료에서 종목이 처음과 마지막으로 보인 날.
+    # 그날 상장 목록을 받지 못한 원자료(빈 목록)는 건너뛴다.
+    list_from = (d(snap["date"]) - timedelta(days=90)).isoformat()
+    first_seen, last_seen, seen_name = {}, {}, {}
+    snap_days = []
+    for p in sorted((DATA / "snapshots").glob("*.json")):
+        day = safe_date(p.stem)
+        if not day or not (list_from <= day <= snap["date"]):
+            continue
+        try:
+            day_listed = json.loads(p.read_text(encoding="utf-8")).get("listed") or []
+        except (OSError, ValueError):
+            continue
+        if not day_listed:
+            continue
+        snap_days.append(day)
+        for x in day_listed:
+            code = str(x.get("code") or "")
+            if code:
+                first_seen.setdefault(code, day)
+                last_seen[code] = day
+                seen_name[code] = x.get("name") or code
+    current = {str(r["code"]) for r in snap["listed"]}
+    list_changes = {"from": snap_days[0] if snap_days else None, "removed": [], "added": []}
+    if current and snap_days:
+        later = lambda day: min((x for x in snap_days if x > day), default=None)
+        list_changes["removed"] = sorted(({"code": c, "name": seen_name[c], "last_seen": last_seen[c],
+                                           "missing_from": later(last_seen[c])}
+                                          for c in last_seen if c not in current), key=lambda x: x["last_seen"], reverse=True)
+        list_changes["added"] = sorted(({"code": c, "name": seen_name[c], "first_seen": first_seen[c]}
+                                        for c in current if first_seen.get(c, snap_days[0]) > snap_days[0]),
+                                       key=lambda x: x["first_seen"], reverse=True)
+
     sec_names = sorted({r["sector"] for r in rows})
     sectors = sorted(({"name": s, "n": sum(1 for r in rows if r["sector"] == s),
                        "mktcap_eok": sum(r["mktcap_eok"] for r in rows if r["sector"] == s)} for s in sec_names),
@@ -588,7 +621,7 @@ def build_listed_data() -> dict:
             "dvd_median": _median(dvds, 2), "dvd_n": len(dvds),
         },
         "index": {"dates": common, "values": idx, "excluded": sorted(skip.values()), "exclusion_counts": excluded},
-        "sectors": sectors, "rows": rows,
+        "sectors": sectors, "rows": rows, "list_changes": list_changes,
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
     }
 
