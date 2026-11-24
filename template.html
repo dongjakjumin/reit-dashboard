@@ -255,7 +255,7 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   const diff = S.new12 - S.prev12, arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '–';
   const ft = S.filings_by_type, ftxt = Object.entries(ft).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} <b>${v}</b>`).join(', ');
   const tiles = [
-    {lab: '운영 중 리츠', val: n0(S.n_reits), unit: '개', det: `자산총계 합계 <b>${jo(S.assets_eok)}조원</b>, 관리주체 <b>${S.n_amc}곳</b>(자기관리 ${S.self_managed}곳 포함), 상장 <b>${S.listed_n}개</b>`},
+    {lab: '운영 중 리츠', val: n0(S.n_reits), unit: '개', det: `자산총계 합계 <b>${jo(S.assets_eok)}조원</b>(모리츠 ${S.mo_n}개 ${jo(S.mo_assets_eok)}조원 포함, 자리츠 지분과 겹칠 수 있음), 관리주체 <b>${S.n_amc}곳</b>(자기관리 ${S.self_managed}곳 포함), 상장 <b>${S.listed_n}개</b>`},
     {lab: '최근 12개월 신규', val: n0(S.new12), unit: '건', det: `현재 운영 목록 기준입니다. 직전 12개월 ${S.prev12}건 대비 ${arrow} ${Math.abs(diff)}건. 인가 <b>${S.new12_by_kind['인가']}</b>, 등록 <b>${S.new12_by_kind['등록']}</b>, 신고 <b>${S.new12_by_kind['신고']}</b>`},
     {lab: '프로젝트리츠(설립신고)', val: n0(S.proj_n), unit: '건', det: `첫 신고 ${dshort(S.proj_first) || '–'}, 자산관리회사 <b>${S.proj_amc_n}곳</b>, 자산총계 합계 <b>${eok(S.proj_assets_eok)}원</b>`},
     {lab: '접수 중인 신청', val: n0(S.filings_n), unit: '건', det: ftxt},
@@ -395,7 +395,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 /* 프로젝트리츠 */
 (function(){
   const rows = D.reits.filter(r => r.project === 'Y');
-  $('#proj-sub').textContent = `운영 중인 프로젝트리츠는 ${cases(rows.length)}입니다. 설립신고 후 인가나 등록을 받은 리츠도 포함합니다. 신고 직후에는 원문에 자산총계가 없어 0으로 기록된 경우가 많습니다. 목록에는 이 값을 ‘–’로 표시합니다.`;
+  $('#proj-sub').textContent = `운영 중인 프로젝트리츠는 ${cases(rows.length)}이고, 모리츠와 자리츠를 한 사업으로 묶으면 ${S.proj_biz_n}개 사업입니다. 설립신고 후 인가나 등록을 받은 리츠도 포함합니다. 신고 직후에는 원문에 자산총계가 없어 0으로 기록된 경우가 많아 목록에 ‘–’로 표시했습니다(${cases(S.proj_zero)}). 자산총계가 60억원 이하인 ${cases(S.proj_early)}은 설립 자본금(50억원 이상, 법 26조의4 ① 2호) 수준이라 ‘초기’로 적었습니다.`;
   const companies = D.project.companies.map(a => ({...a, mix: Object.entries(a.sectors).map(([s,n]) => s + ' ' + cases(n)).join(', ')}));
   comparisonTable('#project-amc', companies, [['name','관리주체'], ['n','프로젝트리츠',cases], ['total','전체 운영 리츠',cases],
     ['mix','투자대상 분포'], ['latest','최근 신고일']], 'n', 'name');
@@ -411,7 +411,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   comparisonTable('#project-pending', pending, [['date','접수일'], ['project_name','사업 이름'], ['applicant','신청인'],
     ['capital_eok','설립자본금',v => v == null ? '–' : v.toLocaleString('ko-KR', {maximumFractionDigits:1}) + '억원'], ['status','진행상태']], 'date', 'applicant');
   $('#proj-table').innerHTML = `<thead><tr><th>신고일</th><th>리츠</th><th>투자대상</th><th>자산관리회사</th><th class="num">자산총계</th></tr></thead><tbody>` +
-    rows.map(r => `<tr class="${rowClass(r.amc_s)}"><td class="nw">${r.date}</td><td>${esc(r.name_s)}</td><td class="nw"><i class="dot" style="background:${SECTOR_COLOR[r.sector]}"></i>${esc(r.sector)}</td><td>${esc(r.amc_s)}</td><td class="num">${r.assets_eok ? eok(r.assets_eok) : '–'}</td></tr>`).join('') + '</tbody>';
+    rows.map(r => `<tr class="${rowClass(r.amc_s)}"><td class="nw">${r.date}</td><td>${esc(r.name_s)}${(D.children[r.id] || []).map(c => `<span class="s">이름이 이어지는 자리츠 ${esc(c.req_type.replace('프로젝트리츠 ', ''))} 처리 중(${c.date} 접수): ${esc(c.project_name || c.name_s)}</span>`).join('')}</td><td class="nw"><i class="dot" style="background:${SECTOR_COLOR[r.sector]}"></i>${esc(r.sector)}</td><td>${esc(r.amc_s)}</td><td class="num">${r.assets_eok ? eok(r.assets_eok) : '–'}${r.assets_eok && r.assets_eok <= 60 ? '<span class="s">초기</span>' : ''}</td></tr>`).join('') + '</tbody>';
   foldTable($('#proj-table'));
   $('#proj-csv').onclick = () => csv('프로젝트리츠_목록', ['신고일','리츠','투자대상','자산관리회사','자산총계(억원)'], rows.map(r => [r.date, r.name_s, r.sector, r.amc_s, r.assets_eok]));
 })();

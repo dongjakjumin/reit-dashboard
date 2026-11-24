@@ -307,6 +307,22 @@ def main() -> int:
     check(all(x["result_date"] is None for x in d["done"] if x["is_change"]),
           "변경 신청에는 인가일을 결과로 붙이지 않음")
     check(len({r["id"] for r in reits}) == len(reits), "리츠 번호 중복 없음")
+    # 프로젝트리츠 사업 수(모리츠와 자리츠를 한 사업으로), 초기와 자산 0원 건수, 모리츠 자산
+    proj_rows = [r for r in d["reits"] if r["project"] == "Y"]
+    bases = {re.sub(r"\s(?:모|자)리츠$", "", r["name_s"]) for r in proj_rows}
+    mo_rows = [r for r in d["reits"] if r["name_s"].endswith(" 모리츠")]
+    check(d["summary"]["proj_biz_n"] == len(bases) <= len(proj_rows)
+          and d["summary"]["proj_early"] == sum(1 for r in proj_rows if 0 < r["assets_eok"] <= 60)
+          and d["summary"]["proj_zero"] == sum(1 for r in proj_rows if not r["assets_eok"])
+          and d["summary"]["mo_n"] == len(mo_rows) and d["summary"]["mo_assets_eok"] == sum(r["assets_eok"] for r in mo_rows),
+          f"프로젝트리츠 {len(proj_rows)}건 = {len(bases)}개 사업, 초기 {d['summary']['proj_early']}건, 모리츠 {len(mo_rows)}개")
+    by_id = {str(r["id"]): r for r in d["reits"]}
+    pending_names = {f["name_s"]: f for f in d["filings"]}
+    check(all(c["name_s"] in pending_names and c["name_s"].endswith("자리츠")
+              and pending_names[c["name_s"]]["applicant"] == by_id[rid]["amc_s"]
+              and c["name_s"].startswith(re.sub(r"(?:\s모리츠|프로젝트리츠|리츠)$", "", by_id[rid]["name_s"]))
+              for rid, kids in d["children"].items() for c in kids),
+          f"이름이 이어지는 자리츠 신청 {sum(len(k) for k in d['children'].values())}건: 처리 중 목록, 신청인, 이름 앞부분 일치")
 
     # 관리주체 상세의 최근 90일 주요 공시: 재무 화면의 주요 공시와 같은 묶음을 관리주체별로 나눈 것
     amc_names = {a["name"] for a in d["amc"]}

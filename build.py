@@ -106,6 +106,30 @@ def collection_changes(previous, latest, filings, reits):
     return {"previous": previous, "rows": changes}
 
 
+def pair_base(name_s: str) -> str:
+    """모리츠와 자리츠는 이름 끝(모리츠, 자리츠)만 다르면 한 사업으로 센다."""
+    return re.sub(r"\s(?:모|자)리츠$", "", name_s)
+
+
+def child_filings(reits: list, frows: list) -> dict:
+    """처리 중인 자리츠 설립신고, 인가, 등록 신청을 이름이 이어지는 운영 리츠(같은 자산관리회사)에 붙인다.
+
+    예: 운영 중인 '코람코개발앵커프로젝트리츠'와 접수 중인 '코람코개발앵커제1호프로젝트 자리츠'.
+    이름 앞부분이 5자 이상 같고 신청인이 그 리츠의 자산관리회사일 때만 잇는다."""
+    out = defaultdict(list)
+    for f in frows:
+        if f["group"] != "신규" or not f["name_s"].endswith("자리츠"):
+            continue
+        hits = []
+        for r in reits:
+            base = re.sub(r"(?:\s모리츠|프로젝트리츠|리츠)$", "", r["name_s"])
+            if len(base) >= 5 and f["name_s"].startswith(base) and r["amc_s"] == f["applicant"] and r["name_s"] != f["name_s"]:
+                hits.append((len(base), r["id"]))
+        if hits:
+            out[str(max(hits)[1])].append({k: f[k] for k in ("date", "name_s", "project_name", "req_type", "status")})
+    return dict(out)
+
+
 def project_comparison(proj, by_amc, today):
     groups = defaultdict(list)
     sectors = Counter()
@@ -164,6 +188,12 @@ def build_data() -> dict:
         "new12_by_kind": {k: sum(1 for r in new12 if r["kind"] == k) for k in KINDS},
         "new12_by_sector": {s: sum(1 for r in new12 if r["sector"] == s) for s in SECTORS},
         "proj_n": len(proj),
+        "proj_biz_n": len({pair_base(r["name_s"]) for r in proj}),
+        # 설립 자본금은 50억원 이상(법 26조의4 ① 2호). 자산총계가 60억원 이하이면 사업 초기로 본다
+        "proj_early": sum(1 for r in proj if 0 < r["assets_eok"] <= 60),
+        "proj_zero": sum(1 for r in proj if not r["assets_eok"]),
+        "mo_n": sum(1 for r in reits if r["name_s"].endswith(" 모리츠")),
+        "mo_assets_eok": sum(r["assets_eok"] for r in reits if r["name_s"].endswith(" 모리츠")),
         "proj_assets_eok": sum(r["assets_eok"] for r in proj),
         "proj_first": min(r["date"] for r in proj) if proj else None,
         "proj_amc_n": len({r["amc"] for r in proj}),
@@ -345,7 +375,7 @@ def build_data() -> dict:
         "changes": collection_changes(previous, snap["date"], flog, rlog),
         "applicants": sorted(applicants.values(), key=lambda a: (-a["recent"], -a["long"], a["name"])),
         "project": project_comparison(proj, by_amc, today),
-        "events": events, "reits": slim, "po_planned": po_planned,
+        "events": events, "reits": slim, "po_planned": po_planned, "children": child_filings(reits, frows),
         "kinds": KINDS, "sectors": SECTORS,
         "highlight_amc": cfg.get("highlight_amc", ""),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
