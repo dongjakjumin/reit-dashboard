@@ -122,7 +122,7 @@ function csv(name, head, rows){
   a.download = name + '_' + D.date + '.csv'; document.body.appendChild(a); a.click(); a.remove();
 }
 
-$('#stamp').textContent = `최근 종가 기준일 ${D.price_as_of ?? "자료 없음"} · 최종 수집 ${D.collected_at} · 영업일 오전 10시 갱신`;
+$('#stamp').textContent = `최근 종가 기준일 ${D.price_as_of ?? "자료 없음"} · 최종 수집 ${D.collected_at} · 영업일마다 한 번 갱신`;
 $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' (' + D.contact + ')' : ''}` : '';
 
 /* 요약 */

@@ -94,12 +94,25 @@ def collect() -> dict:
     # 성과지표와 WALE을 종목코드, 종목명으로 붙인다
     metrics = {str(m.get("stockCd")): m for m in reits_api.listed_metrics()}
     wale = {str(w.get("stockNm")).strip(): _num(w.get("waleThstrm")) for w in reits_api.listed_wale()}
+    # 원문이 빈 목록을 돌려준 날에는 전날 값을 이어 쓴다. 빈 값으로 덮으면 재무 화면과 WALE 칸이 통째로 빈다.
+    prev = {str(r.get("code")): r for r in _load(DATA / "latest.json", {}).get("listed", [])}
+    matched = sum(str(r["code"]) in metrics for r in listed)
+    keep_metrics = matched < 0.8 * len(listed)
+    keep_wale = all(v is None for v in wale.values())
+    if keep_metrics:
+        print(f"[수집] 경고 성과지표가 상장 {len(listed)}종목 중 {matched}종목에만 있어 전날 값을 이어 씀")
+    if keep_wale:
+        print("[수집] 경고 WALE 응답이 비어 전날 값을 이어 씀")
     for row in listed:
+        old = prev.get(str(row["code"]), {})
         m = metrics.get(str(row["code"]))
-        extra = _pick(m, METRIC_KEEP, ("reit_id", "fiscal_price", "dvd_pct", "annual_dvd_pct",
-                                       "nav_mil", "ffo_mil")) if m else {v: None for v in METRIC_KEEP.values()}
+        if keep_metrics:
+            extra = {v: old.get(v) for v in METRIC_KEEP.values()}
+        else:
+            extra = _pick(m, METRIC_KEEP, ("reit_id", "fiscal_price", "dvd_pct", "annual_dvd_pct",
+                                           "nav_mil", "ffo_mil")) if m else {v: None for v in METRIC_KEEP.values()}
         row.update(extra)
-        row["wale_years"] = wale.get(row["name"])
+        row["wale_years"] = old.get("wale_years") if keep_wale else wale.get(row["name"])
     if len(reits) < 300:
         raise RuntimeError(f"리츠 목록이 {len(reits)}건뿐임. 수집 이상으로 보고 저장하지 않음")
     if not filings or not listed:
@@ -201,7 +214,9 @@ def update_prices(snap: dict):
         code = str(row["code"])
         hist = prices.get(code, {})
         if consecutive_failures < MAX_CONSECUTIVE_PRICE_FAILURES:
-            start = d_from if len(hist) < 150 else max(hist).replace("-", "")
+            # 마지막 날짜 10일 전부터 다시 받아, 하루 빠졌거나 잘못 들어간 최근 종가를 이력 값으로 맞춘다
+            start = d_from if len(hist) < 150 else (
+                datetime.strptime(max(hist), "%Y-%m-%d") - timedelta(days=10)).strftime("%Y%m%d")
             try:
                 history = reits_api.price_history(code, start, d_to)
             except Exception as exc:
@@ -218,9 +233,8 @@ def update_prices(snap: dict):
                 prices[code] = hist
         else:
             skipped += 1
-        stamp = row.get("as_of") or ""
-        if stamp[:10] == snap["date"] and "15:40" <= stamp[11:16] <= "23:59" and row.get("price"):
-            hist[snap["date"]] = row["price"]
+        # 그날 종가는 넣지 않는다. 목록의 현재가는 정규장이 끝난 뒤에도 바뀌어(시간외 거래)
+        # 늦게 돈 날 확정 전 값이 종가로 들어갔다. 그날 값은 다음 수집 때 이력에서 받는다.
         if hist or code in prices:
             prices[code] = dict(sorted(hist.items()))
     _save(path, prices)
@@ -232,30 +246,42 @@ def update_prices(snap: dict):
 
 
 FIN_REFRESH_DAYS = 7      # 상장리츠 재무 자료는 일주일에 한 번만 다시 받는다
+FIN_PER_RUN = 6           # 한 번에 다시 받는 종목 수. 주 1회 재조회가 하루에 몰리지 않게 나눈다
 DISCLOSURE_DAYS = 120     # 수시공시는 최근 120일을 받아 누적한다
 # 임원, 자산운용전문인력 변경처럼 개인 이름이 주 내용인 공시는 내용 문구를 저장하지 않는다
 DISCLOSURE_NO_TEXT = {"RT02100003", "RT02100015"}
 
 
 def update_financials(snap: dict):
-    """상장리츠의 자산, 부채, 자본과 결산기별 추이. 요청 수를 줄이려고 주 1회만 갱신."""
+    """상장리츠의 자산, 부채, 자본과 결산기별 추이. 요청 수를 줄이려고 종목마다 주 1회만 갱신.
+    새 종목, 결산기가 바뀐 종목, 오래된 종목 순으로 한 번에 FIN_PER_RUN개까지 받는다.
+    빈 응답이나 조회 실패는 이전 자료를 그대로 두고 다음 수집 때 다시 받는다."""
     path = DATA / "financials.json"
     fin = _load(path, {})
     today = datetime.strptime(snap["date"], "%Y-%m-%d")
-    fetched = 0
+    due = []
     for row in snap["listed"]:
-        rid = row.get("reit_id")
-        if not rid:
+        if not row.get("reit_id"):
             continue
-        key = str(rid)
-        old = fin.get(key)
-        fresh = old and (today - datetime.strptime(old["fetched"], "%Y-%m-%d")).days < FIN_REFRESH_DAYS \
-            and old.get("fiscal_end") == row.get("fiscal_end")
-        if fresh:
+        old = fin.get(str(row["reit_id"]))
+        if not old:
+            due.append((0, "", row))
+        elif old.get("fiscal_end") != row.get("fiscal_end"):
+            due.append((1, old["fetched"], row))
+        elif (today - datetime.strptime(old["fetched"], "%Y-%m-%d")).days >= FIN_REFRESH_DAYS:
+            due.append((2, old["fetched"], row))
+    due.sort(key=lambda z: (z[0], z[1]))
+    fetched = failures = 0
+    for _, _, row in due[:FIN_PER_RUN]:
+        rid = row["reit_id"]
+        try:
+            b = reits_api.reit_basic(rid)
+            bal = reits_api.reit_balance_series(rid)
+            inc = {x.get("stacntRelmDe"): x for x in reits_api.reit_income_series(rid)}
+        except Exception as exc:
+            failures += 1
+            print(f"[수집] 경고 재무 {row['code']}: {exc}")
             continue
-        b = reits_api.reit_basic(rid)
-        bal = reits_api.reit_balance_series(rid)
-        inc = {x.get("stacntRelmDe"): x for x in reits_api.reit_income_series(rid)}
         series = []
         for x in bal:
             end = x.get("stacntRelmDe")
@@ -266,7 +292,7 @@ def update_financials(snap: dict):
                            "equity": _num(x.get("caplSum")),
                            "revenue": _num(i.get("ernSum")), "op_profit": _num(i.get("profitSum"))})
         series.sort(key=lambda z: z["end"] or "")
-        fin[key] = {
+        record = {
             "fetched": snap["date"], "code": row["code"], "name": row["name"],
             "fiscal_end": row.get("fiscal_end"),
             "assets": _num(b.get("totAssets")), "debt": _num(b.get("cmpnyDebt")),
@@ -275,8 +301,15 @@ def update_financials(snap: dict):
             "base_year": b.get("baseYear"), "period": b.get("psacntNo"),
             "series": series,
         }
+        if None in (record["assets"], record["debt"], record["equity"]) or not series:
+            failures += 1
+            print(f"[수집] 경고 재무 {row['code']}: 빈 응답이라 이전 자료를 둠")
+            continue
+        fin[str(rid)] = record
         fetched += 1
     _save(path, fin, pretty=True)
+    if failures:
+        raise RuntimeError(f"재무 조회 실패 {failures}종목(이전 자료 유지)")
     return fetched
 
 

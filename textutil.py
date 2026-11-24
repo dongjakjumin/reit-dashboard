@@ -30,26 +30,55 @@ def mask_person(name: str | None) -> str | None:
 
 
 # 공시 본문의 임원 선임, 사임 문구에서 사람 이름을 지운다. 임원 변경 공시는 본문을 저장하지 않는 원칙을
-# '기타' 공시에 섞여 들어온 같은 내용에도 적용한다. 예: "사내이사 홍길동 선임", "(사임) 대표이사 홍길동, 이사 김철수"
+# '기타' 공시에 섞여 들어온 같은 내용에도 적용한다. 예: "사내이사 홍길동 선임", "(사임) 대표이사 홍길동, 이사 김철수",
+# "사내이사 홍길동, 김철수 선임", "대표이사 홍길동 외 1인 선임", "이사 선임: 홍길동", "사내이사 홍길동 선임 및 김철수 사임"
 OFFICER_LABEL = "(이름 생략)"
-_TITLES = r"(?:대표이사|사내이사|사외이사|기타비상무이사|비상무이사|상근감사|감사위원|감사|이사)"
-_ACTIONS = r"(?:재선임|선임|사임|해임|중임|연임|퇴임|취임)"
-_NOT_NAMES = {"보수", "선임", "사임", "해임", "중임", "연임", "퇴임", "취임", "재선임", "후보", "전원", "변경",
-              "승인", "신규", "선출", "등", "및", "각", "선임의", "사임의", "해임의"}
-OFFICER_NAME_RE = re.compile(rf"({_TITLES})\s+([가-힣]{{2,4}})(?=\s*(?:,|\(|{_ACTIONS}|$)|\s+{_TITLES}|\s+-)")
+_TITLES = (r"(?:대표이사|사내이사|사외이사|기타비상무이사|비상무이사|감독이사|법인이사|집행임원|상근감사|감사위원"
+           r"|청산인|감사|이사)")
+_PERSON_ACTIONS = r"(?:재선임|선임|사임|해임|중임|연임|퇴임|취임|선출|임기\s?만료)"
+_ACTIONS = rf"(?:{_PERSON_ACTIONS}|변경\s?전|변경\s?후)"
+_NOT_NAMES = {"보수", "선임", "사임", "해임", "중임", "연임", "퇴임", "취임", "재선임", "후보", "후보자", "전원", "변경",
+              "승인", "신규", "선출", "등", "및", "각", "선임의", "사임의", "해임의", "임원", "후임", "신임", "이사회",
+              "감사인", "위원", "위원장", "의장", "대표", "상근", "비상근", "추가", "일괄", "동시", "임기", "만료",
+              "이름", "생략", "취소", "결의", "예정", "완료", "현재", "기존"}
+_NAME = r"[가-힣]{2,4}"
+_SEP = r"\s*(?:,|·|ㆍ|/|및)\s*"
+_END = rf"(?=\s*(?:,|\(|\)|외\s*\d|{_ACTIONS}|$)|\s+{_TITLES}|\s+-|\s*;)"
+# 직함 바로 뒤의 이름(여럿이면 쉼표, 가운뎃점, '및'으로 이어진 것까지). 왼쪽 경계를 두어 '외부감사'의 '감사'는 잡지 않는다.
+_AFTER_TITLE = re.compile(rf"(?<![가-힣]){_TITLES}\s*[:：]?\s*({_NAME}(?:{_SEP}{_NAME})*){_END}")
+# "선임: 홍길동"처럼 동작 뒤 쌍점에 이어진 이름
+_AFTER_COLON = re.compile(rf"{_ACTIONS}\s*[:：]\s*({_NAME}(?:{_SEP}{_NAME})*)(?![가-힣])")
+# "및 김철수 사임"처럼 직함 없이 동작 바로 앞에 온 이름
+_BEFORE_ACTION = re.compile(rf"(?<![가-힣])({_NAME})(?=\s*{_PERSON_ACTIONS})")
+
+
+def _is_name(token: str) -> bool:
+    return len(token) >= 2 and token not in _NOT_NAMES and not re.fullmatch(_TITLES, token)
+
+
+def _officer_spans(text: str | None) -> list[tuple[int, int]]:
+    """임원 문구 안에서 이름으로 보이는 곳의 (시작, 끝). 직함과 동작 낱말이 함께 있는 글만 본다."""
+    if not text or not re.search(_ACTIONS, text) or not re.search(_TITLES, text):
+        return []
+    spans = set()
+    for pattern in (_AFTER_TITLE, _AFTER_COLON, _BEFORE_ACTION):
+        for m in pattern.finditer(text):
+            for t in re.finditer(r"[가-힣]+", m.group(1)):
+                if _is_name(t.group(0)):
+                    spans.add((m.start(1) + t.start(), m.start(1) + t.end()))
+    return sorted(spans)
 
 
 def mask_officer_names(text: str | None) -> str | None:
-    if not text or not re.search(_ACTIONS, text):
-        return text
-    return OFFICER_NAME_RE.sub(lambda m: m.group(0) if m.group(2) in _NOT_NAMES else f"{m.group(1)} {OFFICER_LABEL}", text)
+    spans = _officer_spans(text)
+    for start, end in reversed(spans):
+        text = text[:start] + OFFICER_LABEL + text[end:]
+    return text
 
 
 def officer_names(text: str | None) -> list[str]:
     """가리지 않고 남은 임원 이름 후보(점검용). mask_officer_names를 거친 글에서는 빈 목록이어야 한다."""
-    if not text or not re.search(_ACTIONS, text):
-        return []
-    return [m.group(2) for m in OFFICER_NAME_RE.finditer(text) if m.group(2) not in _NOT_NAMES]
+    return [text[a:b] for a, b in _officer_spans(text)]
 
 
 def redact_phones(value):

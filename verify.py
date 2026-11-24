@@ -227,18 +227,21 @@ def main() -> int:
             bad += 1
 
     skipped = 0
+    blocked = False
 
     def ask(path: str, data: dict):
-        """원문 재조회. 접속이 안 되면 실패로 세지 않고 건너뛴 것으로 적는다(숫자가 어긋난 것과 구분)."""
-        nonlocal skipped
-        if os.environ.get("VERIFY_OFFLINE"):  # 화면만 다시 올릴 때는 원문에 접속하지 않는다
+        """원문 재조회. 접속이 안 되면 실패로 세지 않고 건너뛴 것으로 적는다(숫자가 어긋난 것과 구분).
+        한 번 접속에 실패하면 남은 재조회도 건너뛴다. 원문이 연결을 끊은 뒤에 요청을 더 보내지 않기 위해서다."""
+        nonlocal skipped, blocked
+        if os.environ.get("VERIFY_OFFLINE") or blocked:  # 화면만 다시 올릴 때는 원문에 접속하지 않는다
             skipped += 1
             return None
         try:
-            return reits_api.post(path, data)
+            return reits_api.post(path, data, retries=1)
         except Exception as e:
             skipped += 1
-            print(f"  건너뜀  {path} 접속 실패: {str(e)[:90]}")
+            blocked = True
+            print(f"  건너뜀  {path} 접속 실패, 남은 원문 재조회도 건너뜀: {str(e)[:90]}")
             return None
 
     snap = json.loads((DATA / "latest.json").read_text(encoding="utf-8"))
@@ -491,8 +494,9 @@ def main() -> int:
         "pblntfDe1": d0.strftime("%Y%m%d"), "pblntfDe2": d1.strftime("%Y%m%d"), "pageSize": 10, "pageNum": 1})
     if live_d:
         stored = sum(1 for x in dis.values() if d0.isoformat() <= (x.get("date") or "") <= d1.isoformat())
-        # 수집 뒤에 새 공시가 올라올 수 있으므로 원문이 조금 많은 것은 허용한다
-        check(0 <= int(live_d["total"]) - stored <= 15,
+        # 수집 뒤에 새 공시가 올라올 수 있으므로 원문이 조금 많은 것은 허용한다.
+        # 원문에서 지운 공시는 저장분에 남으므로 저장이 3건까지 많은 것도 허용한다.
+        check(-3 <= int(live_d["total"]) - stored <= 15,
               f"최근 14일 수시공시 원문 {int(live_d['total'])}건, 저장 {stored}건")
 
     print("[6] DART 차입과 배당")
@@ -674,14 +678,31 @@ def main() -> int:
     check(not leaks, "저장 파일과 화면 전화번호 점검" + " ".join(str(p) for p in leaks))
     check(all(not v.get("text") for v in dis.values() if "주주" in v["matter"]), "주주 공시 본문 없음")
     named = [no for no, v in dis.items() if officer_names(v.get("text"))]
-    named_pages = [p.name for p in build.SITE.glob("*.html") if officer_names(p.read_text(encoding="utf-8"))]
-    check(not named and not named_pages, "공시 본문과 화면에 임원 이름 없음(선임, 사임 문구)"
-          + (f" 공시번호 {', '.join(named[:5])}" if named else "") + (f" 화면 {', '.join(named_pages)}" if named_pages else ""))
+    # 화면에 실리는 공시 본문(주요 공시 목록, 종목별 타임라인)을 한 건씩 본다. 가림 함수와 같은 범위로 봐야
+    # 화면 전체에 흩어진 낱말을 이어 붙여 엉뚱한 이름을 잡지 않는다.
+    page_texts = [x["text"] for x in fd["disclosures"]] + [e.get("text") or "" for ev in fd["timelines"].values() for e in ev]
+    named_pages = [t[:40] for t in page_texts if officer_names(t)]
+    check(not named and not named_pages, "공시 본문과 화면 본문에 임원 이름 없음(선임, 사임 문구)"
+          + (f" 공시번호 {', '.join(named[:5])}" if named else "") + (f" 화면 {' / '.join(named_pages[:3])}" if named_pages else ""))
     officer_cases = [("(사임) 대표이사 홍길동, 사내이사 김철수", "(사임) 대표이사 (이름 생략), 사내이사 (이름 생략)"),
                      ("감사 박하늘 선임", "감사 (이름 생략) 선임"),
-                     ("이사 보수 한도 승인", "이사 보수 한도 승인"), ("사외이사 선임의 건", "사외이사 선임의 건")]
+                     ("이사 보수 한도 승인", None), ("사외이사 선임의 건", None),
+                     ("사내이사 홍길동, 김철수 선임", "사내이사 (이름 생략), (이름 생략) 선임"),
+                     ("사내이사 홍길동 선임 및 김철수 사임", "사내이사 (이름 생략) 선임 및 (이름 생략) 사임"),
+                     ("대표이사 홍길동 외 1인 선임", "대표이사 (이름 생략) 외 1인 선임"),
+                     ("사내이사 홍길동·김철수 선임", "사내이사 (이름 생략)·(이름 생략) 선임"),
+                     ("이사 선임: 홍길동", "이사 선임: (이름 생략)"),
+                     ("대표이사 홍길동 선출", "대표이사 (이름 생략) 선출"),
+                     ("대표이사 홍길동 임기만료", "대표이사 (이름 생략) 임기만료"),
+                     ("(변경 전) 대표이사 홍길동 (변경 후) 대표이사 김철수",
+                      "(변경 전) 대표이사 (이름 생략) (변경 후) 대표이사 (이름 생략)"),
+                     ("제5기 외부감사 결과(적정의견) 사내이사 선임", None), ("회계감사 계약(3년) 감사인 선임", None),
+                     ("감독이사 선임에는 적용되지 않는 집중투표제 배제", None),
+                     ("대표이사 홍길동, 사내이사 선임", "대표이사 (이름 생략), 사내이사 선임")]
     for text, expected in officer_cases:
-        check(mask_officer_names(text) == expected, f"임원 이름 가상 입력 {expected}")
+        expected = expected or text
+        masked = mask_officer_names(text)
+        check(masked == expected and not officer_names(masked), f"임원 이름 가상 입력 {expected}")
     cases = [(name, PRIVATE_LABEL) for name in ("홍길동(개인)", "홍길동 (본인)", "남궁민수", "김솔", "박하늘 외 2인")]
     cases += [(name, name) for name in ("㈜에스원", "주식회사 케이탑", "롯데쇼핑", "(주)한빛", "한솔 유한회사")]
     for name, expected in cases:

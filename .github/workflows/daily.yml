@@ -1,14 +1,23 @@
-# Collects once per weekday (10:00 KST), rebuilds the pages, and publishes them to GitHub Pages.
+# Collects once per weekday, rebuilds the pages, and publishes them to GitHub Pages.
+# GitHub can start scheduled runs hours late or drop them when its queue is busy, so each weekday is
+# scheduled three times. A run whose KST date already has a snapshot stops at the gate (manual runs too,
+# unless recollect is ticked), so the source site is still contacted at most once a day.
 # The collected data is committed right after collection, so a failed check blocks the deploy
 # but never loses that day's data.
 name: daily
 on:
   schedule:
-    - cron: "0 1 * * 1-5"   # 01:00 UTC Mon-Fri = 10:00 KST Mon-Fri
+    - cron: "17 1 * * 1-5"   # 10:17 KST Mon-Fri, off the top of the hour when the queue is busiest
+    - cron: "37 3 * * 1-5"   # 12:37 KST, backup if the first run was dropped or failed before saving
+    - cron: "57 6 * * 1-5"   # 15:57 KST, second backup
   workflow_dispatch:
     inputs:
       deploy_only:
         description: "Rebuild and deploy from committed data without contacting the source site"
+        type: boolean
+        default: false
+      recollect:
+        description: "Collect again even if today's data already exists (a second source access that day)"
         type: boolean
         default: false
 permissions:
@@ -19,7 +28,39 @@ concurrency:
   group: daily
   cancel-in-progress: false
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - id: check
+        env:
+          EVENT: ${{ github.event_name }}
+          DEPLOY_ONLY: ${{ inputs.deploy_only }}
+          RECOLLECT: ${{ inputs.recollect }}
+        run: |
+          today=$(TZ=Asia/Seoul date +%F)
+          hour=$(TZ=Asia/Seoul date +%-H)
+          run=true
+          # Runs in this group never overlap, so an earlier run of the day has already pushed its snapshot.
+          if [ "$DEPLOY_ONLY" = "true" ]; then
+            echo "deploy only: the source site is not contacted"
+          elif [ "$EVENT" = "schedule" ] && [ "$hour" -lt 10 ]; then
+            # The earliest schedule is 10:17 KST, so a scheduled run starting before 10 is yesterday's run
+            # delayed past midnight. It must not take today's collection.
+            echo "::notice::scheduled run started at ${hour}h KST; skipping"
+            run=false
+          elif [ -f "data/snapshots/$today.json" ] && [ "$RECOLLECT" != "true" ]; then
+            echo "::notice::data for $today is already collected; skipping"
+            run=false
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
   build:
+    needs: gate
+    if: ${{ needs.gate.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +90,7 @@ jobs:
             echo "no data change"
             exit 0
           fi
-          git commit -m "data: $(date -u +%F)"
+          git commit -m "data: $(TZ=Asia/Seoul date +%F)"
           # Someone may have pushed while this run was collecting: replay the data commit on top and retry.
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then exit 0; fi

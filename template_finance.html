@@ -177,7 +177,7 @@ function csv(name, head, rows){
   a.download = name + '_' + D.date + '.csv'; document.body.appendChild(a); a.click(); a.remove();
 }
 
-$('#stamp').textContent = `최종 수집 ${D.collected_at} · 공시는 영업일 오전 10시, 재무 자료는 주 1회 갱신(최근 ${D.fin_fetched ?? "자료 없음"})`;
+$('#stamp').textContent = `최종 수집 ${D.collected_at} · 공시는 영업일마다, 재무 자료는 주 1회 갱신(최근 ${D.fin_fetched ?? "자료 없음"})`;
 $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' (' + D.contact + ')' : ''}` : '';
 
 /* 요약 */
