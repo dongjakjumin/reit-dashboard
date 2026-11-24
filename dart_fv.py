@@ -39,6 +39,10 @@ SECTION = re.compile(r'<TITLE[^>]*AASSOCNOTE="D-0-[^"]*"[^>]*>(.*?)</TITLE>', re
 NO_REAPPRAISAL = re.compile(r"(?:공정가치\s*평가|감정\s*평가)를?\s*(?:재수행|재실시|다시\s*(?:수행|실시))하지\s*"
                             r"(?:아니하였|아니했|않았|않고|아니하고)")
 PAST_END = re.compile(r"(?:였|했|았|었)(?:습니다|다)\.\s*$|(?:였|했|았|었)음\s*$")
+# '재수행하지 않고, 최근 평가기준일의 감정평가액을 공정가치로 사용하고 있습니다'처럼 지금도 옛 감정가를 쓴다는 현재 진행형 끝.
+# 일치 구절 뒤에 감정평가액이나 공정가치가 있어야 하고, '재수행하지 않고 원가모형을 적용하고 있습니다' 같은 회계정책 문장은 뺀다
+USING_END = re.compile(r"(?:사용|적용|이용|간주)하고\s*있(?:습니다|다)\.\s*$")
+USING_WHAT = re.compile(r"감정\s*평가\s*(?:금)?액|감정가액|평가\s*금액|공정가치")
 PRIOR_PERIOD = re.compile(r"전기(?:말)?\s*(?:에는|에도|중에는)")
 # [review5] 문장 어디든 전기 서술('전기에는', '전기 중', '전기의 경우')이 있으면 일치 절이 '당기'를 말할 때만 이번 결산의 사실로 본다
 # ('전기 중 취득한 투자부동산'처럼 자산을 꾸미는 '전기 중'은 전기 서술로 보지 않는다)
@@ -258,7 +262,10 @@ def reappraisal_skipped(text, end):
         # 일치 구절이 든 절('~하였으나,', '~하며,' 뒤)에 전기 서술('전기에는 ~')이 있으면 이번 결산의 사실이 아니다
         cut = max((x.end() for x in re.finditer(r"(?:으나|하나|지만|며|고)\s*[,，]", sentence[:m.start()])), default=0)
         # '아니할 수 있습니다' 같은 회계정책 조건문은 과거형이 아니라 걸린다. '~하지 않고'는 문장 끝이 과거형이어야 한다
-        past = not m[0].endswith("고") or PAST_END.search(sentence.strip())
+        tail = sentence[m.end():]
+        using_now = bool(USING_END.search(sentence.strip()) and USING_WHAT.search(tail) and not COST_MODEL.search(tail))
+        past_fact = not m[0].endswith("고") or PAST_END.search(sentence.strip())
+        past = past_fact or using_now
         if (len(sentence) > 1500 or "투자부동산" not in prev + sentence or "유형자산" in sentence
                 or PRIOR_PERIOD.search(sentence[cut:m.end()]) or not past
                 or (PRIOR_ANY.search(sentence[:m.end()]) and "당기" not in sentence[cut:m.end()])
@@ -272,8 +279,13 @@ def reappraisal_skipped(text, end):
                 and CURRENT_REDONE.search(nxt) and not re.search(r"하지\s*(?:않|아니)|취득|신규|편입|전기", nxt)):
             continue
         pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
+        dates = before_end(iso_dates(pick), end)
+        # 현재 진행형 문장은 결산월 전 평가기준일이 적혀 있을 때만 신호로 본다
+        # ('3년 주기로 감정평가를 하고 그 사이에는 최근 감정평가액을 사용하고 있습니다' 같은 감정 주기 정책 문장을 거른다)
+        if not past_fact and not dates:
+            continue
         # 근거 글은 자르지 않는다(verify.py가 날짜마다 근거 글에 있는지 본다)
-        return before_end(iso_dates(pick), end), (prev + sentence).strip()
+        return dates, (prev + sentence).strip()
     return None
 
 

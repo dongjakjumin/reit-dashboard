@@ -24,6 +24,7 @@ from pathlib import Path
 from statistics import median
 
 import build
+import dart_fv
 import ecos
 import reits_api
 from dart import previous_year
@@ -55,7 +56,8 @@ def stale_row_ok(fvr, row, same_report):
     # [review5] '~하지 않고 ... 결정되었습니다'처럼 '었'으로 끝나는 과거형도 받고, 생략 문장의 일치 구절 앞에 전기 서술만 있으면 막는다
     last = core[-1] if core else ""
     pre = last[:re.search(r"재수행|재실시|다시\s*(?:수행|실시)", last).start()] if last else ""
-    proof_ok = stale != "skipped" or (any(re.search(r"하였|했|았|였|었", x) for x in core)
+    # '재수행하지 않고 ~ 감정평가액을 공정가치로 사용하고 있습니다'(지금도 옛 감정가를 쓴다는 현재 진행형)도 사실 문장으로 받는다
+    proof_ok = stale != "skipped" or (any(re.search(r"하였|했|았|였|었|(?:사용|적용|이용|간주)하고\s*있(?:습니다|다)", x) for x in core)
                                       and not (re.search(r"전기(?:말)?\s*(?:에는|에도|의\s*경우|중(?!\s*(?:에\s*)?(?:취득|처분|매각|대체|신규|증가|감소|완공|준공|편입|발생)))", pre) and "당기" not in last))
     proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof)
                                 for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
@@ -649,6 +651,18 @@ def main() -> int:
                    ({"matter_code": "RT02100006", "matter": "실사보고서", "text": ""}, "자산 취득, 처분")]
     for case, expected in group_cases:
         check(build.dis_group(case) == expected, f"공시 묶음 가상 입력 {case['text'] or case['matter']} → {expected or '정기, 일반'}")
+    # 감정평가 생략 문장 가상 사례: 과거형과 현재 진행형(옛 감정가를 지금도 씀)은 신호, 원가모형 정책 문장과 조건문은 신호 아님
+    skip_cases = [("과거형", "투자부동산의 공정가치는 최근 평가기준일(2025년 12월 31일) 대비 변동이 중요하지 않아 "
+                   "당기말 현재 공정가치평가를 재수행하지 아니하였습니다.", True),
+                  ("현재 진행형, 평가기준일 있음", "투자부동산 공정가치평가를 재수행하지 않고, 최근 평가기준일(2025년 12월 31일)의 "
+                   "감정평가액을 공정가치로 사용하고 있습니다.", True),
+                  ("원가모형 정책", "투자부동산은 공정가치평가를 재수행하지 않고 원가모형을 적용하고 있습니다.", False),
+                  ("감정 주기 정책", "투자부동산 공정가치평가를 재수행하지 않고 3년 주기로 감정평가를 실시하며, 그 사이에는 "
+                   "최근 감정평가액을 공정가치로 사용하고 있습니다.", False),
+                  ("조건문", "변동이 중요하지 않은 경우 투자부동산 공정가치평가를 재수행하지 아니할 수 있습니다.", False)]
+    for label, text, expected in skip_cases:
+        check(bool(dart_fv.reappraisal_skipped(text, "2026-06-30")) == expected,
+              f"감정평가 생략 문장 가상 입력({label}) → {'신호' if expected else '신호 아님'}")
     since = build.since(build.d(snap["date"]))
     risky = [no for no, x in dis.items() if (x.get("date") or "") >= since
              and re.search(r"회생절차|사채권자\s?집회", (x.get("matter") or "") + (x.get("text") or ""))]
