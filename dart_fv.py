@@ -4,7 +4,7 @@
 1. 공정가치 모형을 쓰는 리츠: 재무상태표의 투자부동산이 곧 공정가치다.
 2. 장부금액과 공정가치가 함께 있는 투자부동산 표: 표의 장부금액이 재무상태표 투자부동산과 0.2% 안에서 같을 때만 쓴다.
 3. "당기말 현재 투자부동산의 공정가치는 OOO원" 문장.
-4. 공정가치 서열체계 표의 '투자부동산' 줄.
+4. 공정가치 서열체계 표의 '투자부동산' 줄. 없으면 바로 앞 문장이 투자부동산 서열체계를 말하는 표의 합계 줄(당기말 열).
 3과 4는 장부금액과 대조할 수 없어, 공정가치가 장부금액의 0.5배에서 2배 사이일 때만 쓴다.
 """
 import argparse
@@ -98,22 +98,37 @@ def sentence_fv(text):
 
 
 def hierarchy_fv(xml):
+    tables = []
     for index, m in enumerate(TABLE.finditer(xml), 1):
         rows = grid(m[0])
         if len(rows) < 2:
             continue
         h, heads = header(rows)
+        if h and h < len(rows):
+            tables.append((index, rows, h, heads, clean(xml[max(0, m.start() - 1500):m.start()])))
+    first = lambda r: next((v for v in (num(c) for c in r[1:]) if v is not None and v > 100), None)
+    # 1차: 머리에 수준이나 서열이 있는 표의 '투자부동산' 줄
+    for index, rows, h, heads, before in tables:
         joined = " ".join(heads)
-        if not h or not ("수준" in joined or "서열" in joined) or "장부" in joined:
-            continue
-        before = clean(xml[max(0, m.start() - 1500):m.start()])
         unit = unit_of(heads, before)
+        if not unit or not ("수준" in joined or "서열" in joined) or "장부" in joined:
+            continue
         for r in rows[h:]:
-            if r and r[0].replace(" ", "") == "투자부동산" and unit:
-                values = [num(c) for c in r[1:]]
-                value = next((v for v in values if v is not None and v > 100), None)
-                if value:
-                    return dict(table=index, fv=round(value * unit))
+            if r and r[0].replace(" ", "") == "투자부동산" and first(r):
+                return dict(table=index, fv=round(first(r) * unit))
+    # 2차: 바로 앞 문장이 투자부동산 서열체계를 말하고, 당기말 열이 전기말 열보다 앞인 표의 합계 줄
+    for index, rows, h, heads, before in tables:
+        joined, near = " ".join(heads), before[-300:]
+        unit = unit_of(heads, before)
+        if not unit or "장부" in joined or not ("서열체계" in near and "투자부동산" in near):
+            continue
+        cur_j = next((j for j, x in enumerate(heads) if "당기" in x), None)
+        prev_j = next((j for j, x in enumerate(heads) if "전기" in x), None)
+        if cur_j is None or (prev_j is not None and prev_j < cur_j):
+            continue
+        totals = [r for r in rows[h:] if r and r[0].replace(" ", "") in ("합계", "총계", "계")]
+        if totals and first(totals[-1]):
+            return dict(table=index, fv=round(first(totals[-1]) * unit))
     return None
 
 
