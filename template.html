@@ -50,10 +50,11 @@ section[aria-labelledby="h-proj"] .card{min-width:0}
   <p class="sub" id="fil-sub"></p>
   <h3>지난 수집 이후 바뀐 것</h3>
   <div id="fil-changes" class="card"></div>
-  <h3>신청인별 업무량</h3>
+  <h3>운용사별 진행 중인 신청</h3>
+  <p class="sub">접수 후 1년이 넘은 신청은 '1년 넘게 계류'에 따로 세고, 나머지 열은 1년 안에 접수한 신청만 셉니다.</p>
   <div class="tw"><table id="applicants"></table></div>
   <h3>처리 중인 신청</h3>
-  <p class="sub">경과일은 접수일부터 셉니다. 최초 확인일은 이 화면이 신청을 처음 수집한 날입니다.</p>
+  <p class="sub">경과일은 접수일부터 최종 수집일까지의 달력 날짜 수입니다.</p>
   <div class="row">
     <div class="seg" id="fil-seg" role="group" aria-label="신청유형"></div>
     <span class="sp"></span>
@@ -149,12 +150,12 @@ section[aria-labelledby="h-proj"] .card{min-width:0}
   <div class="card read">
     <ul style="margin:0;padding-left:18px">
       <li><b>인가</b>: 부동산투자회사가 국토교통부 장관의 영업인가를 받은 경우입니다.</li>
-      <li><b>등록</b>: 법에서 정한 요건을 갖춘 리츠가 인가 대신 등록으로 영업을 시작한 경우입니다.</li>
+      <li><b>등록</b>: 위탁관리리츠와 CR리츠가 인가 대신 등록하고 영업을 시작한 경우입니다. 위탁관리리츠는 국민연금공단 등 법에서 정한 주주가 발행주식의 30% 이상을 취득해야 하고, CR리츠는 법 49조의2 ①의 자산 구성 기준을 갖춰야 합니다. 두 경우 모두 총자산 중 부동산개발사업 투자비율이 30% 이하여야 합니다(부동산투자회사법 9조의2 ①).</li>
       <li><b>신고</b>: 프로젝트리츠 설립신고입니다. 개발 단계에서는 설립신고만으로 사업을 시작하고, 사용승인이나 준공검사를 받은 날부터 18개월 안에 영업인가를 받거나 등록합니다(부동산투자회사법 26조의4, 시행령 30조의2). 이 화면에서는 구분이 신고이거나 리츠정보시스템에 프로젝트리츠로 표시된 리츠를 프로젝트리츠로 셌습니다.</li>
       <li><b>접수현황</b>: 리츠정보시스템이 현재 처리 중인 신청만 보여 줍니다. 이 화면은 영업일마다 목록을 저장해, 신청이 목록에서 빠진 날 운영 목록에서 확인한 인가, 등록, 신고 결과를 기록합니다.</li>
       <li><b>지난 수집 이후 바뀐 것</b>은 직전 수집일과 최종 수집일의 공개 목록을 견준 기록입니다. 새 신청, 상태 변경, 접수 목록에서 빠진 신청, 운영 목록에 새로 올라온 리츠를 표시합니다. 목록에서 빠진 신청의 인가 여부는 운영 목록에서 따로 확인합니다.</li>
-      <li><b>신규 신청</b>에는 영업인가, 영업등록, 프로젝트리츠 설립신고를 포함합니다. 변경인가/등록/신고는 변경 신청으로 셉니다.</li>
-      <li><b>90일</b>은 오래된 신규 신청을 찾아보기 위해 이 화면에서 임의로 정한 기준입니다.</li>
+      <li><b>신규 신청</b>에는 영업인가, 영업등록, 프로젝트리츠 설립신고를 포함합니다. 이미 운영 목록에 있는 리츠(등록이나 설립신고로 운영 중인 리츠)가 낸 영업인가, 영업등록 신청은 <b>전환</b>으로 따로 셉니다. 변경인가/등록/신고는 변경 신청으로 셉니다.</li>
+      <li><b>처리기간</b>: 인가, 등록, 변경인가와 변경등록은 신청을 받은 날부터 20일 안에 결정합니다(인가 및 등록 지침 8조 ②, 등록은 법 9조의2 ③도 같음). 프로젝트리츠 설립신고는 신고를 받은 날부터 20일 안에 수리 여부를 알립니다(법 26조의4 ②). 신청서 보완기간은 20일에 넣지 않지만, 공개 자료로는 보완기간을 알 수 없어 경과일에서 빼지 않았습니다.</li>
       <li><b>경과일</b>: 접수일부터 최종 수집일까지의 달력 날짜 수입니다. 보완 요청으로 멈춘 기간도 포함합니다. 접수일이 몇 년 전인 건은 리츠정보시스템 목록에 남아 있는 그대로 옮긴 것입니다.</li>
       <li><b>리츠 수와 자산총계</b>: 리츠조회 목록에 지금 올라 있는 리츠를 센 값입니다. 리츠정보시스템 첫 화면의 통계(전월 말 기준)와는 기준 시점이 달라 숫자가 조금 다를 수 있습니다.</li>
       <li><b>자산관리회사별 자산총계</b>: 각 리츠의 자산총계를 단순히 더한 값입니다. 모리츠와 자리츠가 같이 있으면 겹쳐 계산될 수 있습니다.</li>
@@ -205,7 +206,7 @@ function seg(el, onChange){
 function legend(el, names, colors){ el.innerHTML = names.map(n => `<span><i class="dot" style="background:${colors[n]}"></i>${esc(n)}</span>`).join(''); }
 
 /* 머리말 */
-$('#stamp').textContent = `최종 수집 ${D.collected_at} · 영업일마다 한 번 갱신 · 수집 기록 ${D.log_days}일째(${D.first_log}부터)`;
+$('#stamp').textContent = `최종 수집 ${D.collected_at} · 영업일마다 한 번 갱신 · 접수 변동 기록 ${D.first_log}부터`;
 $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' (' + D.contact + ')' : ''}` : '';
 
 /* 최근 1주 동향: 네 화면의 자료에서 최근 7일에 생긴 일만 모은다 */
@@ -273,7 +274,7 @@ function comparisonTable(id, rows, columns, initial, companyKey){
     table.innerHTML = '<thead><tr>' + columns.map(([k, label, format]) =>
       `<th class="${format ? 'num ' : ''}sortable" data-sort="${k}"${key === k ? ` aria-sort="${direction === 1 ? 'ascending' : 'descending'}"` : ''}><button type="button">${esc(label)}</button></th>`
     ).join('') + '</tr></thead><tbody>' + ordered.map(r => `<tr class="${rowClass(r[companyKey])}">` +
-      columns.map(([k, , format]) => `<td class="${format ? 'num' : ''}">${esc(format ? format(r[k]) : r[k] || '–')}</td>`).join('') +
+      columns.map(([k, , format, html]) => `<td class="${format ? 'num' : ''}">${html ? html(r) : esc(format ? format(r[k]) : r[k] || '–')}</td>`).join('') +
       '</tr>').join('') + '</tbody>';
   }
   table.addEventListener('click', e => {
@@ -291,11 +292,13 @@ const cases = v => n0(v) + '건';
 
 /* 접수현황 */
 (function(){
-  const types = ['전체', '신규만', '변경만', ...Object.keys(S.filings_by_type).sort((a, b) => S.filings_by_type[b] - S.filings_by_type[a])];
+  const G = S.filings_by_group;
+  const types = ['전체', '신규만', ...(G.전환 ? ['전환만'] : []), '변경만', ...Object.keys(S.filings_by_type).sort((a, b) => S.filings_by_type[b] - S.filings_by_type[a])];
   let cur = '전체';
-  const counts = {...S.filings_by_type, 신규만: S.new_filings, 변경만: S.filings_n - S.new_filings};
+  const counts = {...S.filings_by_type, 신규만: G.신규, 전환만: G.전환, 변경만: G.변경};
   $('#fil-seg').innerHTML = types.map((t, i) => `<button data-v="${esc(t)}" aria-pressed="${i === 0}">${esc(t)}${i ? ' ' + cases(counts[t]) : ''}</button>`).join('');
-  $('#fil-sub').textContent = `처리 중인 신청 ${cases(S.filings_n)} 가운데 신규 ${cases(counts.신규만)}, 변경 ${cases(counts.변경만)}, 보완요청 중 ${cases(S.filings_by_status['보완요청'])}, 접수 후 90일을 넘긴 신규 신청 ${cases(S.old_new)}입니다. 90일은 이 화면에서 임의로 정한 기준입니다.`;
+  const [a20, a60, a365, aLong] = S.age_buckets;
+  $('#fil-sub').textContent = `처리 중인 신청 ${cases(S.filings_n)} 가운데 신규 ${cases(G.신규)}, ${G.전환 ? `운영 중인 리츠의 인가, 등록 전환 ${cases(G.전환)}, ` : ''}변경 ${cases(G.변경)}이고 보완요청 중인 신청은 ${cases(S.filings_by_status['보완요청'] || 0)}입니다. 접수 후 지난 날수로 나누면 20일 이내 ${cases(a20)}, 21~60일 ${cases(a60)}, 61일~1년 ${cases(a365)}, 1년 초과 ${cases(aLong)}입니다. 법정 처리기간은 20일이고 보완기간은 여기에 넣지 않습니다.`;
   const {previous, rows: changes} = D.changes;
   const boxChanges = $('#fil-changes');
   if (changes.length){
@@ -304,14 +307,15 @@ const cases = v => n0(v) + '건';
   } else {
     boxChanges.textContent = previous ? `직전 수집(${previous}) 이후 바뀐 건이 없습니다.` : '견줄 직전 수집이 없습니다.';
   }
-  comparisonTable('#applicants', D.applicants, [['name','신청인'], ['total','전체',cases], ['new','신규',cases],
-    ['change','변경',cases], ['supplement','보완요청 중',cases], ['oldest','가장 오래된 접수',v => v.toLocaleString('ko-KR') + '일']], 'total', 'name');
+  comparisonTable('#applicants', D.applicants, [['name','신청회사',null,r => esc(r.name) + (r.public ? ' <span class="tag">공공기관</span>' : '')],
+    ['recent','1년 안에 접수',cases], ['new','신규, 전환',cases], ['change','변경',cases], ['supplement','보완요청 중',cases],
+    ['long','1년 넘게 계류',cases], ['oldest','가장 오래된 접수',v => v.toLocaleString('ko-KR') + '일']], 'recent', 'name');
   const rows = () => D.filings.filter(f => cur === '전체' || f.req_type === cur || f.group + '만' === cur);
   function draw(){
     const r = rows();
     $('#fil-count').textContent = `${r.length}건 / 전체 ${D.filings.length}건`;
-    $('#fil-table').innerHTML = `<thead><tr><th>접수일</th><th>최초 확인일</th><th class="num">경과일</th><th>신청유형</th><th>리츠</th><th>사업</th><th>신청회사</th><th>진행상태</th></tr></thead><tbody>` +
-      r.map(f => `<tr class="${rowClass(f.applicant)}"><td class="nw">${esc(f.date)}</td><td class="nw">${esc(f.first_seen) || '–'}</td><td class="num">${f.days.toLocaleString('ko-KR')}일</td><td class="nw"><span class="tag">${esc(f.group)}</span> ${esc(f.req_type)}</td><td>${esc(f.name_s)}</td><td>${esc(f.project_name)}${f.biz_type ? `<span class="s">${esc(f.biz_type)}</span>` : ''}</td><td>${esc(f.applicant)}</td><td class="nw"><span class="tag">${esc(f.status)}</span>${f.changed_on ? `<span class="s">${esc(f.changed_on)}에 바뀜</span>` : ''}</td></tr>`).join('') + '</tbody>';
+    $('#fil-table').innerHTML = `<thead><tr><th>접수일</th><th class="num">경과일</th><th>신청유형</th><th>리츠</th><th>사업</th><th>신청회사</th><th>진행상태</th></tr></thead><tbody>` +
+      r.map(f => `<tr class="${rowClass(f.applicant)}"><td class="nw">${esc(f.date)}</td><td class="num">${f.days.toLocaleString('ko-KR')}일</td><td class="nw"><span class="tag">${esc(f.group)}</span> ${esc(f.req_type)}</td><td>${esc(f.name_s)}</td><td>${esc(f.project_name)}${f.biz_type ? `<span class="s">${esc(f.biz_type)}</span>` : ''}</td><td>${esc(f.applicant)}</td><td class="nw"><span class="tag">${esc(f.status)}</span>${f.changed_on ? `<span class="s">${esc(f.changed_on)}에 바뀜</span>` : ''}</td></tr>`).join('') + '</tbody>';
   }
   seg($('#fil-seg'), v => { cur = v; draw(); });
   $('#fil-csv').onclick = () => csv('리츠_접수현황', ['접수일','경과일','신청유형','리츠','사업','사업구분','신청회사','진행상태'], rows().map(f => [f.date, f.days, f.req_type, f.name_s, f.project_name, f.biz_type, f.applicant, f.status]));
@@ -420,7 +424,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     let rows = sorted(); const total = rows.length;
     if (!all){ const topN = rows.slice(0, 20); if (hlRow && !topN.includes(hlRow)) topN.push(hlRow); rows = topN; }
     const rank = a => sorted().indexOf(a) + 1;
-    $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>관리주체</th>${header('n', '리츠 수')}${header('assets', '자산총계')}<th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th>${header('new12', '최근 12개월 신규')}<th>최근 인가일</th></tr></thead><tbody>` +
+    $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>관리주체</th>${header('n', '리츠 수')}${header('assets', '자산총계')}<th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th>${header('new12', '최근 12개월 신규')}<th>최근 인가, 등록, 신고일</th></tr></thead><tbody>` +
       rows.map(a => { const mix = D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
         const mixTip = D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ');
         return `<tr class="${hlRow === a ? 'hl' : ''}"><td class="num">${rank(a)}</td><td><button type="button" class="linkish" data-amc="${esc(a.name)}">${esc(a.name)}</button></td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td><span class="bar" style="width:${Math.max(1, a.assets_eok / maxA * 110)}px"></span></td><td title="${esc(mixTip)}"><span class="mix">${mix}</span></td><td class="num">${a.proj_n || '–'}</td><td class="num">${a.new12 || '–'}</td><td class="nw">${a.latest}</td></tr>`; }).join('') + '</tbody>';
@@ -436,7 +440,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   }
   seg($('#amc-seg'), v => { sort = v; asc = false; draw(); });
   $('#amc-more').onclick = () => { all = !all; draw(); };
-  $('#amc-csv').onclick = () => csv('자산관리회사별_리츠현황', ['자산관리회사','리츠 수','자산총계(억원)','프로젝트리츠','최근 12개월 신규','최근 인가일', ...D.sectors], sorted().map(a => [a.name, a.n, a.assets_eok, a.proj_n, a.new12, a.latest, ...D.sectors.map(s => a.sectors[s] || 0)]));
+  $('#amc-csv').onclick = () => csv('자산관리회사별_리츠현황', ['자산관리회사','리츠 수','자산총계(억원)','프로젝트리츠','최근 12개월 신규','최근 인가, 등록, 신고일', ...D.sectors], sorted().map(a => [a.name, a.n, a.assets_eok, a.proj_n, a.new12, a.latest, ...D.sectors.map(s => a.sectors[s] || 0)]));
   draw();
 })();
 
@@ -483,7 +487,7 @@ const pickAmc = (function(){
         ds.map(x => `<tr><td class="nw">${x.date}</td><td class="nw"><span class="tag">${esc(x.group)}</span></td><td>${esc(x.company_s)}${x.self ? ' <span class="s">회사 공시</span>' : ''}</td><td>${esc(x.matter)}</td></tr>`).join('')
       }</tbody></table></div>` : '<p class="note" style="margin:0">이 기간에 수집된 주요 공시가 없습니다. 정기공시와 일반 공시는 세지 않습니다.</p>'}
       <h4 class="minor">자산총계 순위 앞뒤 관리주체</h4>
-      <div class="tw"><table><thead><tr><th class="num">순위</th><th>관리주체</th><th class="num">리츠 수</th><th class="num">자산총계</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th><th class="num">최근 12개월 신규</th><th>최근 인가일</th></tr></thead><tbody>${
+      <div class="tw"><table><thead><tr><th class="num">순위</th><th>관리주체</th><th class="num">리츠 수</th><th class="num">자산총계</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th><th class="num">최근 12개월 신규</th><th>최근 인가, 등록, 신고일</th></tr></thead><tbody>${
         peers.map(p => `<tr class="${p === a ? 'hl' : ''}"><td class="num">${p.rank_assets}</td><td>${p === a ? esc(p.name) : `<button type="button" class="linkish" data-amc="${esc(p.name)}">${esc(p.name)}</button>`}</td><td class="num">${p.n}</td><td class="num">${eok(p.assets_eok)}</td><td><span class="mix">${mixBar(p)}</span></td><td class="num">${p.proj_n || '–'}</td><td class="num">${p.new12 || '–'}</td><td class="nw">${p.latest}</td></tr>`).join('')
       }</tbody></table></div>
       <p class="note">공시는 공시 회사명으로 운영 중 리츠와 관리주체를 찾아 연결했습니다.${D.amc_dis_unmatched ? ` 운영 중 목록에서 찾지 못한 회사의 공시 ${D.amc_dis_unmatched}건은 넣지 않았습니다.` : ''} 공시 내용은 재무 구조와 공시 화면의 리츠 주요 공시에서 볼 수 있습니다.</p>`;

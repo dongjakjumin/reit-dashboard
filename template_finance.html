@@ -54,7 +54,7 @@
   <div class="row"><span class="sp"></span><button class="btn" id="maturity-csv">엑셀(CSV) 내려받기</button></div>
   <div class="tw"><table id="maturity-table"></table></div>
   <p class="sub">12개월 내 만기에는 DART 사업보고서 재무상태표에서 유동부채로 분류한 차입금과 사채를 합산합니다. 대출 건별 만기와 고정금리와 변동금리 구분은 사업보고서 주석에서 확인합니다. 연결 자료가 있는 종목은 연결, 그 밖의 종목은 별도 재무제표를 사용합니다. 위 재무 구조 표는 리츠정보시스템의 별도 기준이며 기준일도 달라 금액에 차이가 생깁니다.</p>
-  <p class="sub">추정 금리는 당기 현금흐름표의 이자 지급액을 연환산한 뒤 기초와 기말 차입 잔액의 평균으로 나누어 계산합니다. 이 값은 약정금리와 다릅니다. 이자를 분기나 반기 뒤에 내거나 기간 중 차입 잔액이 크게 바뀌면 낮거나 높게 나옵니다. 종목별 약정금리는 아래 건별 표에서 확인합니다. 영업활동과 재무활동의 이자 지급액을 합산합니다. 실제 현금을 지급한 시점은 발생 기준 이자비용을 인식한 시점과 다를 수 있으며, 이자 지급액에는 선급 이자나 수수료가 포함될 수 있습니다. 이자 지급액을 확인할 수 없으면 손익계산서의 이자비용이나 금융비용을 사용합니다. 영업이익 ÷ 이자도 같은 기간의 같은 이자 항목으로 계산합니다.</p>
+  <p class="sub">추정 금리는 당기 현금흐름표의 이자 지급액을 연환산한 뒤 기초와 기말 차입 잔액의 평균으로 나눈 값으로, 약정금리와 다릅니다. 이자를 분기나 반기 뒤에 내거나 기간 중 차입 잔액이 크게 바뀌면 낮거나 높게 나옵니다. 그래서 CD(91일) 금리보다 낮거나 9%를 넘으면 회색으로 두고, 건별 표가 있는 종목은 주석에 적힌 약정금리의 금액 가중 평균을 함께 적습니다. 이자 지급액은 영업활동과 재무활동의 지급액을 합한 값이라 선급 이자나 수수료가 섞일 수 있고, 확인할 수 없으면 손익계산서의 이자비용이나 금융비용을 씁니다. 영업이익 ÷ 이자도 같은 기간의 같은 이자 항목으로 계산하며, 영업손실이면 배수 대신 ‘영업손실’로 적습니다.</p>
   <p class="sub">회사채 금리와 차이는 추정 금리에서 원화 회사채 금리를 뺀 값입니다. 건별 표에 외화 차입이 한 건이라도 있는 종목은 비교에서 제외합니다.</p>
   <p class="sub">1%p 상승 시 연 이자 증가액은 12개월 내 만기분 전액을 같은 금액으로 다시 빌린다고 가정해 계산합니다. 영업손실이 난 종목은 연환산 영업이익 대비 비율을 비웁니다.</p>
 </section>
@@ -85,8 +85,8 @@
   <div class="tw"><table id="loan-table"></table></div>
   <p class="sub" id="loan-check"></p>
   <p class="sub" id="loan-warning"></p>
-  <p class="sub">사업보고서 주석의 표를 기계로 읽고 재무상태표 차입 합계와 대조해 확인한 종목만 표시합니다. 조정 후 차이가 1% 이내이면 ‘일치’, 명목 합계의 차이가 3% 이내이면 ‘근사’로 표시합니다. 건별 금액은 명목 금액이므로 할인차금 등 조정액만큼 장부금액과 차이가 납니다. 만기와 잔여 개월 수는 각 종목의 보고서 기준일에서 계산하며, 기준일 이후의 상환과 신규 차입은 반영하지 않습니다. 잔여 개월 수는 기준일부터 만기일까지 꽉 찬 달 수입니다. 만기 달에 기준일과 같은 날이 없으면 그 달 말일을 같은 날로 봅니다(6월 30일 기준이면 다음 해 2월 28일 만기는 8개월). XBRL 원문에서 금리를 소수로 적은 경우 0.0640은 연 6.40%를 뜻합니다. 금리 유형을 판독할 수 없으면 ‘모름’으로 표시합니다.</p>
-  <p class="sub">주석에 이자율이 숫자로만 적힌 건은 고정금리로 보되, 각주에 변동금리라고 적혀 있으면 변동금리로 분류합니다. 변동금리 차입의 기준일 적용 금리를 숫자로 적은 회사가 있으면 고정으로 잡히므로 고정금리 비중은 실제보다 높게 나올 수 있습니다. 보고서 기준일이 종목마다 달라 이미 지난 반기에도 금액이 나오며, 기준일 이후에 상환했는지 다시 빌렸는지는 확인하지 못했습니다. 보고서 기준일보다 만기가 앞선 건은 상환 여부를 확인하지 못한 금액입니다. 요약의 ‘12개월 안에 만기’ 금액에서는 이 건을 제외합니다.</p>
+  <p class="sub">사업보고서 차입금 주석의 건별 금액을 재무상태표 차입 합계와 맞춰 본 종목만 표시합니다. 조정 후 차이가 1% 이내이면 ‘재무상태표와 일치’, 명목 합계의 차이가 3% 이내이면 ‘차이 3% 이내’로 적습니다. 건별 금액은 명목 금액이므로 할인차금 등 조정액만큼 장부금액과 차이가 납니다. 만기와 잔여 개월 수는 각 종목의 보고서 기준일에서 계산하며, 기준일 이후의 상환과 신규 차입은 반영하지 않습니다. 잔여 개월 수는 기준일부터 만기일까지 꽉 찬 달 수입니다. 만기 달에 기준일과 같은 날이 없으면 그 달 말일을 같은 날로 봅니다(6월 30일 기준이면 다음 해 2월 28일 만기는 8개월). 이자율은 연 % 단위로 맞춰 적고(원문 0.0640은 6.40%) 원문의 각주 기호((*1), (주1) 등)는 지웠습니다. 주석에 금리 유형이 없으면 ‘미기재’로 적습니다.</p>
+  <p class="sub">주석에 이자율이 숫자로만 적힌 건은 고정금리로 보되, 각주에 변동금리라고 적혀 있으면 변동금리로 분류합니다. 변동금리 차입의 기준일 적용 금리를 숫자로 적은 회사가 있으면 고정으로 잡히므로 고정금리 비중은 실제보다 높게 나올 수 있습니다. 보고서 기준일이 종목마다 달라 이미 지난 반기에도 금액이 나옵니다. 기준일보다 만기가 앞선 건은 그 뒤 상환 여부를 공시로 따로 봐야 하므로 요약의 ‘12개월 안에 만기’ 금액에서 뺍니다.</p>
   <p class="sub" id="loan-missing"></p>
 </section>
 
@@ -273,6 +273,13 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
     minimumFractionDigits: digits, maximumFractionDigits: digits
   });
   const decimals = {share: 1, rate: 1, coverage: 2, impact: 1};
+  // 지급이자로 거꾸로 구한 금리가 CD금리보다 낮거나 9%를 넘으면 기간 중 차입 변동이나 이자 지급 시점 차이로 본다
+  const rateOdd = v => (rates.cd91 && v < rates.cd91.value) || v > 9;
+  const loanRate = code => {
+    const xs = (D.loans.issuers[code]?.loans || []).filter(x => x.rate != null && !x.fx);
+    const amount = xs.reduce((s, x) => s + x.amount, 0);
+    return amount ? xs.reduce((s, x) => s + x.rate * x.amount, 0) / amount : null;
+  };
   const total = available.reduce((sum,r) => sum+r.total,0);
   const short = available.reduce((sum,r) => sum+r.short,0);
   const hi = Math.max(...available.filter(r => r.share != null).map(r => r.share));
@@ -299,6 +306,12 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
       if (key === 'corp_spread' && r.fx) return '<td class="num">–<small class="s">외화 차입 포함</small></td>';
       if (key === 'corp_spread') return '<td class="num">'+(r[key] == null ? '–' : (r[key] > 0 ? '+' : '') + fmt(r[key], 1))+'</td>';
       const value = key === 'rate' && r.total === 0 ? null : r[key];
+      if (key === 'coverage' && value != null && value < 0) return '<td class="num">영업손실</td>';
+      if (key === 'rate' && value != null && rateOdd(value)) {
+        const note = loanRate(r.code);
+        return '<td class="num"><span style="color:var(--muted)">'+fmt(value, 1)+'</span><span class="s">'
+          +(value < 9 ? 'CD금리보다 낮음' : '9% 초과')+(note != null ? ', 주석 약정금리 평균 '+note.toFixed(2)+'%' : '')+'</span></td>';
+      }
       const source = key === 'rate' && r.interest_source ? '<span class="s">'+esc(r.interest_source)+'</span>' : '';
       return '<td class="num">'+(value == null ? '–' : fmt(value, decimals[key] ?? 0))+source+'</td>';
     }).join('')+'</tr>');
@@ -325,8 +338,16 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
   const pct = v => v == null ? '자료 없음' : v.toFixed(2)+'%';
   const big = v => { const e = Math.round(v/1e8); return e >= 10000 ? Math.floor(e/10000)+'조 '+(e%10000).toLocaleString('ko-KR')+'억원' : e.toLocaleString('ko-KR')+'억원'; };
   $('#loan-summary').textContent = `차입이 있는 ${borrowers}개 종목 중 ${entries.length}개 종목을 확인했습니다. 확인한 차입은 ${big(nominal)}이며, 각 기준일부터 12개월 안에 ${big(due)}의 만기가 돌아옵니다. 주석에 이자율이 숫자로만 적힌 건을 고정금리로 보면 금리 유형을 확인한 금액 중 그 비중은 ${pct(fixed_share == null ? null : fixed_share*100)}이며, 고정금리로 추정한 건의 금액 가중 평균 금리는 ${pct(avg_rate)}입니다.`;
-  const rateLabel = type => type === '고정' ? '고정(추정)' : type;
-  const kindCell = x => '<td>'+esc(x.kind)+(x.fx ? '<small class="s">외화</small>' : '')+'</td>';
+  const rateLabel = type => type === '고정' ? '고정(추정)' : type === '모름' ? '미기재' : type;
+  // 원문 각주 기호: (*1), (*), (주1), (주1,2). 회사 표기 (주)는 남긴다
+  const noMark = s => String(s ?? '').replace(/\s*\((?:\*\d*|주\d+(?:\s*,\s*\d+)*)\)/g, '').trim();
+  const rateShown = x => {
+    if (x.rate != null) return x.rate.toFixed(2) + '%';
+    const t = noMark(x.rate_text);
+    return /^\d*\.?\d+$/.test(t) ? (Number(t) < 1 ? Number(t) * 100 : Number(t)).toFixed(2) + '%' : t;
+  };
+  const matchLabel = m => ({'일치': '재무상태표와 일치', '근사': '차이 3% 이내'})[m] || m;
+  const kindCell = x => '<td>'+esc(noMark(x.kind))+(x.fx ? '<small class="s">외화</small>' : '')+'</td>';
   const colors = {'고정':'var(--s1)','변동':'var(--s2)','모름':'var(--s0)'};
   function drawChart(prefix, buckets){
     $(prefix+'-legend').innerHTML = Object.entries(colors).map(([k,c]) => `<span><i class="dot" style="background:${c}"></i>${rateLabel(k)}</span>`).join('');
@@ -350,20 +371,14 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
   drawChart('#upcoming', u.months);
   const floating = u.float_share == null ? '금리 유형을 확인한 금액이 없어 변동금리 비중을 계산할 수 없습니다.'
     : `금리 유형을 확인한 금액 중 변동금리 비중은 ${pct(u.float_share*100)}입니다.`;
-  $('#upcoming-summary').textContent = `차입이 있는 ${borrowers}개 종목 중 ${entries.length}개 종목을 확인했습니다. ${u.as_of} 기준으로 앞으로 12개월 안에 공시상 만기가 예정된 차입은 ${big(u.total)}(${u.rows.length}건)이며, 그중 6개월 안이 ${big(u.within6)}입니다. ${floating} 보고서 기준일 이후 이미 만기가 지난 차입은 ${big(u.passed.amount)}(${u.passed.issuers}개 종목 ${u.passed.count}건)이며, 이후 상환과 만기 연장 여부는 확인하지 못했습니다.`
+  $('#upcoming-summary').textContent = `차입이 있는 ${borrowers}개 종목 중 ${entries.length}개 종목을 확인했습니다. ${u.as_of} 기준으로 앞으로 12개월 안에 공시상 만기가 예정된 차입은 ${big(u.total)}(${u.rows.length}건)이며, 그중 6개월 안이 ${big(u.within6)}입니다. ${floating} 보고서 기준일 이후 이미 만기가 지난 차입은 ${big(u.passed.amount)}(${u.passed.issuers}개 종목 ${u.passed.count}건)이며, 이후 상환과 만기 연장 여부는 각 회사 공시로 따로 봐야 합니다.`
     + (u.overdue.count ? ` 보고서 기준일에 이미 만기가 지나 있던 차입 ${big(u.overdue.amount)}(${u.overdue.count}건)도 뺐습니다.` : '');
-  function upcomingRate(x){
-    if (x.rate_type === '고정' && x.rate != null && /^\d*\.\d+$/.test(x.rate_text) && Number(x.rate_text) < 1) {
-      return pct(x.rate);
-    }
-    return /^\d+(?:\.\d+)?$/.test(x.rate_text) ? x.rate_text + '%' : x.rate_text;
-  }
   function drawUpcoming(){
     const rows = $('#upcoming-all').checked ? u.rows : u.rows.filter(x=>x.amount >= 100e8);
     $('#upcoming-table tbody').innerHTML = rows.map(x=>{
-      const lender = (x.lenders[0] || '') + (x.lender_n > 1 ? ` 외 ${x.lender_n-1}곳` : '');
+      const lender = noMark(x.lenders[0] || '') + (x.lender_n > 1 ? ` 외 ${x.lender_n-1}곳` : '');
       return `<tr><td>${esc(x.maturity)}</td><td>D-${x.days}</td><td><a href="?code=${esc(x.code)}#loans" data-loan="${esc(x.code)}">${esc(x.name)}</a></td>`
-        + kindCell(x) + [lender,upcomingRate(x),rateLabel(x.rate_type),money(x.amount)].map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>';
+        + kindCell(x) + [lender,rateShown(x),rateLabel(x.rate_type),money(x.amount)].map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>';
     }).join('');
     foldTable($('#upcoming-table'));
     $('#upcoming-count').textContent = `전체 ${u.rows.length}건 중 금액 조건에 맞는 차입은 ${rows.length}건입니다.`;
@@ -376,7 +391,9 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
   const select = $('#loan-stock');
   select.innerHTML = entries.map(([code,r])=>`<option value="${esc(code)}">${esc(r.name)}</option>`).join('');
   const heads = ['구분','차입처','만기일','이자율(원문)','금리 구분','금액(억원)','잔여 개월 수'];
+  const shownHeads = ['구분','차입처','만기일','이자율','금리 구분','금액(억원)','잔여 개월 수'];
   const loanDetails = (x, type) => [x.lender,x.maturity,x.rate_text,type,money(x.amount),x.months];
+  const loanCells = x => [noMark(x.lender),x.maturity,rateShown(x),rateLabel(x.rate_type),money(x.amount),x.months];
   function draw(){
     const r = issuers[select.value];
     if (!r) return;
@@ -385,9 +402,9 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
     const past = r.loans.filter(x=>x.maturity < r.end).length;
     if (past) messages.push('보고서 기준일보다 만기가 앞선 차입이 '+past+'건 있습니다. 원문에서 상환 여부를 확인해야 합니다.');
     $('#loan-warning').textContent = messages.join(' ');
-    $('#loan-table').innerHTML = '<thead><tr>'+heads.map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>'+
-      r.loans.map(x=>'<tr>'+kindCell(x)+loanDetails(x,rateLabel(x.rate_type)).map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody>';
-    $('#loan-check').innerHTML = `기준일 ${esc(r.end)} · 주석 합계 ${money(r.nominal)}억원, 재무상태표 차입 합계 ${money(r.bs_total)}억원, 조정액 ${money(r.adjustments)}억원 반영 후 차이 ${money(r.diff)}억원(${esc(r.match)}) · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${encodeURIComponent(r.rcept_no)}">DART 원문</a>`;
+    $('#loan-table').innerHTML = '<thead><tr>'+shownHeads.map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>'+
+      r.loans.map(x=>'<tr>'+kindCell(x)+loanCells(x).map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody>';
+    $('#loan-check').innerHTML = `기준일 ${esc(r.end)} · 주석 합계 ${money(r.nominal)}억원, 재무상태표 차입 합계 ${money(r.bs_total)}억원, 조정액 ${money(r.adjustments)}억원 반영 후 차이 ${money(r.diff)}억원(${esc(matchLabel(r.match))}) · <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${encodeURIComponent(r.rcept_no)}">DART 원문</a>`;
   }
   const code = new URLSearchParams(location.search).get('code');
   if (issuers[code]) select.value = code;

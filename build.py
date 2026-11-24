@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from dart import previous_year
-from textutil import CHANGE_REQUEST, filing_result, mask_officer_names, mask_person
+from textutil import CHANGE_REQUEST, PRIVATE_LABEL, filing_result, mask_officer_names, mask_person
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
@@ -31,12 +31,30 @@ def clean_company(name: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+def shareholder_label(name: str | None) -> str:
+    """최대주주 표시 이름. 회사 표기를 빼되, 빼고 나서 개인 이름처럼 보이면(예: 주식회사 예지훈 외) ㈜를 남긴다.
+    원문 칸에서 줄이 바뀌며 닫는 괄호가 잘린 이름은 괄호를 닫아 준다."""
+    masked = mask_person(name) or ""
+    s = clean_company(masked)
+    if s != masked and mask_person(s) == PRIVATE_LABEL:
+        s = "㈜" + s
+    return s + ")" * max(0, s.count("(") - s.count(")"))
+
+
 def short_reit(name: str) -> str:
-    s = clean_company(name)
+    s = clean_company(name).replace("부동산투저회사", "부동산투자회사")  # 접수현황 원문 오타
     s = s.replace("위탁관리부동산투자회사", "리츠").replace("기업구조조정부동산투자회사", "CR리츠")
     s = s.replace("자기관리부동산투자회사", "자기관리리츠").replace("부동산투자회사", "리츠")
     s = s.replace("위탁관리모리츠", " 모리츠").replace("위탁관리자리츠", " 자리츠")
     return re.sub(r"\s+", " ", s).strip()
+
+
+def applicant_name(name: str | None) -> str:
+    """신청회사 표시 이름. 리츠가 직접 신청한 건(자기관리리츠)도 리츠 이름 규칙으로 줄인다."""
+    return short_reit(mask_person(name) or "")
+
+
+PUBLIC_RE = re.compile(r"(?:공사|공단)$")  # 주택도시보증공사, 한국토지주택공사, 인천도시공사 같은 공공기관
 
 
 def d(s: str) -> date:
@@ -69,7 +87,7 @@ def collection_changes(previous, latest, filings, reits):
     if previous:
         for rec in filings.values():
             name = short_reit(mask_person(rec["name"]))
-            company = clean_company(mask_person(rec["applicant"]))
+            company = applicant_name(rec["applicant"])
             def add(kind, detail):
                 changes.append({"kind": kind, "name": name, "company": company, "detail": detail})
 
@@ -215,12 +233,11 @@ def build_data() -> dict:
             "name_s": short_reit(mask_person(f["name"])),
             "project_name": short_reit(mask_person(f["project_name"] or "")),
             "biz_type": f["biz_type"] or "",
-            "applicant": clean_company(mask_person(f["applicant"])),
+            "applicant": applicant_name(f["applicant"]),
             "status": f["status"],
-            "existing": f["reit_id"] in reit_ids,
-            "first_seen": safe_date(rec.get("first_seen")),
             "changed_on": safe_date(history[-1][0]) if len(history) > 1 else "",
-            "group": "변경" if f["req_type"] == CHANGE_REQUEST else "신규",
+            # 이미 운영 목록에 있는 리츠(등록, 설립신고)가 낸 영업인가, 등록 신청은 신규 설립이 아니라 전환으로 센다
+            "group": "변경" if f["req_type"] == CHANGE_REQUEST else "전환" if f["reit_id"] in reit_ids else "신규",
             "capital_eok": f["founding_capital"] / 100_000_000 if f.get("founding_capital") is not None else None,
         })
 
@@ -234,7 +251,7 @@ def build_data() -> dict:
             end = None if is_change else safe_date(result.get("result_date")) or None
             done.append({
                 "date": safe_date(rec["date"]), "gone_on": safe_date(rec["gone_on"]), "req_type": rec["req_type"],
-                "name_s": short_reit(mask_person(rec["name"])), "applicant": clean_company(mask_person(rec["applicant"])),
+                "name_s": short_reit(mask_person(rec["name"])), "applicant": applicant_name(rec["applicant"]),
                 "is_change": is_change,
                 "result_kind": result.get("result_kind") if end else None,
                 "result_date": end,
@@ -244,16 +261,22 @@ def build_data() -> dict:
     dates = sorted(p.stem for p in (DATA / "snapshots").glob("*.json")
                    if safe_date(p.stem) and p.stem <= snap["date"])
     previous = max((day for day in dates if day < snap["date"]), default=None)
+    # 운용사별 진행 중인 신청: 접수 후 1년이 넘은 신청은 '1년 넘게 계류'로 따로 세어 순위를 왜곡하지 않게 한다
     applicants = {}
     for f in frows:
-        a = applicants.setdefault(f["applicant"], {"name": f["applicant"], "total": 0, "new": 0,
-                                                  "change": 0, "supplement": 0, "oldest": 0})
-        a["total"] += 1
-        a["change" if f["group"] == "변경" else "new"] += 1
-        a["supplement"] += f["status"] == "보완요청"
+        a = applicants.setdefault(f["applicant"], {"name": f["applicant"], "public": bool(PUBLIC_RE.search(f["applicant"])),
+                                                  "recent": 0, "new": 0, "change": 0, "supplement": 0, "long": 0, "oldest": 0})
+        if f["days"] > 365:
+            a["long"] += 1
+        else:
+            a["recent"] += 1
+            a["change" if f["group"] == "변경" else "new"] += 1
+            a["supplement"] += f["status"] == "보완요청"
         a["oldest"] = max(a["oldest"], f["days"])
-    summary["new_filings"] = sum(a["new"] for a in applicants.values())
-    summary["old_new"] = sum(f["group"] == "신규" and f["days"] > 90 for f in frows)
+    summary["filings_by_group"] = {g: sum(f["group"] == g for f in frows) for g in ("신규", "전환", "변경")}
+    # 법정 처리기간(인가, 등록, 변경인가 20일: 인가 및 등록 지침 8조 ②, 설립신고 20일: 법 26조의4 ②) 기준 구간
+    summary["age_buckets"] = [sum(lo <= f["days"] <= hi for f in frows)
+                              for lo, hi in ((0, 20), (21, 60), (61, 365), (366, 10 ** 6))]
 
     # 최근 변동(접수와 인가, 등록, 신고를 날짜순으로)
     events = []
@@ -306,13 +329,36 @@ def build_data() -> dict:
         "amc": amc, "amc_dis": dict(amc_dis), "amc_dis_from": dis_from, "amc_dis_unmatched": dis_unmatched,
         "filings": frows, "done": done, "log_days": len(dates), "first_log": min(dates, default=snap["date"]),
         "changes": collection_changes(previous, snap["date"], flog, rlog),
-        "applicants": sorted(applicants.values(), key=lambda a: (-a["total"], a["name"])),
+        "applicants": sorted(applicants.values(), key=lambda a: (-a["recent"], -a["long"], a["name"])),
         "project": project_comparison(proj, by_amc, today),
         "events": events, "reits": slim,
         "kinds": KINDS, "sectors": SECTORS,
         "highlight_amc": cfg.get("highlight_amc", ""),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
     }
+
+
+def dividend_profile(record: dict) -> dict:
+    """DART 결산기별 주당배당금에서 최근 결산기 배당, 직전 대비 증감, 최근 12개월 안의 급증 배당을 뽑는다.
+
+    급증 배당은 직전 결산기 주당배당금의 1.5배 이상인 결산기다(특별배당이나 자산 매각 차익 분배일 수 있다)."""
+    divs = record.get("dividends") or []
+    last = divs[-1] if divs else None
+    prev = divs[-2] if len(divs) > 1 else None
+    out = {"dps_last": None, "dps_k": None, "dps_chg": None, "dps_jump": False}
+    if not last or last.get("dps") is None:
+        return out
+    out["dps_last"] = last["dps"]
+    if last.get("days"):
+        out["dps_k"] = round(365 / last["days"])  # 연간 결산 횟수
+    if prev and prev.get("dps"):
+        out["dps_chg"] = round((last["dps"] / prev["dps"] - 1) * 100, 1)
+    end = record.get("dividend_end")
+    if end:
+        cutoff = previous_year(d(end)).isoformat()
+        out["dps_jump"] = any(cutoff < b["end"] <= end and a.get("dps") and b.get("dps") is not None and b["dps"] >= 1.5 * a["dps"]
+                              for a, b in zip(divs, divs[1:]))
+    return out
 
 
 def _median(xs: list[float], digits: int) -> float | None:
@@ -536,6 +582,10 @@ def build_listed_data() -> dict:
         elif r.get("dvd_pct") and r.get("annual_dvd_pct"):
             ppy = min(4, max(1, round(r["annual_dvd_pct"] / r["dvd_pct"])))
         market_yield = dps / last * 100 if not yield_blocked and dps is not None and last and last > 0 else None
+        # 현재 배당 수준: 가장 최근 결산기 주당배당금 × 연간 결산 횟수 ÷ 현재가. 최근 12개월 합계에 섞인 특별배당과 감액을 덜어 낸다
+        prof = dividend_profile(dividends)
+        run_yield = (prof["dps_last"] * prof["dps_k"] / last * 100
+                     if not yield_blocked and not halted and prof["dps_k"] and prof["dps_last"] is not None and last and last > 0 else None)
         # 비율은 원자료(백만원)로 계산한다. 억원으로 반올림한 NAV, FFO로 나누면 끝자리가 틀린다.
         pnav = mktcap / (r["nav_mil"] / 100) if r.get("nav_mil") and r["nav_mil"] > 0 and mktcap else None
         pffo = mktcap / (r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") and r["ffo_mil"] > 0 and ppy and mktcap else None
@@ -546,6 +596,8 @@ def build_listed_data() -> dict:
             "has_finance": _has_finance(fin.get(str(r.get("reit_id")))),
             "homepage": safe_url(r.get("homepage")), "listed_date": safe_date(r.get("listed_date")),
             "market_yield": market_yield, "dividend_end": dividend_end or None,
+            "run_yield": run_yield, "dps_last": prof["dps_last"], "dps_k": prof["dps_k"],
+            "dps_chg": prof["dps_chg"], "dps_jump": prof["dps_jump"],
             "spread": round(spread, 2) if spread is not None else None,
             "market_yield_reason": "기준가 변경" if yield_blocked else None,
             "price": last, "mktcap_eok": mktcap,
@@ -619,6 +671,9 @@ def build_listed_data() -> dict:
     pnavs = [r["pnav"] for r in rows if r["pnav"] is not None]  # 1배 미만 개수와 최저, 최고는 화면에 보이는 값으로 센다
     pnav_raw = [v["pnav"] for v in raw.values() if v["pnav"] is not None]
     yields = [r["market_yield"] for r in rows if r["market_yield"] is not None]
+    weighted = [(r["market_yield"], r["mktcap_eok"]) for r in rows if r["market_yield"] is not None and r["mktcap_eok"]]
+    yield_wavg = sum(y * w for y, w in weighted) / sum(w for _, w in weighted) if weighted else None
+    runs = [r["run_yield"] for r in rows if r["run_yield"] is not None]
     spreads = [v["spread"] for v in raw.values() if v["spread"] is not None]
     dvds = [r["annual_dvd_pct"] for r in rows if r["annual_dvd_pct"]]
     changes = [r["ret_1y"] for r in rows if str(r["code"]) in full and r["ret_1y"] is not None] if common else []
@@ -638,6 +693,10 @@ def build_listed_data() -> dict:
             "nav_book_diff": [name for name, ok in nav_book if not ok],
             "pnav_below1": sum(1 for v in pnavs if v < 1), "pnav_min": min(pnavs, default=None), "pnav_max": max(pnavs, default=None),
             "yield_median": _median(yields, 2), "yield_n": len(yields),
+            "yield_wavg": round(yield_wavg, 2) if yield_wavg is not None else None,
+            "spread_wavg": round(yield_wavg - benchmark, 2) if yield_wavg is not None and benchmark is not None else None,
+            "run_median": _median(runs, 2), "run_n": len(runs),
+            "jump": [r["name"] for r in rows if r["dps_jump"]],
             "rates": rates, "spread_median": _median(spreads, 2), "spread_n": len(spreads),
             "dvd_median": _median(dvds, 2), "dvd_n": len(dvds),
         },
@@ -652,10 +711,10 @@ DISCLOSURE_GROUPS = {
     "RT02100018": "위험 신호", "RT02100019": "위험 신호", "RT02100027": "위험 신호",
     "RT02100021": "자산 취득, 처분", "RT02100022": "자산 취득, 처분",
     "RT02100023": "신용평가", "RT02100024": "최대주주 변경",
-    "RT02100028": "특수관계 거래", "RT02100029": "대출 실행",
+    "RT02100028": "이해관계자 거래", "RT02100029": "대출 실행",
     "RT02100020": "기타 공시", "RT02100002": "기타 공시",
 }
-GROUP_ORDER = ["위험 신호", "해산, 청산", "자산 취득, 처분", "신용평가", "최대주주 변경", "특수관계 거래", "대출 실행", "기타 공시"]
+GROUP_ORDER = ["위험 신호", "해산, 청산", "자산 취득, 처분", "신용평가", "최대주주 변경", "이해관계자 거래", "대출 실행", "기타 공시"]
 # 유형 코드가 '기타'이거나 정기 공시여도 제목과 본문에 아래 말이 있으면 따로 묶는다.
 # (회생절차나 사채권자집회 공시가 '기타'로 올라와 위험 신호에서 빠지던 것을 바로잡는다.)
 RISK_WORDS = re.compile(r"회생절차|회생법원|사채권자\s?집회|기한의?\s?이익.{0,6}상실|미상환|부도|파산|자율\s?구조조정")
@@ -735,7 +794,7 @@ def build_finance_data() -> dict:
             "debt_to_equity": round(f["debt"] / f["equity"], 2) if f.get("equity") and f["equity"] > 0 else None,
             "revenue_eok": round(rev / 1e8, 1) if rev is not None else None,
             "op_margin": round(op / rev * 100, 1) if rev and op is not None else None,
-            "top_shareholder": clean_company(mask_person(f.get("top_shareholder")) or ""),
+            "top_shareholder": shareholder_label(f.get("top_shareholder")),
             "series": [{"end": safe_date(x["end"]), "assets_eok": eok(x["assets"]), "debt_eok": eok(x["debt"]),
                         "debt_to_assets": round(x["debt"] / x["assets"] * 100, 1)} for x in ser],
         })
@@ -822,7 +881,7 @@ def weekly_digest(data: dict, listed: dict, finance: dict) -> dict:
                 for f in data["filings"] if f["date"] >= start]
     changed, gone = [], []
     for rec in flog.values():
-        name, company = short_reit(mask_person(rec["name"])), clean_company(mask_person(rec["applicant"]))
+        name, company = short_reit(mask_person(rec["name"])), applicant_name(rec["applicant"])
         history = rec.get("status_history") or []
         for (_, before), (day, after) in zip(history, history[1:]):
             if start <= day <= end:
@@ -926,7 +985,7 @@ def main():
     print(f"[빌드] 상장리츠 {ls['n']}개, 시가총액 {ls['mktcap_eok']/10000:.2f}조원, "
           f"지수 1년 {ls['index_ret']}%({ls['index_n']}개), "
           f"P/B 중앙값 {ls['pnav_median']}(1배 미만 {ls['pnav_below1']}/{ls['pnav_n']}), "
-          f"연환산 배당률 중앙값 {ls['dvd_median']}% | listed.html {n_listed:,}자")
+          f"시가배당률 가중 {ls['yield_wavg']}%(중앙값 {ls['yield_median']}%) | listed.html {n_listed:,}자")
     fs = finance["summary"]
     print(f"[빌드] 재무 구조 {fs['n']}개, 부채/자산 중앙값 {fs['da_median']}%, "
           f"최근 90일 주요 공시 {fs['dis_major']}건(위험 신호 {fs['dis_risk']}건), 정기와 일반 {fs['dis_routine']}건 | "

@@ -27,7 +27,7 @@ import build
 import ecos
 import reits_api
 from dart import previous_year
-from textutil import PRIVATE_LABEL, mask_officer_names, mask_person, officer_names, phone_files
+from textutil import CHANGE_REQUEST, PRIVATE_LABEL, mask_officer_names, mask_person, officer_names, phone_files
 
 DATA = Path(__file__).parent / "data"
 
@@ -275,8 +275,15 @@ def main() -> int:
     check(sum(s["filings_by_type"].values()) == s["filings_n"], "접수 유형별 합 = 접수 전체")
     check(sum(1 for r in reits if r["kind"] == "신고" or r.get("project") == "Y") == s["proj_n"],
           "신고 구분이거나 프로젝트리츠 표시가 있는 건수 = 프로젝트리츠 건수")
-    check(sum(a["new"] + a["change"] for a in d["applicants"]) == len(snap["filings"]),
-          "신청인별 신규와 변경 합 = 처리 중인 신청 전체")
+    check(sum(a["new"] + a["change"] + a["long"] for a in d["applicants"]) == len(snap["filings"])
+          and all(a["recent"] == a["new"] + a["change"] for a in d["applicants"]),
+          "운용사별 1년 안 신규, 전환, 변경과 1년 넘은 신청 합 = 처리 중인 신청 전체")
+    check(sum(a["long"] for a in d["applicants"]) == sum(f["days"] > 365 for f in d["filings"]) == s["age_buckets"][3]
+          and sum(s["age_buckets"]) == s["filings_n"] and sum(s["filings_by_group"].values()) == s["filings_n"],
+          f"경과일 구간 {s['age_buckets']} 합과 신규, 전환, 변경 {s['filings_by_group']} 합 = 접수 전체")
+    reit_ids_now = {r["id"] for r in reits}
+    check(s["filings_by_group"]["전환"] == sum(f["req_type"] != CHANGE_REQUEST and f["reit_id"] in reit_ids_now for f in snap["filings"]),
+          "운영 목록에 이미 있는 리츠의 인가, 등록 신청 수 = 전환 건수")
     project = d["project"]
     check(sum(a["n"] for a in project["companies"]) == s["proj_n"], "관리주체별 합 = 프로젝트리츠 전체")
     check(sum(project["sectors"].values()) == s["proj_n"], "투자대상별 합 = 프로젝트리츠 전체")
@@ -523,6 +530,7 @@ def main() -> int:
     if dart_data:
         check(any(r.get("total") is not None for r in maturity.values()), "저장한 DART 차입 합계의 화면 표시")
     expected_yields = []
+    weighted_yields, expected_runs = [], []  # (시가배당률, 시가총액), 현재 배당 수준
     print("[6-1] ECOS 시장금리")
     rate_data = saved_json("rates.json")
     series = rate_data.get("series", {})
@@ -668,10 +676,36 @@ def main() -> int:
               and record.get("dividend_end") == market_row.get("dividend_end")
               and yield_reason == market_row.get("market_yield_reason")
               and matches(expected, market_row.get("market_yield")), f"{name} 화면 시가배당률과 기준가 변경")
+        if expected is not None and market_row.get("mktcap_eok"):
+            weighted_yields.append((expected, market_row["mktcap_eok"]))
+        # 현재 배당 수준: 마지막 결산기 주당배당금 × round(365 / 결산기 일수) ÷ 현재가
+        divs = record.get("dividends") or []
+        last_div = divs[-1] if divs else {}
+        prev_div = divs[-2] if len(divs) > 1 else {}
+        k = round(365 / last_div["days"]) if last_div.get("days") else None
+        run = (last_div["dps"] * k / price * 100 if not yield_reason and not market_row.get("halted") and k
+               and last_div.get("dps") is not None and price and price > 0 else None)
+        if run is not None:
+            expected_runs.append(run)
+        chg = (round((last_div["dps"] / prev_div["dps"] - 1) * 100, 1)
+               if last_div.get("dps") is not None and prev_div.get("dps") else None)
+        jump = bool(record.get("dividend_end")) and any(
+            str(previous_year(date.fromisoformat(record["dividend_end"]))) < b["end"] <= record["dividend_end"]
+            and a.get("dps") and b.get("dps") is not None and b["dps"] >= 1.5 * a["dps"] for a, b in zip(divs, divs[1:]))
+        check(matches(run, market_row.get("run_yield")) and chg == market_row.get("dps_chg") and jump == market_row.get("dps_jump"),
+              f"{name} 현재 배당 수준, 주당배당금 전기 대비, 1.5배 넘는 배당 표시")
     spread_median = round(median(expected_spreads), 2) if expected_spreads else None
     check(yield_summary.get("spread_n") == len(expected_spreads) and yield_summary.get("spread_median") == spread_median,
           "국고채 대비 배당률 차이 중앙값과 종목 수")
     expected_median = round(median(expected_yields), 2) if expected_yields else None
+    wavg = (sum(y * w for y, w in weighted_yields) / sum(w for _, w in weighted_yields)) if weighted_yields else None
+    bench = latest_rates.get("ktb10")
+    check(matches(yield_summary.get("yield_wavg"), round(wavg, 2) if wavg is not None else None)
+          and matches(yield_summary.get("spread_wavg"), round(wavg - bench, 2) if wavg is not None and bench is not None else None),
+          f"시가총액 가중 시가배당률 {yield_summary.get('yield_wavg')}%와 국고채 대비 차이 재계산")
+    check(yield_summary.get("run_n") == len(expected_runs)
+          and matches(yield_summary.get("run_median"), round(median(expected_runs), 2) if expected_runs else None),
+          f"현재 배당 수준 중앙값 {yield_summary.get('run_median')}%({len(expected_runs)}개) 재계산")
     check(yield_summary.get("yield_n") == len(expected_yields) and matches(yield_summary.get("yield_median"), expected_median),
           "시가배당률 값이 있는 종목 수와 중앙값 재계산")
     verify_loans(check, dart_data, finance_payload.get("loans", {}), listed, snap["date"])
@@ -726,6 +760,10 @@ def main() -> int:
           "접수 자료에 허용한 항목만 저장됨(담당자 이름, 연락처 항목 없음)")
     check(all(mask_person(v.get("top_shareholder")) == v.get("top_shareholder") for v in fin.values()),
           "최대주주 칸에 개인 이름 모양 값 없음")
+    # 화면 값은 회사 표기를 뺀 이름이다. 빼고 나서 개인 이름처럼 보이는 회사는 ㈜를 남겨야 한다
+    shown_holders = [r["top_shareholder"] for r in fd["rows"] if r.get("top_shareholder")]
+    check(all(mask_person(h) == h and h.count("(") == h.count(")") for h in shown_holders),
+          f"화면 최대주주 {len(shown_holders)}개가 개인 이름처럼 보이지 않고 괄호 짝이 맞음")
 
     print("[8] 최근 1주 동향")
     try:
