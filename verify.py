@@ -511,6 +511,8 @@ def main() -> int:
             and r.get("ltv_end") == cur["end"] and r.get("borrow_eok") == round(cur["total"] / 1e8))))
     check(all(ltv_ok) and len(ltv_raw) >= len(fd["rows"]) - 2,
           f"LTV(차입금과 사채 ÷ 자산총계) {sum(ltv_ok)}/{len(ltv_ok)}종목 재계산 일치")
+    listed_ltv = {r["code"]: r.get("ltv") for r in build.build_listed_data()["rows"]}
+    check(all(listed_ltv.get(r["code"]) == r.get("ltv") for r in fd["rows"]), "상장리츠 표와 재무 표의 LTV 일치")
     via_sub = sum(1 for r in fd["rows"] if r["debt_to_assets"] < 20 and r.get("ltv_basis") == "연결"
                   and r.get("borrow_eok") and r["ltv"] > r["debt_to_assets"])
     check(fd["summary"].get("ltv_n") == len(ltv_raw) and fd["summary"].get("via_sub") == via_sub

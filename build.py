@@ -658,6 +658,9 @@ def build_listed_data() -> dict:
             "pnav": round(pnav, 2) if pnav is not None else None,
             "pffo": round(pffo, 1) if pffo is not None else None,
             "wale_years": r.get("wale_years") or None,
+            # 재무 화면과 같은 LTV(DART 사업보고서 차입금과 사채 ÷ 자산총계, 연결 우선)
+            "ltv": (round(dividends["current"]["total"] / dividends["current"]["assets"] * 100, 1)
+                    if (dividends.get("current") or {}).get("assets") and dividends["current"].get("total") is not None else None),
             "price_break": price_break, "halted": halted,
             "fiscal_end": safe_date(r.get("fiscal_end")), "fiscal_period": r.get("fiscal_period"),
             "spark": [hist[x] for x in dates[::5]] + ([last] if dates and (len(dates) - 1) % 5 else []),
