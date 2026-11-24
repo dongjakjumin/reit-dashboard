@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import sys
 from calendar import monthrange
 from collections import Counter, defaultdict
@@ -19,6 +20,11 @@ from textutil import CHANGE_REQUEST, PRIVATE_LABEL, filing_result, mask_officer_
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 SITE = ROOT / "site"
+# 링크 미리보기 이미지(og.png). 숫자가 없는 고정 이미지라 매일 바뀌는 자료와 어긋나지 않는다
+OG_IMAGE_META = ('<meta property="og:image" content="https://dongjakjumin.github.io/reit-dashboard/og.png">\n'
+                 '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
+                 '<meta property="og:image:alt" content="리츠 현황판: 인가와 프로젝트리츠, 상장리츠 비교판, 재무 구조와 공시, 사업성 계산기">\n'
+                 '<meta name="twitter:card" content="summary_large_image">\n')
 
 KINDS = ["인가", "등록", "신고"]
 SECTORS = ["주택", "오피스", "물류", "복합형", "리테일", "호텔", "기타"]
@@ -1207,7 +1213,11 @@ def render(template: str, out: str, data: dict | None, page: str, extra: dict[st
             raise RuntimeError(f"{template}에서 자료를 넣을 자리를 찾지 못함")
         payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
         html = html.replace("/*__DATA__*/null", payload)
+    if html.count("</head>") != 1:
+        raise RuntimeError(f"{template}에서 </head>를 하나만 찾지 못함")
+    html = html.replace("</head>", OG_IMAGE_META + "</head>")
     SITE.mkdir(exist_ok=True)
+    shutil.copyfile(ROOT / "og.png", SITE / "og.png")
     (SITE / out).write_text(html, encoding="utf-8", newline="\n")
     return len(html)
 
