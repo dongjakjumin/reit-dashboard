@@ -35,12 +35,14 @@ def mask_person(name: str | None) -> str | None:
 OFFICER_LABEL = "(이름 생략)"
 _TITLES = (r"(?:대표이사|사내이사|사외이사|기타비상무이사|비상무이사|감독이사|법인이사|집행임원|상근감사|감사위원"
            r"|청산인|감사|이사)")
-_PERSON_ACTIONS = r"(?:재선임|선임|사임|해임|중임|연임|퇴임|취임|선출|임기\s?만료)"
+# '중도퇴임', '일신상의 사유로 사임'처럼 이름과 동작 사이에 붙는 말도 동작의 일부로 본다
+_PERSON_ACTIONS = (r"(?:(?:중도|일신상의?\s*사유로|개인\s*사정으로)\s*)?"
+                   r"(?:재선임|선임|사임|해임|중임|연임|퇴임|취임|선출|임기\s?만료)")
 _ACTIONS = rf"(?:{_PERSON_ACTIONS}|변경\s?전|변경\s?후)"
 _NOT_NAMES = {"보수", "선임", "사임", "해임", "중임", "연임", "퇴임", "취임", "재선임", "후보", "후보자", "전원", "변경",
               "승인", "신규", "선출", "등", "및", "각", "선임의", "사임의", "해임의", "임원", "후임", "신임", "이사회",
               "감사인", "위원", "위원장", "의장", "대표", "상근", "비상근", "추가", "일괄", "동시", "임기", "만료",
-              "이름", "생략", "취소", "결의", "예정", "완료", "현재", "기존"}
+              "이름", "생략", "취소", "결의", "예정", "완료", "현재", "기존", "중도", "사유로", "사정으로", "일신상의"}
 _NAME = r"[가-힣]{2,4}"
 _SEP = r"\s*(?:,|·|ㆍ|/|및)\s*"
 _END = rf"(?=\s*(?:,|\(|\)|외\s*\d|{_ACTIONS}|$)|\s+{_TITLES}|\s+-|\s*;)"
@@ -50,6 +52,12 @@ _AFTER_TITLE = re.compile(rf"(?<![가-힣]){_TITLES}\s*[:：]?\s*({_NAME}(?:{_SE
 _AFTER_COLON = re.compile(rf"{_ACTIONS}\s*[:：]\s*({_NAME}(?:{_SEP}{_NAME})*)(?![가-힣])")
 # "및 김철수 사임"처럼 직함 없이 동작 바로 앞에 온 이름
 _BEFORE_ACTION = re.compile(rf"(?<![가-힣])({_NAME})(?=\s*{_PERSON_ACTIONS})")
+# "신임 대표이사 김철수", "후임 감사: 김철수"
+_NEW_OFFICER = re.compile(rf"(?:신임|후임)\s*{_TITLES}\s*[:：]?\s*({_NAME}(?:{_SEP}{_NAME})*)(?![가-힣])")
+# "대표이사 변경(홍길동→김철수)", "대표이사: 홍길동 -> 김철수"처럼 직함 뒤 화살표로 이은 두 이름
+_ARROW = r"(?:→|->|⇒|➔|➜)"
+_ARROW_CHANGE = re.compile(
+    rf"(?<![가-힣]){_TITLES}[^.\n]{{0,12}}?(?<![가-힣])({_NAME})\s*\(?\s*{_ARROW}\s*({_NAME})(?![가-힣])")
 
 
 def _is_name(token: str) -> bool:
@@ -57,16 +65,33 @@ def _is_name(token: str) -> bool:
 
 
 def _officer_spans(text: str | None) -> list[tuple[int, int]]:
-    """임원 문구 안에서 이름으로 보이는 곳의 (시작, 끝). 직함과 동작 낱말이 함께 있는 글만 본다."""
-    if not text or not re.search(_ACTIONS, text) or not re.search(_TITLES, text):
+    """임원 문구 안에서 이름으로 보이는 곳의 (시작, 끝). 직함과 함께 동작 낱말, '신임/후임', 화살표가 있는 글만 본다."""
+    if not text or not re.search(_TITLES, text):
         return []
+    patterns = []
+    if re.search(_ACTIONS, text):
+        patterns += [_AFTER_TITLE, _AFTER_COLON, _BEFORE_ACTION]
+    if re.search(r"신임|후임", text):
+        patterns.append(_NEW_OFFICER)
+    if re.search(_ARROW, text):
+        patterns.append(_ARROW_CHANGE)
     spans = set()
-    for pattern in (_AFTER_TITLE, _AFTER_COLON, _BEFORE_ACTION):
+    for pattern in patterns:
         for m in pattern.finditer(text):
-            for t in re.finditer(r"[가-힣]+", m.group(1)):
-                if _is_name(t.group(0)):
-                    spans.add((m.start(1) + t.start(), m.start(1) + t.end()))
-    return sorted(spans)
+            for g in range(1, pattern.groups + 1):
+                if m.group(g) is None:
+                    continue
+                for t in re.finditer(r"[가-힣]+", m.group(g)):
+                    if _is_name(t.group(0)):
+                        spans.add((m.start(g) + t.start(), m.start(g) + t.end()))
+    # 겹치는 구간은 합친다(뒤에서부터 바꿀 때 글이 어긋나지 않게)
+    merged = []
+    for start, end in sorted(spans):
+        if merged and start < merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else:
+            merged.append((start, end))
+    return merged
 
 
 def mask_officer_names(text: str | None) -> str | None:
