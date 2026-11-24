@@ -420,7 +420,7 @@ const pickAmc = (function(){
     const zero = rs.filter(r => !r.assets_eok).length;
     box.innerHTML = `<div class="card">
         <div class="kv">${stats.map(([l, v, s]) => `<div><div class="lab">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('')}</div>
-        <p class="note" style="margin-top:14px"><span class="mix" style="width:140px">${mixBar(a)}</span> 투자대상 ${listOf(a.sectors, D.sectors)} · 회사유형 ${listOf(tally(rs, r => r.type))} · 공모 여부 ${listOf(tally(rs, r => r.public_offering))}${zero ? ` · 자산총계가 0으로 표시된 리츠 ${zero}개(새로 인가된 리츠는 투자보고서가 나오기 전까지 0)` : ''}</p>
+        <p class="note" style="margin-top:14px"><span class="mix" style="width:140px">${mixBar(a)}</span> 투자대상: ${listOf(a.sectors, D.sectors)}<br>회사유형: ${listOf(tally(rs, r => r.type))}<br>공모 여부: ${listOf(tally(rs, r => r.public_offering))}${zero ? `<br>자산총계가 0으로 표시된 리츠 ${zero}개. 새로 생긴 리츠는 첫 투자보고서가 나오기 전까지 0으로 나옵니다.` : ''}</p>
       </div>
       <h4 class="minor">관리하는 리츠 ${rs.length}개</h4>
       <div class="tw"><table id="amc-reits"><thead><tr><th>인가, 등록, 신고일</th><th>구분</th><th>리츠</th><th>유형</th><th>투자대상</th><th class="num">자산총계</th><th class="num">연환산배당률</th><th>공모</th></tr></thead><tbody>${
