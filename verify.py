@@ -283,6 +283,27 @@ def main() -> int:
           "변경 신청에는 인가일을 결과로 붙이지 않음")
     check(len({r["id"] for r in reits}) == len(reits), "리츠 번호 중복 없음")
 
+    # 관리주체 상세의 최근 90일 주요 공시: 재무 화면의 주요 공시와 같은 묶음을 관리주체별로 나눈 것
+    amc_names = {a["name"] for a in d["amc"]}
+    amc_dis = d["amc_dis"]
+    dis_saved = json.loads((DATA / "disclosures.json").read_text(encoding="utf-8")) if (DATA / "disclosures.json").is_file() else {}
+    major90 = {no for no, x in dis_saved.items()
+               if build.DISCLOSURE_GROUPS.get(x.get("matter_code")) and build.safe_date(x.get("date"))
+               and x["date"] >= d["amc_dis_from"]}
+    linked = [x["no"] for rows in amc_dis.values() for x in rows]
+    check(set(amc_dis) <= amc_names, "관리주체 상세 공시의 회사가 모두 관리주체 목록에 있음")
+    check(len(linked) == len(set(linked)) and set(linked) <= major90
+          and len(linked) + d["amc_dis_unmatched"] == len(major90),
+          f"관리주체 상세 공시 {len(linked)}건 + 연결 못 한 {d['amc_dis_unmatched']}건 = 최근 90일 주요 공시 {len(major90)}건")
+    reit_names = {build._norm_company(r["name"]): build.clean_company(mask_person(r["amc"])) for r in reits}
+    amc_norm = {build._norm_company(r["amc"]): build.clean_company(mask_person(r["amc"])) for r in reits}
+    check(all(reit_names.get(build._norm_company(dis_saved[x["no"]]["company"]),
+                             amc_norm.get(build._norm_company(dis_saved[x["no"]]["company"]))) == owner
+              for owner, rows in amc_dis.items() for x in rows),
+          "관리주체 상세 공시마다 공시 회사의 관리주체가 맞음")
+    check(all(set(x) == {"no", "date", "group", "matter", "company_s", "self"} for rows in amc_dis.values() for x in rows),
+          "관리주체 상세 공시에 본문을 싣지 않음")
+
     print("[2] 원문 건수 재조회")
     live = ask("/reits/prmpc/searchPrmpcOper", dict(reits_api.OPER_EMPTY, pageSize=10, pageNum=1))
     if live:  # 수집과 점검 사이에 원문이 바뀔 수 있어 3건까지는 차이를 허용한다

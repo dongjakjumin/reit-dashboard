@@ -104,6 +104,10 @@ section[aria-labelledby="h-proj"] .card{min-width:0}
     <button class="btn" id="amc-csv">엑셀(CSV) 내려받기</button>
   </div>
   <div class="tw"><table id="amc-table"></table></div>
+  <h3 id="amc-detail-title" style="margin-top:26px">관리주체 상세</h3>
+  <p class="sub" id="amc-detail-sub"></p>
+  <div class="row"><select id="amc-pick" aria-label="관리주체 선택"></select></div>
+  <div id="amc-detail"></div>
 </section>
 
 <section aria-labelledby="h-ev">
@@ -371,7 +375,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>관리주체</th>${header('n', '리츠 수')}${header('assets', '자산총계')}<th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th>${header('new12', '최근 12개월 신규')}<th>최근 인가일</th></tr></thead><tbody>` +
       rows.map(a => { const mix = D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
         const mixTip = D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ');
-        return `<tr class="${hlRow === a ? 'hl' : ''}"><td class="num">${rank(a)}</td><td>${esc(a.name)}</td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td><span class="bar" style="width:${Math.max(1, a.assets_eok / maxA * 110)}px"></span></td><td title="${esc(mixTip)}"><span class="mix">${mix}</span></td><td class="num">${a.proj_n || '–'}</td><td class="num">${a.new12 || '–'}</td><td class="nw">${a.latest}</td></tr>`; }).join('') + '</tbody>';
+        return `<tr class="${hlRow === a ? 'hl' : ''}"><td class="num">${rank(a)}</td><td><button type="button" class="linkish" data-amc="${esc(a.name)}">${esc(a.name)}</button></td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td><span class="bar" style="width:${Math.max(1, a.assets_eok / maxA * 110)}px"></span></td><td title="${esc(mixTip)}"><span class="mix">${mix}</span></td><td class="num">${a.proj_n || '–'}</td><td class="num">${a.new12 || '–'}</td><td class="nw">${a.latest}</td></tr>`; }).join('') + '</tbody>';
     $('#amc-table').querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
       const key = th.dataset.sort;
       asc = sort === key && !asc;
@@ -387,6 +391,68 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   $('#amc-csv').onclick = () => csv('자산관리회사별_리츠현황', ['자산관리회사','리츠 수','자산총계(억원)','프로젝트리츠','최근 12개월 신규','최근 인가일', ...D.sectors], sorted().map(a => [a.name, a.n, a.assets_eok, a.proj_n, a.new12, a.latest, ...D.sectors.map(s => a.sectors[s] || 0)]));
   draw();
 })();
+
+/* 관리주체 상세: 한 회사의 리츠, 처리 중인 신청, 최근 주요 공시, 자산총계 순위 앞뒤 회사 */
+const pickAmc = (function(){
+  const byAssets = [...D.amc].sort((a, b) => a.rank_assets - b.rank_assets);
+  const pick = $('#amc-pick'), box = $('#amc-detail');
+  const pct = (x, y) => y ? (x / y * 100).toFixed(1) + '%' : '–';
+  const tally = (rows, f) => rows.reduce((m, x) => { const k = f(x) || '표시 없음'; m[k] = (m[k] || 0) + 1; return m; }, {});
+  const listOf = (o, order) => (order || Object.keys(o).sort((x, y) => o[y] - o[x] || x.localeCompare(y, 'ko'))).filter(k => o[k]).map(k => `${esc(k)} ${o[k]}`).join(', ');
+  const mixBar = a => D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
+  pick.innerHTML = byAssets.map(a => `<option value="${esc(a.name)}">${a.rank_assets}위 ${esc(a.name)} (리츠 ${a.n}개)</option>`).join('');
+  $('#amc-detail-sub').textContent = `표에서 관리주체 이름을 누르거나 아래 목록에서 고르면 그 회사가 관리하는 리츠, 처리 중인 신청, 최근 90일 주요 공시(${D.amc_dis_from} 이후), 자산총계 순위가 앞뒤인 관리주체를 한 번에 봅니다.`;
+  function render(name){
+    const a = D.amc.find(x => x.name === name) || byAssets[0];
+    pick.value = a.name;
+    const rs = D.reits.filter(r => r.amc_s === a.name);
+    const fs = D.filings.filter(f => f.applicant === a.name);
+    const ds = D.amc_dis[a.name] || [];
+    const i = byAssets.indexOf(a), peers = byAssets.slice(Math.max(0, i - 3), i + 4);
+    const sup = fs.filter(f => f.status === '보완요청').length;
+    const stats = [
+      ['리츠 수', `${a.n}개`, `${listOf(tally(rs, r => r.kind), D.kinds)} · 리츠 수 ${a.rank_n}위`],
+      ['자산총계', `${eok(a.assets_eok)}원`, `전체의 ${pct(a.assets_eok, S.assets_eok)} · ${a.rank_assets}위 / ${D.amc.length}곳`],
+      ['최근 12개월 신규', `${a.new12}건`, `전체 ${S.new12}건의 ${pct(a.new12, S.new12)}`],
+      ['프로젝트리츠', `${a.proj_n}건`, `전체 ${S.proj_n}건의 ${pct(a.proj_n, S.proj_n)}`],
+      ['처리 중인 신청', `${fs.length}건`, fs.length ? `그중 보완요청 ${sup}건` : '접수현황에 없음'],
+    ];
+    const zero = rs.filter(r => !r.assets_eok).length;
+    box.innerHTML = `<div class="card">
+        <div class="kv">${stats.map(([l, v, s]) => `<div><div class="lab">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('')}</div>
+        <p class="note" style="margin-top:14px"><span class="mix" style="width:140px">${mixBar(a)}</span> 투자대상 ${listOf(a.sectors, D.sectors)} · 회사유형 ${listOf(tally(rs, r => r.type))} · 공모 여부 ${listOf(tally(rs, r => r.public_offering))}${zero ? ` · 자산총계가 0으로 표시된 리츠 ${zero}개(새로 인가된 리츠는 투자보고서가 나오기 전까지 0)` : ''}</p>
+      </div>
+      <h4 class="minor">관리하는 리츠 ${rs.length}개</h4>
+      <div class="tw"><table id="amc-reits"><thead><tr><th>인가, 등록, 신고일</th><th>구분</th><th>리츠</th><th>유형</th><th>투자대상</th><th class="num">자산총계</th><th class="num">연환산배당률</th><th>공모</th></tr></thead><tbody>${
+        rs.map(x => `<tr><td class="nw">${x.date}</td><td class="nw"><i class="dot" style="background:${KIND_COLOR[x.kind]}"></i>${esc(x.kind)}</td><td>${esc(x.name_s)}${x.project === 'Y' ? ' <span class="tag">프로젝트리츠</span>' : ''}</td><td class="nw">${esc(x.type)}</td><td class="nw"><i class="dot" style="background:${SECTOR_COLOR[x.sector] || 'var(--s0)'}"></i>${esc(x.sector)}</td><td class="num">${x.assets_eok ? eok(x.assets_eok) : '–'}</td><td class="num">${x.dividend_pct ? x.dividend_pct.toFixed(2) + '%' : '–'}</td><td class="nw">${esc(x.public_offering || '–')}</td></tr>`).join('')
+      }</tbody></table></div>
+      <h4 class="minor">처리 중인 신청 ${fs.length}건</h4>
+      ${fs.length ? `<div class="tw"><table><thead><tr><th>접수일</th><th class="num">경과일</th><th>신청유형</th><th>리츠</th><th>사업</th><th>진행상태</th></tr></thead><tbody>${
+        fs.map(f => `<tr><td class="nw">${f.date}</td><td class="num">${n0(f.days)}일</td><td class="nw"><span class="tag">${esc(f.group)}</span> ${esc(f.req_type)}</td><td>${esc(f.name_s)}</td><td>${esc(f.project_name || '–')}</td><td class="nw">${esc(f.status)}</td></tr>`).join('')
+      }</tbody></table></div>` : '<p class="note" style="margin:0">리츠정보시스템 접수현황에 이 회사가 신청한 건이 없습니다.</p>'}
+      <h4 class="minor">최근 90일 주요 공시 ${ds.length}건</h4>
+      ${ds.length ? `<div class="tw"><table id="amc-dis"><thead><tr><th>공시일</th><th>유형</th><th>리츠</th><th>공시</th></tr></thead><tbody>${
+        ds.map(x => `<tr><td class="nw">${x.date}</td><td class="nw"><span class="tag">${esc(x.group)}</span></td><td>${esc(x.company_s)}${x.self ? ' <span class="s">회사 공시</span>' : ''}</td><td>${esc(x.matter)}</td></tr>`).join('')
+      }</tbody></table></div>` : '<p class="note" style="margin:0">이 기간에 수집된 주요 공시가 없습니다. 정기공시와 일반 공시는 세지 않습니다.</p>'}
+      <h4 class="minor">자산총계 순위 앞뒤 관리주체</h4>
+      <div class="tw"><table><thead><tr><th class="num">순위</th><th>관리주체</th><th class="num">리츠 수</th><th class="num">자산총계</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th><th class="num">최근 12개월 신규</th><th>최근 인가일</th></tr></thead><tbody>${
+        peers.map(p => `<tr class="${p === a ? 'hl' : ''}"><td class="num">${p.rank_assets}</td><td>${p === a ? esc(p.name) : `<button type="button" class="linkish" data-amc="${esc(p.name)}">${esc(p.name)}</button>`}</td><td class="num">${p.n}</td><td class="num">${eok(p.assets_eok)}</td><td><span class="mix">${mixBar(p)}</span></td><td class="num">${p.proj_n || '–'}</td><td class="num">${p.new12 || '–'}</td><td class="nw">${p.latest}</td></tr>`).join('')
+      }</tbody></table></div>
+      <p class="note">공시는 공시 회사명으로 운영 중 리츠와 관리주체를 찾아 연결했습니다.${D.amc_dis_unmatched ? ` 운영 중 목록에서 찾지 못한 회사의 공시 ${D.amc_dis_unmatched}건은 넣지 않았습니다.` : ''} 공시 내용은 재무 구조와 공시 화면의 리츠 주요 공시에서 볼 수 있습니다.</p>`;
+    foldTable($('#amc-reits'));
+    if ($('#amc-dis')) foldTable($('#amc-dis'));
+  }
+  function choose(name, scroll){
+    render(name);
+    history.replaceState(null, '', '?amc=' + encodeURIComponent(pick.value) + location.hash);
+    if (scroll) $('#amc-detail-title').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+  pick.onchange = () => choose(pick.value, false);
+  box.addEventListener('click', e => { const b = e.target.closest('button[data-amc]'); if (b) choose(b.dataset.amc, false); });
+  render(hlRow ? hlRow.name : byAssets[0].name);
+  return choose;
+})();
+$('#amc-table').addEventListener('click', e => { const b = e.target.closest('button[data-amc]'); if (b) pickAmc(b.dataset.amc, true); });
 
 /* 최근 변동 */
 $('#ev-table').innerHTML = `<thead><tr><th>날짜</th><th>구분</th><th>리츠</th><th>자산관리회사, 신청회사</th><th>내용</th></tr></thead><tbody>` +

@@ -95,6 +95,15 @@ th.sortable[aria-sort=ascending]::after{content:" ▴"}
 td.pos{color:var(--up)} td.neg{color:var(--down)}
 .spark{display:block;width:84px;height:24px}
 a.ext{color:inherit;text-decoration:underline;text-decoration-color:var(--axis);text-underline-offset:3px}
+.linkish{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--axis);text-underline-offset:3px}
+.linkish:hover{text-decoration-color:var(--ink2)}
+.linkish:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.kv .lab{font-size:12.5px;color:var(--ink2)}
+.kv .v{font-size:21px;font-weight:700;line-height:1.3;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kv .s{font-size:12.5px;color:var(--muted)}
+h4.minor{font-size:14px;margin:20px 0 8px}
+#amc-pick{max-width:100%}
 .seg{max-width:100%;overflow-x:auto}
 .seg button{white-space:nowrap;flex:none}
 #idx-chart:focus-visible{outline:2px solid var(--accent);outline-offset:2px}

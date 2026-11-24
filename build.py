@@ -271,10 +271,35 @@ def build_data() -> dict:
     cfg_path = ROOT / "config.json"
     cfg = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
 
+    # 관리주체 상세: 최근 90일 주요 공시를 공시 회사명으로 운영 중 리츠나 관리주체에 연결한다.
+    # 본문은 싣지 않는다(주주 관련 공시의 개인 정보가 섞이지 않게 제목과 유형만 쓴다).
+    reit_by_norm = {_norm_company(r["name"]): r for r in reits}
+    amc_by_norm = {_norm_company(r["amc"]): r["amc_s"] for r in reits}
+    dis_from = (today - timedelta(days=90)).isoformat()
+    amc_dis: dict[str, list] = defaultdict(list)
+    dis_unmatched = 0
+    for no, x in optional_data("disclosures.json").items():
+        grp = DISCLOSURE_GROUPS.get(x.get("matter_code"))
+        day = safe_date(x.get("date"))
+        if not grp or not day or day < dis_from:
+            continue
+        key = _norm_company(x.get("company"))
+        owner_reit = reit_by_norm.get(key)
+        owner = owner_reit["amc_s"] if owner_reit else amc_by_norm.get(key)
+        if not owner:
+            dis_unmatched += 1
+            continue
+        amc_dis[owner].append({"no": no, "date": day, "group": grp, "matter": x.get("matter") or "",
+                               "company_s": owner_reit["name_s"] if owner_reit else owner,
+                               "self": owner_reit is None})
+    for rows in amc_dis.values():
+        rows.sort(key=lambda z: (z["date"], int(z["no"])), reverse=True)
+
     return {
         "collected_at": snap["collected_at"], "date": snap["date"],
         "summary": summary, "yearly": yearly, "monthly": monthly, "sector": sector,
-        "amc": amc, "filings": frows, "done": done, "log_days": len(dates), "first_log": min(dates, default=snap["date"]),
+        "amc": amc, "amc_dis": dict(amc_dis), "amc_dis_from": dis_from, "amc_dis_unmatched": dis_unmatched,
+        "filings": frows, "done": done, "log_days": len(dates), "first_log": min(dates, default=snap["date"]),
         "changes": collection_changes(previous, snap["date"], flog, rlog),
         "applicants": sorted(applicants.values(), key=lambda a: (-a["total"], a["name"])),
         "project": project_comparison(proj, by_amc, today),
