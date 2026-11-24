@@ -326,8 +326,9 @@ def update_disclosures(snap: dict):
             continue
         code = x.get("matterCode")
         matter = " ".join(str(x.get("matterNm") or "").split())
-        text = "" if code in DISCLOSURE_NO_TEXT or "주주" in matter else " ".join(str(x.get("changeCn") or "").split())[:300]
-        text = mask_officer_names(re.sub(PHONE_RE, "(번호 생략)", text))
+        text = "" if code in DISCLOSURE_NO_TEXT or "주주" in matter else " ".join(str(x.get("changeCn") or "").split())
+        # [review6] 300자로 자르기 전에 가린다(자른 끝에서 '사임' 같은 동작 낱말이 잘려 이름이 남지 않게)
+        text = mask_officer_names(re.sub(PHONE_RE, "(번호 생략)", text))[:300]
         log[str(int(no))] = {
             "date": x.get("pblntfDe"), "company": (x.get("cmpnyNm") or "").strip(),
             "company_type": x.get("cmpnySeNm"), "matter_code": code,
@@ -335,6 +336,10 @@ def update_disclosures(snap: dict):
         }
     cutoff = (today - timedelta(days=365)).strftime("%Y-%m-%d")
     log = {k: v for k, v in log.items() if (v.get("date") or "") >= cutoff}
+    # [review6] 가림 규칙을 고치면 이미 쌓인 본문에도 바로 적용한다
+    for v in log.values():
+        if v.get("text"):
+            v["text"] = mask_officer_names(v["text"])
     _save(path, dict(sorted(log.items(), key=lambda kv: (kv[1]["date"], int(kv[0])), reverse=True)))
     return len(rows)
 

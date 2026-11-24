@@ -59,13 +59,23 @@ def lead(context):
     return context[start + 2 if start >= 0 else 0:]
 
 
+# [review6] 발행 사채로 보는 말: 차입, 앞에 글자가 붙지 않은 '사채', 발행 사채의 종류를 붙인 말(띄어 쓰거나 '회사채'로 쓴 것 포함)
+ISSUED_DEBT = re.compile(r"차입|(?<![가-힣])사채|(?:무보증|보증|담보부|공모|사모|전환|신주인수권부?|교환|일반|선순위|후순위|외화|원화)"
+                         r"\s*(?:회)?사채")
+# [review6] '발행'의 주어가 다른 금융기관이면('증권사가 발행한', '은행 발행') 보유 상품 설명이다
+OTHER_ISSUER = re.compile(r"(?:증권사|증권회사|증권|은행|금융기관|발행기관|카드사|캐피탈)(?:가|이|에서)?\s*$")
+
+
 def asset_note(context):
     """표 바로 앞 글이 보유 금융상품(단기금융상품의 전자단기사채 등)을 말하고, 차입이나 발행 사채는 말하지 않으면 True."""
     near = lead(context)
     # [review5] '회사채', '단기사채', '전자단기사채'처럼 앞에 다른 글자가 붙은 '사채'는 보유 상품 이름이라 발행 사채로 보지 않는다
     # 다만 '무보증사채', '공모사채', '전환사채'처럼 발행 사채의 종류를 앞에 붙인 말은 발행 사채로 본다
-    return bool(ASSET_NOTE.search(near)) and not re.search(
-        r"차입|발행|(?<![가-힣])사채|(?:무보증|보증|담보부|공모|사모|전환|신주인수권부?|교환)사채", near)
+    if not ASSET_NOTE.search(near) or ISSUED_DEBT.search(near):
+        return False
+    # [review6] '발행어음', '증권사가 발행한 전자단기사채', '시중은행 발행 CD'의 '발행'은 회사가 발행한 것이 아니다
+    return not any(not OTHER_ISSUER.search(near[max(0, m.start() - 12):m.start()])
+                   for m in re.finditer(r"발행(?!어음)", near))
 
 
 def candidates(xml, basis, body):
