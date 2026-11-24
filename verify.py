@@ -519,6 +519,24 @@ def main() -> int:
             and r.get("ltv_end") == cur["end"] and r.get("borrow_eok") == round(cur["total"] / 1e8))))
     check(all(ltv_ok) and len(ltv_raw) >= len(fd["rows"]) - 2,
           f"LTV(차입금과 사채 ÷ 자산총계) {sum(ltv_ok)}/{len(ltv_ok)}종목 재계산 일치")
+    # 감정가 LTV = 차입 ÷ (자산총계 + 공정가치 - 장부금액). 같은 보고서의 주석일 때만 계산하고, 공정가치가 장부금액보다 크면 장부 LTV보다 낮아야 한다
+    fv_saved = build.optional_data("fv.json")
+    lf_ok, lf_raw, lf_book = [], [], []
+    for r in fd["rows"]:
+        rec = dart_fs.get(r["code"]) or {}
+        cur = rec.get("current") or {}
+        fvr = fv_saved.get(r["code"]) or {}
+        want = None
+        if cur.get("assets") and cur.get("total") is not None and fvr.get("fv") is not None and fvr.get("rcept_no") == rec.get("rcept_no"):
+            want = cur["total"] / (cur["assets"] + fvr["fv"] - fvr["book"]) * 100
+            lf_raw.append(want)
+            lf_book.append(cur["total"] / cur["assets"] * 100)
+        lf_ok.append(r.get("ltv_fv") == (round(want, 1) if want is not None else None) and (want is None or (
+            0 <= want <= 100 and ((r["ltv_fv"] <= r["ltv"]) if fvr["fv"] >= fvr["book"] else (r["ltv_fv"] >= r["ltv"])))))
+    check(all(lf_ok) and fd["summary"].get("ltv_fv_n") == len(lf_raw)
+          and fd["summary"].get("ltv_fv_median") == (round(median(lf_raw), 1) if lf_raw else None)
+          and fd["summary"].get("ltv_fv_book_median") == (round(median(lf_book), 1) if lf_book else None),
+          f"LTV(감정가) {sum(lf_ok)}/{len(lf_ok)}종목 재계산, 중앙값 {fd['summary'].get('ltv_fv_median')}%({len(lf_raw)}개)")
     listed_ltv = {r["code"]: r.get("ltv") for r in build.build_listed_data()["rows"]}
     check(all(listed_ltv.get(r["code"]) == r.get("ltv") for r in fd["rows"]), "상장리츠 표와 재무 표의 LTV 일치")
     via_sub = sum(1 for r in fd["rows"] if r["debt_to_assets"] < 20 and r.get("ltv_basis") == "연결"

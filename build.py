@@ -908,6 +908,8 @@ def build_finance_data() -> dict:
     today = d(snap["date"])
     eok = lambda won: round(won / 1e8) if won is not None else None
     dart_fs = optional_data("dart.json")
+    fv_fs = optional_data("fv.json")
+    raw_ltv_fv, raw_ltv_fv_book = [], []
 
     rows, timelines, raw_fin = [], {}, []
     for r in snap["listed"]:
@@ -928,6 +930,13 @@ def build_finance_data() -> dict:
         drec = dart_fs.get(r["code"]) or {}
         dcur = drec.get("current") or {}
         ltv = dcur["total"] / dcur["assets"] * 100 if dcur.get("assets") and dcur.get("total") is not None else None
+        # 감정가 LTV: 분모의 투자부동산을 같은 사업보고서 주석의 공정가치로 바꾼다(자산총계 + 공정가치 - 장부금액)
+        fvr = fv_fs.get(r["code"]) or {}
+        ltv_fv = (dcur["total"] / (dcur["assets"] + fvr["fv"] - fvr["book"]) * 100
+                  if ltv is not None and fvr.get("fv") is not None and fvr.get("rcept_no") == drec.get("rcept_no") else None)
+        if ltv_fv is not None:
+            raw_ltv_fv.append(ltv_fv)
+            raw_ltv_fv_book.append(ltv)
         rows.append({
             "code": r["code"], "name": r["name"], "sector": r.get("sector") or "기타",
             "homepage": safe_url(r.get("homepage")), "mktcap_eok": r.get("mktcap_eok"),
@@ -940,6 +949,7 @@ def build_finance_data() -> dict:
             "ltv_basis": ("연결" if drec.get("basis") == "CFS" else "별도") if ltv is not None else None,
             "ltv_end": safe_date(dcur.get("end")) if ltv is not None else None,
             "borrow_eok": eok(dcur["total"]) if ltv is not None else None,
+            "ltv_fv": round(ltv_fv, 1) if ltv_fv is not None else None,
             "revenue_eok": round(rev / 1e8, 1) if rev is not None else None,
             "ffo_y_eok": round(r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") is not None and ppy else None,
             "ffo_end": safe_date(r.get("fiscal_end")) if r.get("ffo_mil") is not None and ppy else None,
@@ -1010,6 +1020,8 @@ def build_finance_data() -> dict:
             "ltv_cfs": sum(1 for r in ltv_rows if r["ltv_basis"] == "연결"),
             "ltv_hi": {"name": ltv_hi["name"], "v": ltv_hi["ltv"]} if ltv_hi else None,
             "via_sub": len(via_sub),
+            "ltv_fv_median": _median(raw_ltv_fv, 1), "ltv_fv_n": len(raw_ltv_fv),
+            "ltv_fv_book_median": _median(raw_ltv_fv_book, 1),
             "assets_eok": round(sum(a for a, _ in raw_fin) / 1e8), "debt_eok": round(sum(b for _, b in raw_fin) / 1e8),
             "dis_major": len(items), "dis_routine": routine90, "dis_risk": counts["위험 신호"],
             "dis_from": cut90,

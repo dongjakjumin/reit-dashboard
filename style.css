@@ -138,7 +138,10 @@ dl.wk ul.wk-l li{margin:2px 0}
 #loan-table td:nth-child(6), #loan-table td:nth-child(7), #loan-table th:nth-child(6), #loan-table th:nth-child(7) { text-align: right; }
 /* 열이 많은 재무 표는 머리글을 줄바꿈해 1366px 노트북 화면에 들어가게 한다 */
 #maturity-table th, #lev-table th, #maturity-table th button, #lev-table th button { white-space: normal; }
-#lev-table td:last-child { overflow-wrap: anywhere; min-width: 150px; }
+#lev-table td:last-child { overflow-wrap: anywhere; min-width: 136px; }
+/* 재무 표는 칸 여백과 자산 추이 선 폭을 줄여 1120px 본문 폭에 들어가게 한다 */
+#lev-table :is(th, td) { padding-left: 8px; padding-right: 8px; }
+#lev-table .spark { width: 72px; }
 #maturity-table td.num .s { white-space: normal; }
 /* 상장리츠 표는 긴 보조 문구만 줄바꿈하고 칸 여백을 조금 줄여 1120px 본문 폭에 들어가게 한다 */
 #tb td .s.wr { white-space: normal; }
