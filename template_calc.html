@@ -51,7 +51,7 @@ table.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:
 <header>
   <h1>프로젝트리츠 사업성 계산기</h1>
   <p>임대형 건물을 개발해 프로젝트리츠로 보유하는 경우를 가정값으로 계산합니다. 총사업비와 조달 구조를 구하고, 임대가 안정된 시점에 매각하는 방안(A안)과 담보대출로 바꿔 운영한 뒤 매각하는 방안(B안)의 수익률을 비교합니다. 계산은 이 화면 안에서만 하고 입력값을 어디로도 보내지 않습니다.</p>
-  <div class="stamp">기본값은 서울 오피스 개발을 가정한 예시입니다. 사업 초기 검토용 계산이며, 실제 검토에는 감정평가, 세무, 대주 조건을 반영해야 합니다.</div>
+  <div class="stamp">기본값은 서울 오피스 개발을 가정한 예시이고, 자산관리회사 보수율도 예시 값입니다. 사업 초기 검토용 계산이며, 실제 검토에는 감정평가, 세무, 대주 조건과 위탁계약의 보수 조건을 반영해야 합니다.</div>
 </header>
 
 <section>
@@ -68,6 +68,7 @@ table.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:
   <div>
     <p class="err" id="stale-note" role="status" hidden>입력을 고치기 전의 결과입니다.</p>
     <div id="results">
+    <p class="card" id="land-cap" style="margin:0 0 12px;font-size:14px"></p>
     <div class="tiles" id="tiles"></div>
 
     <div class="card" style="margin-top:12px">
@@ -78,7 +79,7 @@ table.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:
     </div>
 
     <h2 id="h-exit" style="margin-top:28px">두 가지 회수 방안</h2>
-    <p class="sub">A안은 임대가 안정된 시점에 매각합니다. B안은 같은 시점에 담보대출로 바꿔 개발 차입을 갚고, 정한 기간만큼 임대로 운영한 뒤 매각합니다.</p>
+    <p class="sub">A안은 임대가 안정된 시점에 매각합니다. B안은 같은 시점에 담보대출로 바꿔 개발 차입을 갚고, 정한 기간만큼 임대로 운영한 뒤 매각합니다. 주주 현금흐름과 IRR은 자산관리회사 보수를 뺀 값입니다.</p>
     <div class="tw"><table class="cmp" id="cmp"></table></div>
 
     <div class="card" style="margin-top:12px">
@@ -116,15 +117,16 @@ table.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:
   <h2 id="h-read">계산 방법과 한계</h2>
   <div class="card read">
     <ul style="margin:0;padding-left:18px">
-      <li><b>사업비 집행</b>: 토지비와 취득 부대비용은 첫 달에, 기타 사업비는 준공까지 매달 같은 금액으로, 공사비는 공사기간에 매달 같은 금액으로 나간다고 가정합니다. 기본값에서 토지 취득 부대비용은 취득세와 취득 수수료 등을 포함합니다. 기타 사업비는 설계비, 감리비, 인허가비, 분담금, 임대 수수료와 예비비 등을 포함합니다.</li>
+      <li><b>사업비 집행</b>: 토지비, 취득 부대비용, 매입보수는 첫 달에, 기타 사업비는 준공까지 매달 같은 금액으로, 공사비는 공사기간에 매달 같은 금액으로 나간다고 가정합니다. 기본값에서 토지 취득 부대비용은 취득세와 취득 수수료 등을 포함합니다. 기타 사업비는 설계비, 감리비, 인허가비, 분담금, 임대 수수료와 예비비 등을 포함합니다.</li>
       <li><b>임대면적</b>: 공용면적을 포함한 계약면적입니다. 기본값은 연면적과 같다고 가정합니다. 임대료는 임대면적에, 공사비는 연면적에 적용합니다.</li>
       <li><b>개발 단계 조달</b>: 자기자본을 먼저 쓰고 나머지를 차입합니다. 이자는 차입 원금에 더하고, 준공까지의 이자를 금융비로 총사업비에 넣습니다.</li>
-      <li><b>임대 안정화</b>: 준공 뒤 입주율이 매달 같은 폭으로 올라 안정화 기간 끝에 목표 입주율에 이릅니다. 이 기간의 이자와 리츠 운영비용이 임대 순수익보다 많으면 차입이 늘어나고, 적으면 차입을 갚습니다. 차입을 다 갚고 남는 돈은 이자 없이 두었다가 안정화 시점에 받습니다.</li>
+      <li><b>임대 안정화</b>: 준공 뒤 입주율이 매달 같은 폭으로 올라 안정화 기간 끝에 목표 입주율에 이릅니다. 이 기간의 이자, 리츠 운영비용, 운용보수가 임대 순수익보다 많으면 차입이 늘어나고, 적으면 차입을 갚습니다. 차입을 다 갚고 남는 돈은 이자 없이 두었다가 안정화 시점에 받습니다.</li>
       <li><b>가치와 매각가</b>: 다음 12개월의 순영업수익(NOI)을 Cap Rate로 나눕니다. A안과 B안의 매각, 담보대출 한도 산정에 같은 Cap Rate를 씁니다.</li>
-      <li><b>B안 담보대출</b>: 안정화 가치에 LTV를 곱해 한도를 구합니다. 첫해 NOI에서 리츠 운영비용을 뺀 금액을 연 금리와 최소 DSCR의 곱으로 나눠 이자 기준 한도를 구합니다. 두 한도 중 작은 금액을 빌립니다. 최소 DSCR이나 금리가 0이면 LTV만 적용합니다. 이자만 내다가 매각할 때 원금을 갚습니다. 연도별 DSCR은 해당 연도 NOI에서 리츠 운영비용을 뺀 금액을 연 이자로 나눈 값입니다.</li>
+      <li><b>B안 담보대출</b>: 안정화 가치에 LTV를 곱해 한도를 구합니다. 첫해 NOI에서 리츠 운영비용과 운용보수를 뺀 금액을 연 금리와 최소 DSCR의 곱으로 나눠 이자 기준 한도를 구합니다. 두 한도 중 작은 금액을 빌립니다. 최소 DSCR이나 금리가 0이면 LTV만 적용합니다. 이자만 내다가 매각할 때 원금을 갚습니다. 연도별 DSCR은 해당 연도 NOI에서 리츠 운영비용과 운용보수를 뺀 금액을 연 이자로 나눈 값입니다.</li>
+      <li><b>자산관리회사 보수</b>: 매입보수는 토지비에 비율을 곱해 토지를 살 때 한 번 내고 총사업비에 넣습니다. 운용보수는 총사업비에 연 비율을 곱해 준공 다음 달부터 내고, 매각보수는 매각가에 비율을 곱해 매각할 때 냅니다. 보수 합계는 세 가지를 사업 기간 동안 더한 금액으로, 주주 현금흐름에서 이미 뺐습니다. 기본 보수율은 예시이며 실제 보수는 회사와 계약마다 다릅니다.</li>
       <li><b>IRR과 회수 배수</b>: 월별 세전 주주 현금흐름으로 구한 내부수익률(연율)과, 받은 돈 합계 ÷ 넣은 돈 합계입니다. B안 운영 기간의 현금흐름은 연차마다 마지막 달에 한 번 받는다고 놓고 계산합니다. 매달 나눠 받는다고 놓으면 IRR이 조금 높아집니다.</li>
-      <li><b>목표 수익률 역산</b>은 한 항목만 바꾸고 나머지 가정을 고정해 계산합니다. 토지비가 바뀌면 취득 부대비용, 자기자본과 차입 금액도 함께 바뀝니다. 역산에도 같은 세전 현금흐름을 쓰며 대출 취급 수수료 등은 제외합니다. 대출 한도가 함께 바뀌어 수익률이 한 방향으로만 움직이지 않으면 답이 둘 이상일 수 있습니다. 리파이낸싱 부족분이 0이 되는 월 임대료는 0.01만원 단위로 올려 적습니다. 내려 적으면 그 임대료에서 부족분이 조금 남기 때문입니다.</li>
-      <li><b>넣지 않은 것</b>: 개발기간의 리츠 운영비용, 법인세와 배당 소득공제, 부가가치세, 분양 수입은 계산하지 않습니다. 무상임대 기간과 임대보증금의 유입과 반환도 제외합니다. 개발 차입은 한도와 만기 없이 부족한 돈을 빌린다고 가정합니다. 대출 취급 수수료, 중도상환과 분할상환, 물가에 따른 공사비 증액, 주주별 우선순위 배분도 제외합니다.</li>
+      <li><b>목표 수익률 역산</b>은 한 항목만 바꾸고 나머지 가정을 고정해 계산합니다. 토지비가 바뀌면 취득 부대비용, 매입보수, 자기자본과 차입 금액도 함께 바뀝니다. 역산에도 같은 세전 현금흐름을 쓰며 대출 취급 수수료 등은 제외합니다. 대출 한도가 함께 바뀌어 수익률이 한 방향으로만 움직이지 않으면 답이 둘 이상일 수 있습니다. 리파이낸싱 부족분이 0이 되는 월 임대료는 0.01만원 단위로 올려 적습니다. 내려 적으면 그 임대료에서 부족분이 조금 남기 때문입니다.</li>
+      <li><b>넣지 않은 것</b>: 개발기간의 리츠 운영비용과 운용보수, 성과보수, 법인세와 배당 소득공제, 부가가치세, 분양 수입은 계산하지 않습니다. 무상임대 기간과 임대보증금의 유입과 반환도 제외합니다. 개발 차입은 한도와 만기 없이 부족한 돈을 빌린다고 가정합니다. 대출 취급 수수료, 중도상환과 분할상환, 물가에 따른 공사비 증액, 주주별 우선순위 배분도 제외합니다.</li>
       <li><b>차입 한도 판정</b>: 법의 한도는 차입금과 사채의 합계를 자기자본과 견주는 것입니다. 법 29조의 자기자본은 재무상태표의 자기자본입니다. 화면의 차입 배수는 어림값입니다. 개발 단계는 처음 자기자본을, 운영 단계는 처음 자기자본과 전환 때 추가 출자액의 합계를 분모로 씁니다. 전환 때 회수하면 처음 자기자본을 그대로 씁니다.</li>
       <li><b>검산</b>: 손으로 답을 구할 수 있는 경우와, 같은 규칙으로 따로 만든 검산용 계산에 무작위 가정 400가지를 넣어 결과가 같은지 대조했습니다. 계산이 맞는지를 본 것이고, 가정이 맞는지는 따로 판단해야 합니다.</li>
     </ul>
@@ -176,14 +178,19 @@ const FIELDS = [
     ['vacancy', '공실률', '%', 1, 0, 99],
     ['opex', '운영비용률', '%', 1, 0, 99, '임대수익 대비'],
     ['growth', '임대료 상승률', '%', 0.5, -10, 20, '연'],
-    ['reit_cost', '리츠 운영비용', '%', 0.05, 0, 5, '연, 총사업비 대비. 자산관리, 사무수탁 보수 등'],
+    ['reit_cost', '리츠 운영비용', '%', 0.05, 0, 5, '연, 총사업비 대비. 사무수탁, 자산보관, 회계감사 등(운용보수 제외)'],
   ]],
   ['운영 단계 대출과 매각', [
     ['perm_ltv', '담보대출 LTV', '%', 1, 0, 90, '안정화 시점 가치 대비'],
     ['perm_dscr_min', '최소 DSCR', '배', 0.1, 0, Infinity, '0이면 적용하지 않습니다.'],
     ['perm_rate', '담보대출 금리', '%', 0.1, 0, 30, '연'],
     ['exit_cap', 'Cap Rate', '%', 0.1, 0.5, 30],
-    ['sale_cost', '매각비용', '%', 0.1, 0, 20, '매각가 대비'],
+    ['sale_cost', '매각비용', '%', 0.1, 0, 20, '매각가 대비. 중개, 자문, 실사 등(매각보수 제외)'],
+  ]],
+  ['자산관리회사 보수(기본값은 예시)', [
+    ['acq_fee', '매입보수', '%', 0.1, 0, 10, '토지비 대비. 토지를 살 때 한 번 내고 총사업비에 넣음'],
+    ['mgmt_fee', '운용보수', '%', 0.05, 0, 5, '연, 총사업비 대비. 준공 다음 달부터'],
+    ['sale_fee', '매각보수', '%', 0.1, 0, 10, '매각가 대비'],
   ]],
   ['목표 수익률', [
     ['target_irr', '목표 자기자본 IRR', '%', 0.1, -99.99, Infinity, '연 기준'],
@@ -266,6 +273,13 @@ function render(){
   const q = new URLSearchParams(); for (const k of KEYS) if (p[k] !== D.base[k]) q.set(k, p[k]); if (start !== thisMonth) q.set('start', start);
   history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : ''));
 
+  // 역산은 맨 위 토지비 상한과 거꾸로 계산 표가 같이 쓰므로 한 번 구한 값을 다시 쓴다.
+  const solved = new Map();
+  const solve = (key, plan, target) => { const id = [key, plan, target].join('|'); if (!solved.has(id)) solved.set(id, solveFor(p, key, plan, target)); return solved.get(id); };
+  const capText = plan => { const x = solve('land', plan, p.target_irr); if (x == null) return '이 범위에서 맞는 값 없음'; const d = x - p.land;
+    return `<b>${eok(x)}원</b>(${d >= 0 ? '여유 ' + eok(d) + '원' : '현재보다 ' + eok(-d) + '원 낮춰야 함'})`; };
+  $('#land-cap').innerHTML = `<strong>토지비 상한</strong> 목표 자기자본 IRR 연 ${p.target_irr}%를 맞추는 토지비는 A안 ${capText('a')}, B안 ${capText('b')}까지입니다. 현재 토지비 ${eok(p.land)}원에서 다른 가정은 그대로 두고 토지비만 움직인 값입니다. <a href="#inverse-heading">거꾸로 계산 표</a>`;
+
   const spread = (r.yield_on_cost - p.exit_cap / 100) * 100;
   $('#tiles').innerHTML = [
     {lab: '총사업비', val: eok(r.tpc), unit: '원', det: `자기자본 <b>${eok(r.equity)}원</b>, 준공 시 차입 <b>${eok(r.dev_debt)}원</b>(LTC ${pct(r.ltc, 0)})`},
@@ -274,23 +288,29 @@ function render(){
     {lab: `B안: ${p.hold_y}년 운영 뒤 매각`, val: r.b.irr == null ? '–' : (r.b.irr * 100).toFixed(1), unit: r.b.irr == null ? '' : '%', det: `자기자본 IRR. 회수 배수 <b>${mult(r.b.multiple)}</b>, 최저 DSCR <b>${r.b.dscr_min == null ? '–' : r.b.dscr_min.toFixed(2) + '배'}</b>`},
   ].map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
 
-  stack($('#cost-bar'), $('#cost-legend'), [{n: '토지비', v: r.land, c: 'var(--s1)'}, {n: '취득 부대비용', v: r.acq, c: 'var(--s2)'}, {n: '공사비', v: r.hard, c: 'var(--s3)'}, {n: '기타 사업비', v: r.soft, c: 'var(--s4)'}, {n: '금융비', v: r.fin, c: 'var(--s5)'}]);
+  stack($('#cost-bar'), $('#cost-legend'), [{n: '토지비', v: r.land, c: 'var(--s1)'}, {n: '취득 부대비용', v: r.acq, c: 'var(--s2)'}, {n: '공사비', v: r.hard, c: 'var(--s3)'}, {n: '기타 사업비', v: r.soft, c: 'var(--s4)'}, {n: '금융비', v: r.fin, c: 'var(--s5)'}, {n: '매입보수', v: r.acq_fee, c: 'var(--s6)'}]);
   stack($('#fund-bar'), $('#fund-legend'), [{n: '자기자본', v: r.equity, c: 'var(--s1)'}, {n: '차입(준공 시 잔액)', v: r.dev_debt, c: 'var(--s2)'}]);
   $('#cost-note').textContent = `연면적 ${n0(p.gfa_py)}평(약 ${n0(p.gfa_py * 3.3058)}㎡), 평당 총사업비 ${n0(r.tpc / p.gfa_py * 1e4)}만원. 개발이익률은 안정화 가치를 준공까지의 총사업비와 비교한 값으로 ${pct(r.dev_margin)}입니다. 준공 뒤 임대 안정화 기간에 늘어난 차입과 매각비용은 포함하지 않습니다. 임대 안정화 기간에 차입이 ${eok(Math.abs(r.debt_at_stab - r.dev_debt))}원 ${r.debt_at_stab >= r.dev_debt ? '늘어' : '줄어'} 안정화 시점 잔액은 ${eok(r.debt_at_stab)}원입니다.` + (r.cash_at_stab > 0.5 ? ` 차입을 다 갚고 남은 ${eok(r.cash_at_stab)}원은 안정화 시점에 받습니다.` : '');
 
   const row = (lab, a, b) => `<tr><td>${lab}</td><td class="num">${a}</td><td class="num">${b}</td></tr>`;
   const refiText = x => x.b.refi < 0 ? `추가 출자 ${eok(-x.b.refi)}원` : x.b.refi > 0 ? `회수 ${eok(x.b.refi)}원` : '추가 출자와 회수 없음';
   const limitText = {ltv: 'LTV', dscr: 'DSCR', both: 'LTV와 DSCR'};
+  // 반올림한 세 항목을 더하면 반올림한 합계와 같도록, 반올림 오차가 가장 큰 항목에서 1억원을 맞춘다(단수 조정).
+  const parts = (total, xs) => { const out = xs.map(Math.round), gap = Math.round(total) - out.reduce((s, v) => s + v, 0);
+    if (gap) { const off = xs.map((v, k) => (v - out[k]) * Math.sign(gap)); out[off.indexOf(Math.max(...off))] += gap; } return out; };
+  const feeCell = (x, mgmt) => { const [buy, run, sell] = parts(x.fees, [r.acq_fee, mgmt, x.sale_fee]);
+    return `${eok(x.fees)}원<span class="s">매입 ${eok(buy)}, 운용 ${eok(run)}, 매각 ${eok(sell)}</span>`; };
   $('#cmp').innerHTML = `<thead><tr><th></th><th class="num">A안: 안정화 시점 매각</th><th class="num">B안: ${p.hold_y}년 운영 뒤 매각</th></tr></thead><tbody>` +
     row('매각 시점', ym(start, r.Ts), ym(start, r.Tend)) + row('매각가', eok(r.a.sale) + '원', eok(r.b.sale) + '원') +
     row('매각 때 갚는 차입', eok(r.debt_at_stab) + '원', eok(r.b.loan) + '원') + row('매각 때 세전 주주 현금흐름', eok(r.a.net) + '원', eok(r.b.net) + '원') +
     row('담보대출 한도 기준', '해당 없음', limitText[r.b.constraint]) +
     row('담보대출 전환 때 개발 차입 상환', '해당 없음', '<b>' + refiText(r) + '</b>') + row('운영 기간 세전 주주 현금흐름 합계', '–', eok(r.b.years.reduce((s, x) => s + x.cf, 0)) + '원') +
+    row('자산관리회사 보수 합계(사업 기간)', feeCell(r.a, r.lease_fee), feeCell(r.b, r.lease_fee + r.b.mgmt_fee_y * p.hold_y)) +
     row('누적 이익', eok(r.a.profit) + '원', eok(r.b.profit) + '원') + row('자기자본 IRR', pct(r.a.irr, 2), pct(r.b.irr, 2)) + row('회수 배수', mult(r.a.multiple), mult(r.b.multiple)) + '</tbody>';
 
   drawCf(r);
-  $('#years').innerHTML = `<thead><tr><th>운영 연차</th><th class="num">NOI</th><th class="num">대출 이자</th><th class="num">리츠 운영비용</th><th class="num">세전 주주 현금흐름</th><th class="num">현금수익률¹</th><th class="num">DSCR</th></tr></thead><tbody>` +
-    r.b.years.map(x => `<tr><td>${x.y}년차 (${ym(start, r.Ts + 12 * x.y)})</td><td class="num">${eok(x.noi)}</td><td class="num">${eok(x.interest)}</td><td class="num">${eok(x.reit)}</td><td class="num">${eok(x.cf)}</td><td class="num">${pct(x.yield_on_equity)}</td><td class="num">${x.dscr == null ? '–' : x.dscr.toFixed(2) + '배'}</td></tr>`).join('') + '</tbody>';
+  $('#years').innerHTML = `<thead><tr><th>운영 연차</th><th class="num">NOI</th><th class="num">대출 이자</th><th class="num">리츠 운영비용</th><th class="num">운용보수</th><th class="num">세전 주주 현금흐름</th><th class="num">현금수익률¹</th><th class="num">DSCR</th></tr></thead><tbody>` +
+    r.b.years.map(x => `<tr><td>${x.y}년차 (${ym(start, r.Ts + 12 * x.y)})</td><td class="num">${eok(x.noi)}</td><td class="num">${eok(x.interest)}</td><td class="num">${eok(x.reit)}</td><td class="num">${eok(x.fee)}</td><td class="num">${eok(x.cf)}</td><td class="num">${pct(x.yield_on_equity)}</td><td class="num">${x.dscr == null ? '–' : x.dscr.toFixed(2) + '배'}</td></tr>`).join('') + '</tbody>';
 
   $('#yield-note').textContent = `¹ 현금수익률은 연간 세전 주주 현금흐름을 전환까지 넣은 자기자본 ${eok(r.b.paid_in)}원으로 나눕니다. 전환 때 추가 출자한 금액은 더하고 회수액은 차감하지 않습니다.`;
   const d = D.downside;
@@ -303,7 +323,7 @@ function render(){
     drow('B안 담보대출 전환 때 개발 차입 상환', refiText) + drow('최고 차입 잔액 ÷ 자기자본', x => x.debt_to_equity == null ? '–' : x.debt_to_equity.toFixed(2) + '배') + '</tbody>';
 
   drawSens(p);
-  drawInverse(p, r);
+  drawInverse(p, r, solve);
 
   const st = (c, t) => `<span class="st ${c}">${t}</span>`;
   const lev = v => v == null ? st('', '해당 없음') : v <= 2 ? st('ok', '2배 이내') : v <= 10 ? st('warn', '2배 초과(어림값), 주주총회 특별결의 필요') : st('no', '한도 초과');
@@ -326,7 +346,7 @@ function render(){
     [1, '사업 시작, 토지 취득'], [p.pre_m + 1, '착공'], [r.Tc, '준공'], [r.Ts, '임대 안정화, A안 매각, B안 담보대출 전환'], [licDue, '영업인가 또는 등록 기한'], [pubDue, '공모 기한'], [r.Tend, 'B안 매각'],
   ].sort((a, b) => a[0] - b[0]).map(x => `<tr><td class="nw">${ym(start, x[0])}</td><td>${x[1]}</td><td class="num">${x[0]}개월째</td></tr>`).join('') + '</tbody>';
 }
-function drawInverse(p, r){
+function drawInverse(p, r, solve){
   const short = [['A안', r.a.irr], ['B안', r.b.irr]].filter(([, v]) => v == null || v * 100 < p.target_irr - 1e-8)
     .map(([n, v]) => n + (v == null ? '' : ` ${(v * 100).toFixed(2)}%`));
   $('#inverse-target').textContent = `목표 자기자본 IRR은 연 ${p.target_irr}%입니다. 목표 수익률은 예시 값이며 시장 기준이 아닙니다.` +
@@ -346,7 +366,7 @@ function drawInverse(p, r){
     function cell(plan){
       if (kind === 'refi' && plan === 'a') return '해당 없음';
       if (kind === 'refi' && r.b.refi >= 0) return '현재 가정에서 추가 출자가 없습니다.';
-      const x = solveFor(p, key, kind === 'refi' ? 'refi' : plan, kind ? 0 : p.target_irr);
+      const x = solve(key, kind === 'refi' ? 'refi' : plan, kind ? 0 : p.target_irr);
       if (x == null) return '이 범위에서는 맞는 값이 없습니다.';
       // 대환 기준을 반올림해 낮춰 보이면 표시 임대료에서 소액의 추가 출자가 생긴다.
       const shown = kind === 'refi' ? Math.ceil(x * 100) / 100 : x;

@@ -30,12 +30,13 @@ process.stdin.on('end', () => {
   const out = JSON.parse(buf).map(p => {
     const r = reitCalc(p);
     return {
-      acq: r.acq, hard: r.hard, soft: r.soft, fin: r.fin, tpc: r.tpc, equity: r.equity, dev_debt: r.dev_debt,
+      acq: r.acq, acq_fee: r.acq_fee, hard: r.hard, soft: r.soft, fin: r.fin, tpc: r.tpc, equity: r.equity, dev_debt: r.dev_debt,
       dev_debt_peak: r.dev_debt_peak, cash_at_stab: r.cash_at_stab,
       ltc: r.ltc, debt_to_equity: r.debt_to_equity, Tc: r.Tc, Ts: r.Ts, Tend: r.Tend,
       lease_interest: r.lease_interest, lease_noi: r.lease_noi, debt_at_stab: r.debt_at_stab,
       noi1: r.noi1, value: r.value, yield_on_cost: r.yield_on_cost, dev_margin: r.dev_margin,
       'a.sale': r.a.sale, 'a.net': r.a.net, 'a.irr': r.a.irr, 'a.multiple': r.a.multiple, 'a.profit': r.a.profit,
+      'a.fees': r.a.fees, 'b.fees': r.b.fees,
       'b.loan': r.b.loan, 'b.refi': r.b.refi, 'b.loan_to_equity': r.b.loan_to_equity, 'b.sale': r.b.sale, 'b.constraint': r.b.constraint, 'b.paid_in': r.b.paid_in,
       'b.years.yield_on_equity': r.b.years.map(x => x.yield_on_equity),
       'b.net': r.b.net, 'b.irr': r.b.irr, 'b.multiple': r.b.multiple, 'b.profit': r.b.profit, 'b.dscr_min': r.b.dscr_min,
@@ -76,6 +77,7 @@ def random_case(rng: random.Random) -> dict:
         "perm_dscr_min": rng.choice([0, rng.uniform(0.5, 4)]), "rent_area_pct": rng.uniform(0, 100),
         "perm_ltv": rng.uniform(0, 80), "perm_rate": rng.uniform(0, 12),
         "exit_cap": rng.uniform(3.5, 8), "sale_cost": rng.uniform(0, 3),
+        "acq_fee": rng.uniform(0, 2), "mgmt_fee": rng.uniform(0, 0.6), "sale_fee": rng.uniform(0, 1.5),
     }
 
 
@@ -93,7 +95,8 @@ def main() -> int:
     print("[1] 손으로 답을 아는 경우")
     # (가) 금리 0, 전액 자기자본, 안정화 기간 0: 총사업비 = 사업비 합계, A안 회수 = 매각가 × (1 - 매각비용)
     p = dict(BASE, dev_rate=0, equity_pct=100, lease_m=0, reit_cost=0, acq_pct=0, soft_pct=0,
-             land=1000, gfa_py=10000, cost_per_py=1000, rent=10, vacancy=0, opex=0, exit_cap=5, sale_cost=0)
+             land=1000, gfa_py=10000, cost_per_py=1000, rent=10, vacancy=0, opex=0, exit_cap=5, sale_cost=0,
+             acq_fee=0, mgmt_fee=0, sale_fee=0)
     r = run_js([p])[0]
     check(same(r["tpc"], 2000) and same(r["equity"], 2000) and same(r["dev_debt"], 0), "금리 0, 전액 자기자본: 총사업비 2,000억 = 자기자본, 차입 0")
     check(same(r["noi1"], 120) and same(r["value"], 2400) and same(r["a.net"], 2400), "NOI 120억, 가치 2,400억, A안 회수 2,400억")
@@ -131,6 +134,13 @@ def main() -> int:
           and free["b.constraint"] == "ltv", "무이자 대출 회수 시 처음 자기자본 유지")
     check(same(half["hard"], 1000) and same(half["noi1"], 60), "임대면적 50%에서 NOI 60억, 공사비 1,000억")
     check(same(empty["b.loan"], 0) and same(empty["noi1"], 0), "임대면적 0에서 대출과 NOI 모두 0")
+    # (자) 자산관리회사 보수: 토지비 1,000억의 1% 매입보수, 총사업비의 연 0.5% 운용보수, 매각가의 1% 매각보수
+    fee = run_js([dict(p3, acq_fee=1, mgmt_fee=0.5, sale_fee=1)])[0]
+    check(same(fee["acq_fee"], 10) and same(fee["tpc"], 2010) and same(fee["a.net"], 2400 * 0.99 - 2010 * 0.7),
+          "매입보수 10억을 더한 총사업비 2,010억, A안 회수 969억(2,400 × 0.99 - 1,407)")
+    check(all(same(x, 120 - 48 - 10.05) for x in fee["b.years.cf"]) and same(fee["b.dscr_min"], (120 - 10.05) / 48)
+          and same(fee["a.fees"], 34) and same(fee["b.fees"], 10 + 10.05 * 5 + 24),
+          "운용보수 연 10.05억을 뺀 연 현금흐름 61.95억, 보수 합계 A안 34억, B안 84.25억")
     print("[2] 경계에 가까운 가정")
     # (마) 보유 30년에 대출 금리가 높아 수익이 거의 없는 경우: IRR이 터무니없는 값이 되지 않아야 한다
     long_case = dict(BASE, perm_rate=9, perm_dscr_min=0, growth=0, hold_y=30)
@@ -169,12 +179,12 @@ def main() -> int:
     b = js[0]
     print(f"  기본 예시: 총사업비 {b['tpc']:,.0f}억, 자기자본 {b['equity']:,.0f}억, 안정화 NOI {b['noi1']:,.1f}억, "
           f"가치 {b['value']:,.0f}억, A안 IRR {b['a.irr']*100:.2f}%, B안 IRR {b['b.irr']*100:.2f}%")
-    expected = [5019, 1506, 288, 6130, 10.54, 9.36]
+    expected = [5052, 1516, 288, 6130, 9.88, 9.07]
     actual = [round(b[k]) for k in ("tpc", "equity", "noi1", "value")]
     actual += [round(b[k] * 100, 2) for k in ("a.irr", "b.irr")]
     check(actual == expected, "기본 가정의 금액과 IRR 6개 유지")
     check([round(b["b.loan_to_equity"], 2), round(b["b.dscr_min"], 2), round(-b["b.refi"])]
-          == [1.94, 1.62, 233], "운영 단계 차입 1.94배, 최저 DSCR 1.62배, 추가 출자 233억원 유지")
+          == [1.9, 1.62, 258], "운영 단계 차입 1.90배, 최저 DSCR 1.62배, 추가 출자 258억원 유지")
     print("[4] 목표 수익률 역산")
     specs = [(k, plan, 8) for k in ("land", "cost_per_py", "rent", "exit_cap") for plan in ("a", "b")]
     specs += [("rent", plan, 0) for plan in ("a", "b", "refi")]

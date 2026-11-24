@@ -1,11 +1,12 @@
 {
-  "note": "화면의 기본값. 실제 사업장이 아닌 가상의 오피스 개발 예시다.",
+  "note": "화면의 기본값. 실제 사업장이 아닌 가상의 오피스 개발 예시다. 자산관리회사 보수율도 예시다.",
   "base": {
     "land": 2800, "acq_pct": 4.6,
     "gfa_py": 12000, "cost_per_py": 1100, "soft_pct": 15,
     "pre_m": 12, "con_m": 36, "lease_m": 12, "hold_y": 5,
     "equity_pct": 30, "dev_rate": 6.5,
-    "rent_area_pct": 100, "rent": 27, "vacancy": 5, "opex": 22, "growth": 2, "reit_cost": 0.3,
+    "rent_area_pct": 100, "rent": 27, "vacancy": 5, "opex": 22, "growth": 2, "reit_cost": 0.1,
+    "acq_fee": 1.0, "mgmt_fee": 0.2, "sale_fee": 0.5,
     "perm_ltv": 55, "perm_rate": 5.0, "perm_dscr_min": 1.2,
     "exit_cap": 4.7, "sale_cost": 1.0, "target_irr": 8
   },
