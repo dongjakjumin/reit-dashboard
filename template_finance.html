@@ -247,7 +247,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
         if (c.k === null) return `<td>${spark(x)}</td>`;
         if (c.txt) return `<td>${esc(x[c.k] || '')}</td>`;
         if (c.k === 'revenue_eok') return `<td class="num">${c.f(x)}${x.fy_end ? `<span class="s">${esc(x.fy_end)}</span>` : ''}</td>`;
-        if (c.k === 'ffo_y_eok') return `<td class="num">${c.f(x)}${x.ffo_end ? `<span class="s">${esc(x.ffo_end)} 결산기</span>` : ''}</td>`;
+        if (c.k === 'ffo_y_eok') return `<td class="num">${c.f(x)}${x.ffo_end ? `<span class="s">${esc(x.ffo_end)}</span>` : ''}</td>`;
         return `<td class="num">${c.f(x)}</td>`; }).join('') + '</tr>').join('') + '</tbody>';
     $('#lev-table').querySelectorAll('th.sortable').forEach(th => th.onclick = () => { const k = th.dataset.k; if (sortK === k) asc = !asc; else { sortK = k; asc = !!cols.find(c => c.k === k).txt; } draw(); $('#lev-table').querySelector(`[data-k="${k}"] button`).focus(); });
   }

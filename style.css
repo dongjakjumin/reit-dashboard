@@ -136,3 +136,8 @@ dl.wk ul.wk-l li{margin:2px 0}
 #upcoming-table :is(td, th):is(:first-child, :nth-child(2), :last-child) { white-space: nowrap; }
 #upcoming-table :is(td, th):last-child { text-align: right; }
 #loan-table td:nth-child(6), #loan-table td:nth-child(7), #loan-table th:nth-child(6), #loan-table th:nth-child(7) { text-align: right; }
+/* 열이 많은 재무 표는 머리글을 줄바꿈해 1366px 노트북 화면에 들어가게 한다 */
+#maturity-table th, #lev-table th, #maturity-table th button, #lev-table th button { white-space: normal; }
+#lev-table td:last-child { overflow-wrap: anywhere; min-width: 150px; }
+#maturity-table td.num .s { white-space: normal; }
+#maturity-table td:nth-child(2) { white-space: nowrap; }

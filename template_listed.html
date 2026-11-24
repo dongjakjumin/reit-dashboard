@@ -57,6 +57,7 @@
     <div class="seg" id="sec-seg" role="group" aria-label="투자대상"></div>
     <span class="sp"></span>
     <span class="count" id="tb-count"></span>
+    <label><input type="checkbox" id="tb-more" autocomplete="off"> 열 모두 보기</label>
     <button class="btn" id="tb-csv">엑셀(CSV) 내려받기</button>
   </div>
   <div class="tw"><table id="tb"></table></div>
@@ -220,13 +221,9 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 (function(){
   const cols = [
     {k: 'name', t: '종목', txt: true},
-    {k: 'price', t: '현재가', f: r => r.price == null ? '–' : n0(r.price) + '원' + (r.price_date ? '' : ' (목록 시세)')},
-    {k: 'chg_pct', t: '전 거래일 대비', f: r => pct(r.chg_pct), c: r => cls(r.chg_pct)},
     {k: 'mktcap_eok', t: '시가총액', f: r => eok(r.mktcap_eok)},
-    {k: 'ret_1m', t: '1개월', f: r => pct(r.ret_1m), c: r => cls(r.ret_1m)},
-    {k: 'ret_3m', t: '3개월', f: r => pct(r.ret_3m), c: r => cls(r.ret_3m)},
-    {k: 'ret_1y', t: '1년', f: r => pct(r.ret_1y), c: r => cls(r.ret_1y)},
-    {k: null, t: '1년 흐름'},
+    {k: 'pnav', t: 'P/B', f: r => r.pnav != null ? r.pnav.toFixed(2) + '배' : '–'},
+    {k: 'pffo', t: 'P/FFO(연환산)', f: r => r.pffo != null ? r.pffo.toFixed(1) + '배' : '–'},
     {k: 'market_yield', t: '시가배당률', f: r => (r.market_yield != null ? r.market_yield.toFixed(2) + '%' :
       '–' + (r.market_yield_reason ? `<span class="s">${esc(r.market_yield_reason)}</span>` : '')) +
       (r.dividend_end ? `<span class="s">${esc(r.dividend_end.slice(2,7).replace('-', '.'))}까지</span>` : '') +
@@ -235,14 +232,21 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
       (r.dps_last != null && r.dps_k ? `<span class="s">${r.dps_last.toLocaleString('ko-KR')}원 × 연 ${r.dps_k}회</span>` : '') +
       (r.dps_chg != null && Math.abs(r.dps_chg) >= 10 ? `<span class="s${cls(r.dps_chg)}">전기 대비 ${pct(r.dps_chg)}</span>` : '')},
     {k: 'spread', t: '국고채 대비', f: r => r.spread == null ? '–' : signed(r.spread) + '%p'},
-    {k: 'annual_dvd_pct', t: '연환산 배당률(납입자본금)', f: r => r.annual_dvd_pct != null ? r.annual_dvd_pct.toFixed(2) + '%' : '–'},
-    {k: 'pnav', t: 'P/B', f: r => r.pnav != null ? r.pnav.toFixed(2) + '배' : '–'},
-    {k: 'pffo', t: 'P/FFO(연환산)', f: r => r.pffo != null ? r.pffo.toFixed(1) + '배' : '–'},
-    {k: 'wale_years', t: 'WALE', f: r => r.wale_years ? (Math.round(r.wale_years * 10) / 10).toFixed(1) + '년' : '–'},
-    {k: 'fiscal_end', t: '직전 결산', txt: true},
-    {k: 'listed_date', t: '상장일', txt: true},
+    {k: 'price', t: '현재가', f: r => (r.price == null ? '–' : n0(r.price) + '원' + (r.price_date ? '' : ' (목록 시세)')) +
+      (r.chg_pct != null ? `<span class="s${cls(r.chg_pct)}">전일 대비 ${pct(r.chg_pct)}</span>` : '')},
+    {k: 'ret_1y', t: '1년 수익률', f: r => pct(r.ret_1y), c: r => cls(r.ret_1y)},
+    {k: null, t: '1년 흐름'},
+    // 아래 열은 '열 모두 보기'를 켜면 보인다(1366px 노트북 화면에서 앞의 열이 잘리지 않게)
+    {k: 'chg_pct', t: '전 거래일 대비', f: r => pct(r.chg_pct), c: r => cls(r.chg_pct), more: true},
+    {k: 'ret_1m', t: '1개월', f: r => pct(r.ret_1m), c: r => cls(r.ret_1m), more: true},
+    {k: 'ret_3m', t: '3개월', f: r => pct(r.ret_3m), c: r => cls(r.ret_3m), more: true},
+    {k: 'annual_dvd_pct', t: '연환산 배당률(납입자본금)', f: r => r.annual_dvd_pct != null ? r.annual_dvd_pct.toFixed(2) + '%' : '–', more: true},
+    {k: 'wale_years', t: 'WALE', f: r => r.wale_years ? (Math.round(r.wale_years * 10) / 10).toFixed(1) + '년' : '–', more: true},
+    {k: 'fiscal_end', t: '직전 결산', txt: true, more: true},
+    {k: 'listed_date', t: '상장일', txt: true, more: true},
   ];
-  let sortK = 'mktcap_eok', asc = false, sec = '전체';
+  let sortK = 'mktcap_eok', asc = false, sec = '전체', more = false;
+  const shown = () => cols.filter(c => more || !c.more);
   const secs = ['전체', ...D.sectors.map(s => s.name)];
   $('#sec-seg').innerHTML = secs.map((s, i) => `<button data-v="${esc(s)}" aria-pressed="${i === 0}">${esc(s)}${s === '전체' ? '' : ' ' + D.sectors.find(x => x.name === s).n}</button>`).join('');
   const spark = r => { const p = r.spark; if (!p || p.length < 2) return ''; const lo = Math.min(...p), hi = Math.max(...p), w = 84, h = 24;
@@ -254,8 +258,8 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   function draw(){
     const r = rows();
     $('#tb-count').textContent = `${r.length}개 / 전체 ${R.length}개`;
-    $('#tb').innerHTML = '<thead><tr>' + cols.map(c => c.k ? `<th class="sortable${c.txt ? '' : ' num'}" data-k="${c.k}"${sortK === c.k ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}><button type="button">${c.t}</button></th>` : `<th>${c.t}</th>`).join('') + '</tr></thead><tbody>' +
-      r.map(x => '<tr>' + cols.map(c => {
+    $('#tb').innerHTML = '<thead><tr>' + shown().map(c => c.k ? `<th class="sortable${c.txt ? '' : ' num'}" data-k="${c.k}"${sortK === c.k ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}><button type="button">${c.t}</button></th>` : `<th>${c.t}</th>`).join('') + '</tr></thead><tbody>' +
+      r.map(x => '<tr>' + shown().map(c => {
         if (c.k === 'name') return `<td>${x.has_finance ? `<a class="ext" href="finance.html?code=${encodeURIComponent(x.code)}#timeline">${esc(x.name)}</a>` : esc(x.name)}<span class="s"><i class="dot" style="background:${secColor(x.sector)}"></i>${esc(x.sector)}${x.price_break ? ' · 기준가 변경 ' + esc(x.price_break) : ''}${x.halted ? ' · 최근 거래 없음' : ''}</span></td>`;
         if (c.k === null) return `<td>${spark(x)}</td>`;
         if (c.k === 'fiscal_end') return `<td class="nw">${esc(x.fiscal_end || '')}<span class="s">${esc(x.fiscal_period || '')}</span></td>`;
@@ -265,6 +269,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   }
   $('#sec-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
     $('#sec-seg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); sec = b.dataset.v; draw(); });
+  $('#tb-more').onchange = e => { more = e.target.checked; if (!more && cols.find(c => c.k === sortK).more) { sortK = 'mktcap_eok'; asc = false; } draw(); };
   $('#tb-csv').onclick = () => csv('상장리츠_비교', ['종목','종목코드','투자대상','현재가','전 거래일 대비(%)','시가총액(억원)','1개월(%)','3개월(%)','1년(%)','배당수익률(%)','시가배당률(%)','배당 집계 말일','현재 배당 수준(%)','최근 결산기 주당배당금(원)','주당배당금 전기 대비(%)','국고채 대비(%p)','연환산 배당률(납입자본금, %)','NAV(억원)','P/B','FFO(억원, 결산기)','P/FFO(연환산)','WALE(년)','직전 결산','기수','상장일'],
     rows().map(x => [x.name, x.code, x.sector, x.price, x.chg_pct, x.mktcap_eok, x.ret_1m, x.ret_3m, x.ret_1y, x.dvd_pct, x.market_yield, x.dividend_end, x.run_yield, x.dps_last, x.dps_chg, x.spread, x.annual_dvd_pct, x.nav_eok, x.pnav, x.ffo_eok, x.pffo, x.wale_years, x.fiscal_end, x.fiscal_period, x.listed_date]));
   draw();
