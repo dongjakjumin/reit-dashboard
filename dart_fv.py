@@ -9,6 +9,7 @@
 다른 방식도 값을 내면 장부금액의 0.5% 안에서 같은지 대조해 confirm에 적는다.
 감정 시점 신호도 남긴다. 표 방식이면 같은 표의 전기말 공정가치(fv_prior)를 적고, 어느 방식이든 주석이 '최근 평가기준일 대비
 변동이 작아 공정가치 평가를 다시 하지 않았다'고 적었으면 not_reappraised와 그 문장의 평가기준일(appraisal_dates)을 적는다.
+그런 문장 없이 전기말 공정가치가 당기와 같으면, 표 바로 뒤 주석에서 '평가기준일'이 든 문장의 날짜를 appraisal_dates에 적는다.
 사업보고서 본문 파일에는 연결과 별도 주석이 함께 있어, 재무제표 기준에 맞는 주석 구역만 읽는다.
 """
 import argparse
@@ -33,7 +34,7 @@ TOTAL = re.compile(r"^(합계|총계|계)|합계$")
 TOTAL_HEAD = re.compile(r"(?:^|\s)(?:합\s*계|총\s*계|계)\s*$")
 SECTION = re.compile(r'<TITLE[^>]*AASSOCNOTE="D-0-[^"]*"[^>]*>(.*?)</TITLE>', re.S)
 NO_REAPPRAISAL = re.compile(r"(?:공정가치\s*평가|감정\s*평가)를?\s*(?:재수행|재실시|다시\s*(?:수행|실시))하지\s*(?:아니|않)")
-DATE = re.compile(r"(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일")
+DATE = re.compile(r"(\d{4})\s*년\s*(\d{1,2})\s*월(?:\s*(\d{1,2})\s*일)?")
 
 
 def num(cell):
@@ -129,7 +130,7 @@ def book_fv_table(xml, book):
             total = lambda j: round(sum(num(r[j]) or 0 for i, r in group if (i, j) not in skip and j < len(r)) * unit)
             table_book = total(book_j)
             if abs(table_book - book) <= 0.002 * book:
-                return dict(table=index, table_book=table_book, fv=total(fv_j),
+                return dict(table=index, table_book=table_book, fv=total(fv_j), end_pos=m.end(),
                             fv_prior=(total(prior_j) or None) if prior_j is not None else None)
     return None
 
@@ -137,6 +138,22 @@ def book_fv_table(xml, book):
 def sentence_fv(text):
     m = SENTENCE.search(text)
     return round(float(m[1].replace(",", "")) * UNITS[m[2]]) if m else None
+
+
+def iso_dates(text, end):
+    """글 속 'YYYY년 M월 D일'(일이 없으면 'YYYY년 M월')을 결산일 전 것만 골라 정렬한다."""
+    found = {f"{y}-{int(mo):02d}" + (f"-{int(dd):02d}" if dd else "") for y, mo, dd in DATE.findall(text)}
+    return sorted(d for d in found if d < end)
+
+
+def cited_dates(text, end):
+    """'평가기준일'이 든 문장의 날짜. 그 문장이나 바로 앞 문장이 투자부동산을 말하고, 유형자산 문장이 아닐 때만 센다."""
+    found, prev = [], ""
+    for s in re.split(r"(?<=다\.)", text):
+        if "평가기준일" in s and "유형자산" not in s and "투자부동산" in prev + s:
+            found += iso_dates(s, end)
+        prev = s
+    return sorted(set(found))
 
 
 def reappraisal_skipped(text, end):
@@ -151,7 +168,7 @@ def reappraisal_skipped(text, end):
         if "투자부동산" not in prev + sentence or "유형자산" in sentence:
             continue
         pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
-        return sorted(d for d in {f"{y}-{int(mo):02d}-{int(dd):02d}" for y, mo, dd in DATE.findall(pick)} if d < end)
+        return iso_dates(pick, end)
     return None
 
 
@@ -231,9 +248,10 @@ def extract(r, doc, xml):
     skipped = reappraisal_skipped(text, cur["end"])
     base.update(not_reappraised=skipped is not None, appraisal_dates=skipped or [])
     found = []  # (방식, 공정가치, 표 번호, 더 남길 항목)
-    hit = book_fv_table(xml, book)
-    if hit:
-        found.append(("장부금액과 공정가치 표", hit["fv"], hit["table"], dict(table_book=hit["table_book"], fv_prior=hit["fv_prior"])))
+    table_hit = book_fv_table(xml, book)
+    if table_hit:
+        found.append(("장부금액과 공정가치 표", table_hit["fv"], table_hit["table"],
+                      dict(table_book=table_hit["table_book"], fv_prior=table_hit["fv_prior"])))
     if fair_value_model(text):
         found.append(("공정가치 모형", book, None, {}))
     if sentence_fv(text):
@@ -248,7 +266,11 @@ def extract(r, doc, xml):
     method, fv, table, extra = usable[0]
     note = {"장부금액과 공정가치 표": f"표 장부금액 {extra.get('table_book', 0):,}원, 재무상태표와 차이 {extra.get('table_book', 0) - book:,}원",
             "공정가치 모형": "재무상태표의 투자부동산이 공정가치"}.get(method, "장부금액과 대조할 수 없는 방식이라 장부금액의 0.5~2배 범위만 사용")
-    return dict(base, fv=fv, method=method, table=table, **extra, note=note,
+    dates = base["appraisal_dates"]
+    if method == "장부금액과 공정가치 표" and not base["not_reappraised"] and extra.get("fv_prior") == fv:
+        # 공정가치가 전기말 그대로면 표 바로 뒤 주석이 적은 평가기준일이 곧 지금 감정가의 기준일이다
+        dates = cited_dates(clean(xml[table_hit["end_pos"]:table_hit["end_pos"] + 8000])[:2500], cur["end"])
+    return dict(base, fv=fv, method=method, table=table, **extra, note=note, appraisal_dates=dates,
                 confirm=[x[0] for x in usable[1:] if abs(x[1] - fv) <= 0.005 * book])
 
 

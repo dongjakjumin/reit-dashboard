@@ -908,10 +908,10 @@ def main() -> int:
         ok &= row.get("fv_confirm") == ([x for x in fvr.get("confirm") or [] if x in fv_methods] if same_report else [])
         # 감정 시점 신호: 주석의 '공정가치 평가를 다시 하지 않음' 문장이 먼저, 없으면 같은 주석 표의 전기말 공정가치가 당기와 같은지
         stale = fv_stale_of(fvr) if same_report else None
-        dates = [d for d in fvr.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(d))] if stale == "skipped" else []
-        # 평가기준일은 결산일 전 날짜이고, 전기말 공정가치는 표 방식일 때만 있다
+        dates = [d for d in fvr.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}(?:-\d{2})?", str(d))] if stale else []
+        # 평가기준일은 결산일 전 날짜이고 신호가 있는 종목에만 있다. 전기말 공정가치는 표 방식일 때만 있다
         stale_ok.append(row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
-                        and all(d < fvr["end"] for d in dates)
+                        and all(d < fvr["end"] for d in dates) and (not same_report or stale or not fvr.get("appraisal_dates"))
                         and (fvr.get("fv_prior") is None or fvr.get("method") == "장부금액과 공정가치 표"))
         if stale:
             stale_kind[stale] += 1

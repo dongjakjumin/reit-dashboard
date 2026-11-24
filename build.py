@@ -606,10 +606,12 @@ def fv_usable(record: dict, fv: dict | None) -> bool:
 def appraisal_age(fv: dict) -> dict:
     """감정평가를 새로 하지 않았을 수 있다는 신호. 주석이 공정가치 평가를 다시 하지 않았다고 적었으면 skipped(그 문장의
     평가기준일 포함), 그렇지 않고 같은 주석 표의 전기말 공정가치가 당기와 같으면 same."""
+    # 평가기준일은 주석에 적힌 날짜(일이 없으면 연월)만 화면에 낸다
+    dates = [d for d in fv.get("appraisal_dates") or [] if re.fullmatch(r"\d{4}-\d{2}(?:-\d{2})?", str(d))]
     if fv.get("not_reappraised"):
-        return dict(fv_stale="skipped", fv_appraisal_dates=[d for d in fv.get("appraisal_dates") or [] if safe_date(d)])
+        return dict(fv_stale="skipped", fv_appraisal_dates=dates)
     if fv.get("method") == "장부금액과 공정가치 표" and fv.get("fv_prior") and fv["fv_prior"] == fv["fv"]:
-        return dict(fv_stale="same", fv_appraisal_dates=[])
+        return dict(fv_stale="same", fv_appraisal_dates=dates)
     return dict(fv_stale=None, fv_appraisal_dates=[])
 
 

@@ -249,7 +249,7 @@ function drawPnav(){
         + `<div class="tr"><span>감정가 NAV(${esc(r.fv_end)})</span><span>${eok(r.nav_fv_eok)}원</span></div><div class="tr"><span>P/NAV(감정가)</span><span>${r.pnav_fv.toFixed(2)}배</span></div>`
         + (r.fv_confirm?.length ? `<div class="tr"><span>공정가치 대조</span><span>${esc(r.fv_confirm.join(', '))}와 일치</span></div>` : '')
         + (r.fv_stale ? `<div class="tr"><span>감정 시점</span><span>${r.fv_stale === 'skipped' ? '공정가치 평가 다시 안 함(주석)' : '전기말 공정가치와 같음'}</span></div>` : '')
-        + (r.fv_appraisal_dates?.length ? `<div class="tr"><span>최근 평가기준일</span><span>${esc([...new Set([r.fv_appraisal_dates[0], r.fv_appraisal_dates.at(-1)])].map(d => d.replace(/^(\d{4})-0?(\d+)-0?(\d+)$/, '$1.$2.$3')).join('~'))}</span></div>` : '')
+        + (r.fv_appraisal_dates?.length ? `<div class="tr"><span>최근 평가기준일</span><span>${esc([...new Set([r.fv_appraisal_dates[0], r.fv_appraisal_dates.at(-1)])].map(d => d.replace(/^(\d{4})-0?(\d+)(?:-0?(\d+))?$/, (_, y, m, dd) => dd ? `${y}.${m}.${dd}` : `${y}.${m}`)).join('~'))}</span></div>` : '')
       : `<div class="tr"><span>P/NAV(감정가)</span><span>${esc(r.nav_fv_reason || '자료 없음')}</span></div>`), e));
     x.addEventListener('mousemove', moveTip); x.addEventListener('mouseleave', hideTip); });
 }
