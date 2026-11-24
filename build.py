@@ -173,6 +173,12 @@ def build_data() -> dict:
         "listed_n": len(snap["listed"]),
     }
 
+    # 공모 여부(리츠조회 목록의 공모 여부 칸, 빈 값은 미기재)
+    summary["po_12"] = dict(Counter(r["public_offering"] or "미기재" for r in new12))
+    po_planned = [{"date": safe_date(r["date"]), "kind": r["kind"], "name_s": r["name_s"], "amc_s": r["amc_s"],
+                   "sector": r["sector"], "assets_eok": r["assets_eok"]}
+                  for r in sorted(reits, key=lambda r: (r["date"], r["id"]), reverse=True) if r["public_offering"] == "공모예정"]
+
     # 연도별(현재 운영 중인 리츠의 인가, 등록, 신고 연도)
     this_year = today.year
     years = list(range(FIRST_CHART_YEAR, this_year + 1))
@@ -205,6 +211,8 @@ def build_data() -> dict:
     amc = []
     for name, rows in by_amc.items():
         sc = Counter(r["sector"] for r in rows)
+        first_r = min(rows, key=lambda r: (r["date"], r["id"]))
+        first_d = d(first_r["date"])
         amc.append({
             "name": name,
             "n": len(rows),
@@ -213,6 +221,12 @@ def build_data() -> dict:
             "new12": sum(1 for r in rows if d(r["date"]) > cut12),
             "sectors": {s: sc.get(s, 0) for s in SECTORS if sc.get(s, 0)},
             "latest": safe_date(max(r["date"] for r in rows)),
+            # 첫 리츠(현재 운영 목록 기준)와 그 뒤 1년, 2년 안에 생긴 리츠 수(첫 리츠 포함)
+            "first": safe_date(first_r["date"]), "first_name": first_r["name_s"], "first_kind": first_r["kind"],
+            "n_y1": sum(1 for r in rows if d(r["date"]) < first_d + timedelta(days=365)),
+            "n_y2": sum(1 for r in rows if d(r["date"]) < first_d + timedelta(days=730)),
+            "self": all("자기관리" in (r["type"] or "") for r in rows),
+            "public": bool(PUBLIC_RE.search(name)),
         })
     amc.sort(key=lambda a: (-a["assets_eok"], -a["n"], a["name"]))
     for i, a in enumerate(amc, 1):
@@ -331,7 +345,7 @@ def build_data() -> dict:
         "changes": collection_changes(previous, snap["date"], flog, rlog),
         "applicants": sorted(applicants.values(), key=lambda a: (-a["recent"], -a["long"], a["name"])),
         "project": project_comparison(proj, by_amc, today),
-        "events": events, "reits": slim,
+        "events": events, "reits": slim, "po_planned": po_planned,
         "kinds": KINDS, "sectors": SECTORS,
         "highlight_amc": cfg.get("highlight_amc", ""),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),

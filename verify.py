@@ -270,6 +270,20 @@ def main() -> int:
           "연도별 투자대상 합 + 이전 연도 = 전체")
     check(sum(a["n"] for a in d["amc"]) == s["n_reits"], "자산관리회사별 리츠 수 합 = 전체")
     check(sum(a["assets_eok"] for a in d["amc"]) == s["assets_eok"], "자산관리회사별 자산총계 합 = 전체")
+    by_amc_v = {}
+    for r in d["reits"]:
+        by_amc_v.setdefault(r["amc_s"], []).append(r)
+    def first_stats(rows):
+        first = min(r["date"] for r in rows)
+        f = date.fromisoformat(first)
+        return (first, sum(date.fromisoformat(r["date"]) < f + timedelta(days=365) for r in rows),
+                sum(date.fromisoformat(r["date"]) < f + timedelta(days=730) for r in rows))
+    check(all((a["first"], a["n_y1"], a["n_y2"]) == first_stats(by_amc_v[a["name"]]) and a["n_y1"] <= a["n_y2"] <= a["n"]
+              and a["self"] == all("자기관리" in (r["type"] or "") for r in by_amc_v[a["name"]]) for a in d["amc"]),
+          "관리주체별 첫 리츠 날짜와 첫 1년, 2년 리츠 수 재계산")
+    check(sum(s["po_12"].values()) == s["new12"]
+          and len(d["po_planned"]) == sum(r["public_offering"] == "공모예정" for r in d["reits"]),
+          f"최근 12개월 공모 여부 합 = 신규 {s['new12']}건, 공모예정 리츠 {len(d['po_planned'])}개")
     check(sum(x["n"] for x in d["sector"]) == s["n_reits"], "투자대상별 리츠 수 합 = 전체")
     check(sum(s["new12_by_kind"].values()) == s["new12"], "최근 12개월 구분별 합 = 최근 12개월 전체")
     check(sum(s["filings_by_type"].values()) == s["filings_n"], "접수 유형별 합 = 접수 전체")

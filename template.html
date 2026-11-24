@@ -87,6 +87,9 @@ section[aria-labelledby="h-proj"] .card{min-width:0}
       <p class="note">신고는 프로젝트리츠 설립신고입니다. 프로젝트리츠 제도는 2025년 11월에 시행됐습니다.</p>
     </div>
   </div>
+  <h3>공모 여부</h3>
+  <p class="sub" id="po-sub"></p>
+  <details><summary id="po-sum"></summary><div class="tw"><table id="po-table"></table></div></details>
 </section>
 
 <section aria-labelledby="h-proj">
@@ -114,10 +117,14 @@ section[aria-labelledby="h-proj"] .card{min-width:0}
     </div>
     <span class="sp"></span>
     <div class="legend" id="amc-legend" style="margin:0"></div>
+    <label><input type="checkbox" id="amc-priv" autocomplete="off"> 공공기관과 자기관리리츠 빼기</label>
     <button class="btn" id="amc-more">전체 보기</button>
     <button class="btn" id="amc-csv">엑셀(CSV) 내려받기</button>
   </div>
   <div class="tw"><table id="amc-table"></table></div>
+  <h3 id="ent-title" style="margin-top:26px">새로 진입한 운용사</h3>
+  <p class="sub" id="ent-sub"></p>
+  <div class="tw"><table id="ent-table"></table></div>
   <h3 id="amc-detail-title" style="margin-top:26px">관리주체 상세</h3>
   <p class="sub" id="amc-detail-sub"></p>
   <div class="row"><select id="amc-pick" aria-label="관리주체 선택"></select></div>
@@ -411,18 +418,18 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 
 /* 자산관리회사 */
 (function(){
-  let sort = 'assets', asc = false, all = false;
+  let sort = 'assets', asc = false, all = false, priv = false;
   $('#amc-sub').textContent = `운영 중 리츠를 관리주체별로 묶었습니다. 관리주체 ${D.amc.length}곳에는 자기관리리츠와 공공기관도 포함합니다.` + (hlRow ? ` ${hlRow.name}은 리츠 ${hlRow.n}개, 자산총계 ${eok(hlRow.assets_eok)}원으로 자산총계 기준 ${hlRow.rank_assets}위입니다.` : '');
   legend($('#amc-legend'), D.sectors, SECTOR_COLOR);
   const maxA = Math.max(...D.amc.map(a => a.assets_eok));
-  const sorted = () => [...D.amc].sort((a, b) => {
+  const sorted = () => D.amc.filter(a => !priv || (!a.self && !a.public)).sort((a, b) => {
     const key = sort === 'assets' ? 'assets_eok' : sort;
     return (asc ? 1 : -1) * (a[key] - b[key]) || b.assets_eok - a.assets_eok || b.n - a.n;
   });
   const header = (key, label) => `<th class="num sortable" data-sort="${key}"${sort === key ? ` aria-sort="${asc ? 'ascending' : 'descending'}"` : ''}><button type="button">${label}</button></th>`;
   function draw(){
     let rows = sorted(); const total = rows.length;
-    if (!all){ const topN = rows.slice(0, 20); if (hlRow && !topN.includes(hlRow)) topN.push(hlRow); rows = topN; }
+    if (!all){ const topN = rows.slice(0, 20); if (hlRow && !topN.includes(hlRow) && rows.includes(hlRow)) topN.push(hlRow); rows = topN; }
     const rank = a => sorted().indexOf(a) + 1;
     $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>관리주체</th>${header('n', '리츠 수')}${header('assets', '자산총계')}<th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th>${header('new12', '최근 12개월 신규')}<th>최근 인가, 등록, 신고일</th></tr></thead><tbody>` +
       rows.map(a => { const mix = D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
@@ -440,8 +447,30 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   }
   seg($('#amc-seg'), v => { sort = v; asc = false; draw(); });
   $('#amc-more').onclick = () => { all = !all; draw(); };
+  $('#amc-priv').onchange = e => { priv = e.target.checked; draw(); };
   $('#amc-csv').onclick = () => csv('자산관리회사별_리츠현황', ['자산관리회사','리츠 수','자산총계(억원)','프로젝트리츠','최근 12개월 신규','최근 인가, 등록, 신고일', ...D.sectors], sorted().map(a => [a.name, a.n, a.assets_eok, a.proj_n, a.new12, a.latest, ...D.sectors.map(s => a.sectors[s] || 0)]));
   draw();
+})();
+
+/* 새로 진입한 운용사: 현재 운영 목록에서 첫 리츠가 2023년 이후인 관리주체(자기관리리츠, 공공기관 제외) */
+(function(){
+  const FROM = '2023-01-01';
+  const after = (s, n) => { const t = new Date(s + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+  const rows = D.amc.filter(a => a.first >= FROM && !a.self && !a.public).sort((a, b) => a.first.localeCompare(b.first) || b.n - a.n);
+  const span = (n, days, a) => `${n}개` + (after(a.first, days) > D.date ? '<span class="s">진행 중</span>' : '');
+  $('#ent-sub').textContent = `현재 운영 목록에서 첫 리츠의 인가, 등록, 신고일이 2023년 이후인 관리주체 ${rows.length}곳입니다(자기관리리츠와 공공기관 제외). 첫 1년과 첫 2년은 첫 리츠 날짜부터 365일, 730일 안에 생긴 리츠 수로, 첫 리츠를 포함합니다. 해산한 리츠는 목록에 없어 첫 리츠 날짜가 실제보다 늦게 잡힐 수 있습니다.`
+    + (hlRow && !rows.includes(hlRow) ? ` 비교하면 ${hlRow.name}은 첫 리츠가 ${hlRow.first}이고 첫 1년 ${hlRow.n_y1}개, 첫 2년 ${hlRow.n_y2}개, 지금 ${hlRow.n}개입니다.` : '');
+  $('#ent-table').innerHTML = `<thead><tr><th>관리주체</th><th>첫 리츠</th><th class="num">첫 1년</th><th class="num">첫 2년</th><th class="num">지금 리츠 수</th><th class="num">자산총계</th><th>투자대상</th></tr></thead><tbody>` +
+    rows.map(a => `<tr class="${hlRow === a ? 'hl' : ''}"><td><button type="button" class="linkish" data-amc="${esc(a.name)}">${esc(a.name)}</button></td><td>${esc(a.first_name)}<span class="s">${a.first} ${esc(a.first_kind)}</span></td><td class="num">${span(a.n_y1, 365, a)}</td><td class="num">${span(a.n_y2, 730, a)}</td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td>${D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ')}</td></tr>`).join('') + '</tbody>';
+})();
+
+/* 공모 여부: 최근 12개월 신규 리츠의 구성과 '공모예정' 리츠 목록 */
+(function(){
+  const P = S.po_12, order = ['공모이행', '공모예정', '해당없음', '미기재'];
+  $('#po-sub').textContent = `최근 12개월 신규 ${S.new12}건의 공모 여부는 ${order.filter(k => P[k]).map(k => `${k} ${P[k]}건`).join(', ')}입니다(리츠조회 목록의 공모 여부 칸). 리츠는 영업인가나 등록 후 3년 안에(개발사업 비중이 30%를 넘으면 준공 후 3년, 프로젝트리츠는 5년) 발행주식의 30% 이상을 일반 청약에 내야 합니다. 연기금 등이 50% 이상을 인수하거나 총자산의 70% 이상이 임대주택이면 예외입니다(법 14조의8 ②, ③).`;
+  $('#po-sum').textContent = `공모 여부가 ‘공모예정’인 운영 리츠 ${D.po_planned.length}개`;
+  $('#po-table').innerHTML = `<thead><tr><th>인가, 등록, 신고일</th><th>구분</th><th>리츠</th><th>관리주체</th><th>투자대상</th><th class="num">자산총계</th></tr></thead><tbody>` +
+    D.po_planned.map(r => `<tr class="${rowClass(r.amc_s)}"><td class="nw">${r.date}</td><td class="nw">${esc(r.kind)}</td><td>${esc(r.name_s)}</td><td>${esc(r.amc_s)}</td><td class="nw">${esc(r.sector)}</td><td class="num">${eok(r.assets_eok)}</td></tr>`).join('') + '</tbody>';
 })();
 
 /* 관리주체 상세: 한 회사의 리츠, 처리 중인 신청, 최근 주요 공시, 자산총계 순위 앞뒤 회사 */
@@ -505,6 +534,7 @@ const pickAmc = (function(){
   return choose;
 })();
 $('#amc-table').addEventListener('click', e => { const b = e.target.closest('button[data-amc]'); if (b) pickAmc(b.dataset.amc, true); });
+$('#ent-table').addEventListener('click', e => { const b = e.target.closest('button[data-amc]'); if (b) pickAmc(b.dataset.amc, true); });
 
 /* 최근 변동 */
 $('#ev-table').innerHTML = `<thead><tr><th>날짜</th><th>구분</th><th>리츠</th><th>자산관리회사, 신청회사</th><th>내용</th></tr></thead><tbody>` +
