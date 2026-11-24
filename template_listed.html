@@ -43,9 +43,9 @@
       <p class="note" id="idx-note"></p>
     </div>
     <div class="card">
-      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">P/B, 낮은 순</strong></div>
+      <div class="row" style="margin-bottom:8px"><strong style="font-size:14px">P/B와 감정가 기준 P/NAV, P/B 낮은 순</strong><span class="sp"></span><div class="legend" id="pnav-legend" style="margin:0"></div></div>
       <div class="chart" id="pnav-chart"></div>
-      <p class="note">세로 선은 1.0배(시가총액 = NAV)입니다. NAV는 직전 결산기 값이라 그 뒤의 자산 편입, 증자, 감정평가 변동은 들어 있지 않습니다.</p>
+      <p class="note">세로 선은 1.0배(시가총액 = NAV)입니다. NAV는 직전 결산기 값이라 그 뒤의 자산 편입, 증자, 감정평가 변동은 들어 있지 않습니다. 검은 눈금은 투자부동산 감정가를 반영한 P/NAV(감정가)이고, 값이 있는 종목에만 그렸습니다.</p>
     </div>
   </div>
 </section>
@@ -149,7 +149,7 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   { const ym = d => d ? d.slice(2, 7).replace('-', '.') : '–';
     $('#fv-cross').textContent = (S.fv_cross || []).map(x => ` 리츠정보시스템 NAV가 장부 자본과 다른 ${x.name}에서 이 방식으로 계산한 감정가 NAV는 ${eok(x.nav_fv_eok)}원(${ym(x.fv_end)} 기준), 리츠정보시스템 NAV는 ${eok(x.nav_eok)}원(${ym(x.nav_end)} 기준)으로 ${x.nav_fv_eok === x.nav_eok ? '같습니다' : `${eok(Math.abs(x.nav_fv_eok - x.nav_eok))}원 차이가 납니다`}.`).join(''); }
   $('#nav-book').textContent = S.nav_book_n ? `${S.nav_book_n}개 종목 중 ${S.nav_book_same}개는 결산기 재무상태표의 자본총계와 값이 같습니다${S.nav_book_diff.length ? `(다른 종목: ${S.nav_book_diff.join(', ')})` : ''}. ` : '';
-  $('#chart-sub').textContent = !D.index.dates.length ? '주가 지수 자료 없음' : `주가 지수는 ${D.index.dates[0]}의 주가를 100으로 놓은 값입니다. P/B는 ${S.pnav_n}개 종목 가운데 ${S.pnav_below1}개가 1배 아래입니다.`;
+  $('#chart-sub').textContent = !D.index.dates.length ? '주가 지수 자료 없음' : `주가 지수는 ${D.index.dates[0]}의 주가를 100으로 놓은 값입니다. P/B는 ${S.pnav_n}개 종목 가운데 ${S.pnav_below1}개가 1배 아래이고, 투자부동산 감정가를 반영한 P/NAV는 ${S.pnav_fv_n}개 가운데 ${S.pnav_fv_below1}개가 1배 아래입니다.`;
 })();
 
 /* 지수 선 그래프 */
@@ -215,18 +215,23 @@ function drawPnav(){
   const el = $('#pnav-chart'), rows = R.filter(r => r.pnav != null).sort((a, b) => a.pnav - b.pnav || a.mktcap_eok / a.nav_eok - b.mktcap_eok / b.nav_eok);
   if (!rows.length) { el.textContent = "자료 없음"; return; }
   const W = Math.max(320, el.clientWidth), rh = 19, mL = 138, mR = 44, mT = 16, H = mT + rows.length * rh + 6;
-  const iw = W - mL - mR, max = Math.max(1.1, ...rows.map(r => r.pnav)) * 1.02, X = v => mL + v / max * iw;
+  const iw = W - mL - mR, max = Math.max(1.1, ...rows.map(r => Math.max(r.pnav, r.pnav_fv ?? 0))) * 1.02, X = v => mL + v / max * iw;
   let g = `<line x1="${X(1)}" x2="${X(1)}" y1="${mT - 4}" y2="${H - 4}" stroke="var(--axis)" stroke-width="1"/><text x="${X(1)}" y="10" text-anchor="middle">1.0배</text>`;
   rows.forEach((r, i) => {
     const y = mT + i * rh, w = Math.max(1, X(r.pnav) - mL), rr = Math.min(4, w);
     g += `<text x="${mL - 8}" y="${y + 12}" text-anchor="end" style="fill:var(--ink2)">${esc(r.name)}</text>`;
     g += `<path d="M${mL},${y + 3}H${mL + w - rr}Q${mL + w},${y + 3} ${mL + w},${y + 3 + rr}V${y + 14 - rr}Q${mL + w},${y + 14} ${mL + w - rr},${y + 14}H${mL}Z" fill="var(--s1)"/>`;
-    g += `<text class="tot" x="${mL + w + 6}" y="${y + 12}">${r.pnav.toFixed(2)}</text>`;
+    const xf = r.pnav_fv != null ? X(r.pnav_fv) : null;
+    if (xf != null) g += `<line x1="${xf.toFixed(1)}" x2="${xf.toFixed(1)}" y1="${y + 1}" y2="${y + 16}" stroke="var(--ink)" stroke-width="2"/>`;
+    g += `<text class="tot" x="${Math.max(mL + w, xf ?? 0) + 6}" y="${y + 12}">${r.pnav.toFixed(2)}</text>`;
     g += `<rect data-i="${i}" x="0" y="${y}" width="${W}" height="${rh}" fill="transparent"/>`;
   });
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="종목별 P/B">${g}</svg>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="종목별 P/B와 감정가 기준 P/NAV">${g}</svg>`;
+  $('#pnav-legend').innerHTML = `<span><i class="dot" style="background:var(--s1)"></i>P/B(장부가)</span><span><i style="display:inline-block;width:2px;height:12px;background:var(--ink);vertical-align:-1px;margin-right:5px"></i>P/NAV(감정가)</span>`;
   el.querySelectorAll('rect[data-i]').forEach(x => { const r = rows[+x.dataset.i];
-    x.addEventListener('mouseenter', e => showTip(`<b>${esc(r.name)}</b><div class="tr"><span>시가총액</span><span>${eok(r.mktcap_eok)}원</span></div><div class="tr"><span>NAV(${esc(r.fiscal_end)})</span><span>${eok(r.nav_eok)}원</span></div><div class="tr"><span>P/B</span><span>${r.pnav.toFixed(2)}배</span></div>`, e));
+    x.addEventListener('mouseenter', e => showTip(`<b>${esc(r.name)}</b><div class="tr"><span>시가총액</span><span>${eok(r.mktcap_eok)}원</span></div><div class="tr"><span>NAV(${esc(r.fiscal_end)})</span><span>${eok(r.nav_eok)}원</span></div><div class="tr"><span>P/B</span><span>${r.pnav.toFixed(2)}배</span></div>` + (r.pnav_fv != null
+      ? `<div class="tr"><span>감정가 NAV(${esc(r.fv_end)})</span><span>${eok(r.nav_fv_eok)}원</span></div><div class="tr"><span>P/NAV(감정가)</span><span>${r.pnav_fv.toFixed(2)}배</span></div>`
+      : `<div class="tr"><span>P/NAV(감정가)</span><span>${esc(r.nav_fv_reason || '자료 없음')}</span></div>`), e));
     x.addEventListener('mousemove', moveTip); x.addEventListener('mouseleave', hideTip); });
 }
 drawIndex(); drawPnav();
