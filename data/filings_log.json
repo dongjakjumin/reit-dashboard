@@ -27,7 +27,9 @@
     "검토완료"
    ]
   ],
-  "gone_on": null
+  "gone_on": "2026-11-25",
+  "result_kind": "신고",
+  "result_date": "2026-11-25"
  },
  "11908": {
   "id": 11908,
@@ -42,7 +44,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -64,7 +66,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -86,7 +88,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -108,7 +110,7 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -130,7 +132,7 @@
   "founding_capital": 6081500000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -150,17 +152,21 @@
   "req_type": "변경인가/등록/신고",
   "name": "주식회사코람코가치투자양지위탁관리부동산투자회사",
   "applicant": "(주)코람코자산신탁",
-  "status": "보완요청",
+  "status": "보완완료",
   "project_name": "아레나스 양지 물류센터",
   "biz_type": "매입(일반)",
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
     "보완요청"
+   ],
+   [
+    "2026-11-25",
+    "보완완료"
    ]
   ],
   "gone_on": null
@@ -178,7 +184,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -200,7 +206,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -226,7 +232,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -252,7 +258,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -274,7 +280,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -296,7 +302,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -318,7 +324,7 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -340,7 +346,7 @@
   "founding_capital": 750000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -362,7 +368,7 @@
   "founding_capital": 4580000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -384,7 +390,7 @@
   "founding_capital": 300000000,
   "public_duty": "Y",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -406,7 +412,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -428,7 +434,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -450,7 +456,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -472,7 +478,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -494,7 +500,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -516,7 +522,7 @@
   "founding_capital": 300000000,
   "public_duty": "",
   "first_seen": "2026-11-21",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-21",
@@ -538,7 +544,7 @@
   "founding_capital": 5000000000,
   "public_duty": "N",
   "first_seen": "2026-11-23",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-23",
@@ -560,7 +566,7 @@
   "founding_capital": 300000000,
   "public_duty": "N",
   "first_seen": "2026-11-24",
-  "last_seen": "2026-11-24",
+  "last_seen": "2026-11-25",
   "status_history": [
    [
     "2026-11-24",
