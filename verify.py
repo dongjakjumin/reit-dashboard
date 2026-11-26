@@ -69,6 +69,19 @@ def stale_row_ok(fvr, row, same_report):
     return ok, stale
 
 
+def ppy_indep(src, series):
+    """연간 결산 횟수: 리츠정보시스템 추이에서 '결산기' 줄의 말일을 정렬해 FFO 기준 결산기와 바로 앞 결산기의 간격으로 낸다.
+    없으면 연환산 배당률 ÷ 배당률. 결과가 1, 2, 4회의 ±5% 밖이면 None."""
+    ends = sorted({x["end"] for x in series if "결산기" in (x.get("label") or "") and build.safe_date(x.get("end"))})
+    fe = src.get("fiscal_end")
+    value = None
+    if fe in ends and ends.index(fe) > 0:
+        value = 365 / (date.fromisoformat(fe) - date.fromisoformat(ends[ends.index(fe) - 1])).days
+    elif src.get("dvd_pct") and src.get("annual_dvd_pct"):
+        value = min(4, max(1, round(src["annual_dvd_pct"] / src["dvd_pct"])))
+    return value if value and any(abs(value / k - 1) <= 0.05 for k in (1, 2, 4)) else None
+
+
 def saved_json(filename):
     path = DATA / filename
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
@@ -455,6 +468,12 @@ def main() -> int:
     check(sum(x["n"] for x in ld["sectors"]) == ls["n"], "투자대상별 종목 수 합 = 전체 종목 수")
     check(all(r["pnav"] is None or abs(r["mktcap_eok"] / r["nav_eok"] - r["pnav"]) < 0.006 for r in ld["rows"]),
           "P/B = 시가총액 / NAV 재계산 일치")
+    # 11차 검토: 우선주(종류주식) 자본은 보통주 시가총액과 맞추려고 NAV에서 뺀다. 원자료 NAV에서 따로 계산해 견준다
+    pref_cfg = json.loads((DATA.parent / "config.json").read_text(encoding="utf-8")).get("preferred") or {}
+    src_nav = {s["code"]: s.get("nav_mil") for s in snap["listed"]}
+    pref_rows = [r for r in ld["rows"] if r["code"] in pref_cfg and src_nav.get(r["code"])]
+    check(all(r["nav_eok"] == round(src_nav[r["code"]] / 100 - pref_cfg[r["code"]]["amount"] / 1e8) for r in pref_rows),
+          f"우선주 자본을 뺀 NAV {len(pref_rows)}개 종목 재계산 일치")
     # NAV가 결산기 자본총계와 같은 종목(장부가 기준): 재무 추이에서 결산일이 같은 줄의 자본총계와 견준다
     fin_saved = build.optional_data("financials.json")
     pairs = []
@@ -538,8 +557,9 @@ def main() -> int:
     # 시가총액 가중 지수(주식 수 = 시가총액 ÷ 현재가)와 배당 1년치 포함 근사(최근 12개월 주당배당금 ÷ 첫날 종가)
     if dates and codes is not None:
         page_rows = {r["code"]: r for r in page_data["rows"]}
-        shares = {c: page_rows[c]["mktcap_eok"] * 1e8 / page_rows[c]["price"] for c in member_codes
-                  if page_rows.get(c, {}).get("mktcap_eok") and page_rows[c].get("price")}
+        list_px = {s["code"]: s.get("price") for s in listed}
+        list_cap = {s["code"]: s.get("mktcap_eok") for s in listed}
+        shares = {c: list_cap[c] * 1e8 / list_px[c] for c in member_codes if list_cap.get(c) and list_px.get(c)}
         cap = []
         if len(shares) == len(member_codes):
             base = sum(shares[c] * histories[c][dates[0]] for c in member_codes)
@@ -633,9 +653,17 @@ def main() -> int:
     ffo_ok = []
     for r in fd["rows"]:
         src = listed_src[r["code"]]
-        ppy = build.periods_per_year(src, fin.get(str(src.get("reit_id")), {}).get("series", []))
+        ppy = ppy_indep(src, fin.get(str(src.get("reit_id")), {}).get("series", []))
         want = round(src["ffo_mil"] / 100 * ppy) if src.get("ffo_mil") is not None and ppy else None
         ffo_ok.append(r.get("ffo_y_eok") == want and "op_margin" not in r)
+        prow = next((x for x in ld["rows"] if x["code"] == r["code"]), {})
+        # 11차 검토: 우선주(종류주식)가 있으면 우선배당 몫을 FFO에서 뺀다(config.json preferred)
+        pref = (json.loads((DATA.parent / "config.json").read_text(encoding="utf-8")).get("preferred") or {}).get(r["code"]) or {}
+        ffo_common = (src["ffo_mil"] / 100 * ppy - (pref.get("amount") or 0) / 1e8 * (pref.get("rate") or 0)
+                      if src.get("ffo_mil") is not None and ppy else None)
+        pwant = (round(prow["mktcap_eok"] / ffo_common, 1)
+                 if ffo_common and ffo_common > 0 and src["ffo_mil"] > 0 and prow.get("mktcap_eok") else None)
+        ffo_ok[-1] &= prow.get("pffo") == pwant
     check(all(ffo_ok), f"재무 구조 표 FFO(연환산) {sum(ffo_ok)}/{len(ffo_ok)}종목 재계산 일치, 영업이익률 열 없음")
     # 유형 코드가 '기타'여도 회생절차, 사채권자집회 공시는 위험 신호로, 해산, 청산 공시는 따로 묶는다
     group_cases = [({"matter_code": "RT02100020", "matter": "기타", "text": "서울회생법원 회생절차 개시"}, "위험 신호"),
@@ -979,11 +1007,12 @@ def main() -> int:
                 cur["equity"] - cur["nci"] if cur.get("equity") is not None and cur.get("nci") is not None else None)
         same_report = usable and (cur.get("equity") or 0) > 0 and owner is not None
         if same_report and abs(cur["equity"] - owner) <= 0.05 * cur["equity"]:
-            nav = owner + (fvr["fv"] - fvr["book"]) * min(1, owner / cur["equity"])
+            pref_won = (pref_cfg.get(row["code"]) or {}).get("amount") or 0  # 우선주 자본은 뺀다(11차 검토)
+            nav = owner - pref_won + (fvr["fv"] - fvr["book"]) * min(1, owner / cur["equity"])
             nav_want = round(nav / 1e8)
             if nav > 0 and row["mktcap_eok"]:
                 want = row["mktcap_eok"] * 1e8 / nav
-                pb_want = round(row["mktcap_eok"] * 1e8 / owner, 2) if owner > 0 else None
+                pb_want = round(row["mktcap_eok"] * 1e8 / (owner - pref_won), 2) if owner - pref_won > 0 else None
         if want is not None:
             fv_vals.append(want)
         fv_by_code[row["code"]] = want
@@ -1038,6 +1067,7 @@ def main() -> int:
                     "ltv_median": med(lt, 1), "ltv_n": len(lt),
                     "ret_1y_median": med(rt, 1), "ret_1y_n": len(rt)}
 
+        listed = [dict(s, mktcap_eok=rows_by[s["code"]]["mktcap_eok"]) for s in listed]  # 화면 현재가 기준 시가총액
         names = {s.get("sector") or "기타" for s in listed}
         want_groups = sorted((group_want(nm, [s for s in listed if (s.get("sector") or "기타") == nm]) for nm in names),
                              key=lambda x: (-x["mktcap_eok"], x["name"]))

@@ -579,11 +579,13 @@ def maturity_rows(stocks, issuers, corporate_rate=None):
         row["fx"] = any(x.get("fx") for x in issuers.get(stock["code"], {}).get("loans", []))
         rows.append(row)
         record = source.get(stock["code"])
-        if not record:
+        # 11차 검토: 당기나 전기 차입 합계가 빠진 기록이 와도 빌드가 멈추지 않게 한다
+        if not record or (record.get("current") or {}).get("total") is None:
             continue
         s = record["current"]
         total, short = s["total"], s["short"]
-        average = (record["previous"]["total"] + total) / 2
+        prev_total = (record.get("previous") or {}).get("total")
+        average = (prev_total + total) / 2 if prev_total is not None else None
         days, op = s["days"], s["op"]
         interest = s.get("interest", s["cost"])
         annual = 365 / days if days else None
@@ -624,11 +626,12 @@ def appraisal_age(fv: dict) -> dict:
     return dict(fv_stale=None, fv_appraisal_dates=[])
 
 
-def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
+def nav_fair(record: dict, fv: dict | None, mktcap_eok, pref_won: float = 0) -> dict:
     """감정가 기준 NAV = 지배기업 소유주지분 + (투자부동산 공정가치 - 장부금액) × 지배지분 비율.
 
     공정가치는 사업보고서 주석(dart_fv.py), 자본은 같은 보고서의 재무상태표(dart.py)에서 온다.
     비지배지분이 자본의 5%를 넘으면 공정가치 차익을 지배지분과 나눌 근거가 없어 비운다.
+    우선주(종류주식) 자본(pref_won, config.json preferred)은 보통주 시가총액과 맞추려고 NAV와 P/B 분모에서 뺀다.
     """
     out = dict(nav_fv_eok=None, pnav_fv=None, pnav_raw=None, pb_dart=None, fv_gain_eok=None, fv_end=None, fv_method=None,
                fv_rcept=None, fv_confirm=[], fv_stale=None, fv_appraisal_dates=[], nav_fv_reason=None)
@@ -659,7 +662,7 @@ def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
     if abs(equity - owner) > 0.05 * equity:
         out["nav_fv_reason"] = f"비지배지분 {abs(equity - owner) / equity * 100:.0f}%"
         return out
-    nav = owner + gain * min(1, owner / equity)
+    nav = owner - pref_won + gain * min(1, owner / equity)
     out["nav_fv_eok"] = round(nav / 1e8)
     if nav <= 0:
         out["nav_fv_reason"] = "감정가 NAV 0 이하"
@@ -667,8 +670,11 @@ def nav_fair(record: dict, fv: dict | None, mktcap_eok) -> dict:
         out["pnav_raw"] = mktcap_eok * 1e8 / nav
         out["pnav_fv"] = round(out["pnav_raw"], 2)
         # 같은 DART 자본으로 낸 P/B. P/NAV(감정가)와의 차이가 곧 감정차익의 효과다(막대 P/B는 리츠정보시스템 NAV 기준)
-        out["pb_dart"] = round(mktcap_eok * 1e8 / owner, 2) if owner > 0 else None
+        out["pb_dart"] = round(mktcap_eok * 1e8 / (owner - pref_won), 2) if owner - pref_won > 0 else None
     return out
+
+
+CFG_PREF = (json.loads((ROOT / "config.json").read_text(encoding="utf-8")) if (ROOT / "config.json").exists() else {}).get("preferred", {})
 
 
 def build_listed_data() -> dict:
@@ -722,7 +728,11 @@ def build_listed_data() -> dict:
             yield_blocked = any(cutoff < b <= price_day and abs(all_prices[b] / all_prices[a] - 1) > 0.31
                                 for a, b in zip(history, history[1:]))
         mktcap = r["mktcap_eok"] or 0
-        nav_eok = round(r["nav_mil"] / 100) if r.get("nav_mil") else None
+        if mktcap and r.get("price") and last and last != r["price"]:
+            mktcap = round(mktcap * last / r["price"])  # 같은 줄의 주식 수 × 화면 현재가
+        pref = (CFG_PREF.get(str(r["code"])) or {})
+        pref_eok = (pref.get("amount") or 0) / 1e8
+        nav_eok = round(r["nav_mil"] / 100 - pref_eok) if r.get("nav_mil") else None
         ffo_eok = round(r["ffo_mil"] / 100, 1) if r.get("ffo_mil") is not None else None
         ppy = periods_per_year(r, fin.get(str(r.get("reit_id")), {}).get("series", []))
         market_yield = dps / last * 100 if not yield_blocked and dps is not None and last and last > 0 else None
@@ -731,10 +741,12 @@ def build_listed_data() -> dict:
         run_yield = (prof["dps_last"] * prof["dps_k"] / last * 100
                      if not yield_blocked and not halted and prof["dps_k"] and prof["dps_last"] is not None and last and last > 0 else None)
         # 비율은 원자료(백만원)로 계산한다. 억원으로 반올림한 NAV, FFO로 나누면 끝자리가 틀린다.
-        pnav = mktcap / (r["nav_mil"] / 100) if r.get("nav_mil") and r["nav_mil"] > 0 and mktcap else None
-        pffo = mktcap / (r["ffo_mil"] / 100 * ppy) if r.get("ffo_mil") and r["ffo_mil"] > 0 and ppy and mktcap else None
+        nav_common = r["nav_mil"] / 100 - pref_eok if r.get("nav_mil") else None
+        ffo_common = r["ffo_mil"] / 100 * ppy - pref_eok * (pref.get("rate") or 0) if r.get("ffo_mil") is not None and ppy else None
+        pnav = mktcap / nav_common if nav_common and nav_common > 0 and mktcap else None
+        pffo = mktcap / ffo_common if ffo_common and ffo_common > 0 and mktcap else None
         spread = market_yield - benchmark if market_yield is not None and benchmark is not None else None
-        fair = nav_fair(dividends, fvdata.get(r["code"]), mktcap)
+        fair = nav_fair(dividends, fvdata.get(r["code"]), mktcap, pref.get("amount") or 0)
         # 재무 화면과 같은 LTV(DART 사업보고서 차입금과 사채 ÷ 자산총계, 연결 우선)
         cur_bs = dividends.get("current") or {}
         ltv = cur_bs["total"] / cur_bs["assets"] * 100 if cur_bs.get("assets") and cur_bs.get("total") is not None else None
@@ -776,8 +788,9 @@ def build_listed_data() -> dict:
     # 시가총액 가중 지수: 지금의 상장주식 수(시가총액 ÷ 현재가)가 1년 내내 같다고 보고 종가에 곱한다.
     # 그 사이 유상증자나 감자로 주식 수가 바뀐 종목이 있으면 근사다.
     row_by = {str(r["code"]): r for r in rows}
-    shares = {c: row_by[c]["mktcap_eok"] * 1e8 / row_by[c]["price"] for c in full
-              if row_by[c].get("mktcap_eok") and row_by[c].get("price")}
+    list_px = {str(r["code"]): r.get("price") for r in snap["listed"]}
+    list_cap = {str(r["code"]): r.get("mktcap_eok") for r in snap["listed"]}
+    shares = {c: list_cap[c] * 1e8 / list_px[c] for c in full if list_cap.get(c) and list_px.get(c)}
     idx_cap = []
     if common and len(shares) == len(full):
         cap_base = sum(shares[c] * window[c][common[0]] for c in full)
