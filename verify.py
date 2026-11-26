@@ -299,6 +299,14 @@ def main() -> int:
         path = build.SITE / f"{name}.html"
         html = path.read_text(encoding="utf-8") if path.is_file() else ""
         check(bool(html.strip()), f"{path.name} 생성 및 내용 확인")
+        if "const D = " in html:
+            # 10차 검토: 공시 본문의 '<!--'와 '<script'가 스크립트 블록을 깨지 않게 자료 안의 '<'는 모두 \u003c로 넣는다
+            raw = html.split("const D = ", 1)[1]
+            try:
+                end = json.JSONDecoder().raw_decode(raw)[1]
+            except ValueError:
+                end = len(raw)
+            check("<" not in raw[:end], f"{path.name} 자료 블록 안에 '<' 문자 없음")
         if name == "listed":
             listed_page = html
     finance_payload = {}

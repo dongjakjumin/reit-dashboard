@@ -240,7 +240,7 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
     ? `<b>${W.received.length}건</b>(접수현황에 남아 있는 신청 기준)` + list(W.received, 6, f => `${esc(f.name_s)} <span class="s-in">${md(f.date)} ${esc(f.req_type)}, ${esc(f.applicant)}</span>`)
     : '접수현황에 이번 주 접수일인 신청이 없습니다.']);
   rows.push(['상태가 바뀐 신청', (W.changed.length ? `<b>${W.changed.length}건</b>` + list(W.changed, 6, c => `${esc(c.name_s)} <span class="s-in">${md(c.date)} ${esc(c.before)} → ${esc(c.after)}</span>`) : '없음')
-    + (W.gone.length ? `접수 목록에서 빠진 신청 <b>${W.gone.length}건</b>` + list(W.gone, 4, g => `${esc(g.name_s)} <span class="s-in">${md(g.date)} ${esc(g.req_type)}</span>`) : '')]);
+    + (W.gone.length ? (W.changed.length ? '' : '. ') + `접수 목록에서 빠진 신청 <b>${W.gone.length}건</b>` + list(W.gone, 4, g => `${esc(g.name_s)} <span class="s-in">${md(g.date)} ${esc(g.req_type)}</span>`) : '')]);
   const grp = Object.entries(W.dis_groups).map(([g, n]) => `${gname(g)} ${n}`).join(', ');
   rows.push(['리츠 주요 공시', W.dis_n
     ? `<b>${W.dis_n}건</b>(${grp}) <a class="ext" href="finance.html#h-dis">공시 표 보기</a>` + (W.notable.length ? list(W.notable, 5, x => `${esc(x.company_s)} <span class="s-in">${md(x.date)} ${gname(x.group)}: ${esc(x.matter)}</span>`) : '')

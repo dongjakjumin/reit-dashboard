@@ -283,7 +283,7 @@ function render(){
   const spread = (r.yield_on_cost - p.exit_cap / 100) * 100;
   $('#tiles').innerHTML = [
     {lab: '총사업비', val: eok(r.tpc), unit: '원', det: `자기자본 <b>${eok(r.equity)}원</b>, 준공 시 차입 <b>${eok(r.dev_debt)}원</b>(LTC ${pct(r.ltc, 0)})`},
-    {lab: '안정화 가치', val: eok(r.value), unit: '원', det: `NOI <b>${eok(r.noi1)}원</b>. 총사업비 대비 수익률 <b>${pct(r.yield_on_cost)}</b>, Cap Rate보다 ${Math.abs(spread).toFixed(1)}%p ${spread >= 0 ? '높음' : '낮음'}`},
+    {lab: '안정화 가치', val: eok(r.value), unit: '원', det: `NOI <b>${eok(r.noi1)}원</b>. 총사업비 대비 수익률 <b>${pct(r.yield_on_cost)}</b>${r.yield_on_cost == null ? '' : `, Cap Rate보다 ${Math.abs(spread).toFixed(1)}%p ${spread >= 0 ? '높음' : '낮음'}`}`},
     {lab: 'A안: 안정화 시점 매각', val: r.a.irr == null ? '–' : (r.a.irr * 100).toFixed(1), unit: r.a.irr == null ? '' : '%', det: `자기자본 IRR. 회수 배수 <b>${mult(r.a.multiple)}</b>, 누적 이익 <b>${eok(r.a.profit)}원</b>`},
     {lab: `B안: ${p.hold_y}년 운영 뒤 매각`, val: r.b.irr == null ? '–' : (r.b.irr * 100).toFixed(1), unit: r.b.irr == null ? '' : '%', det: `자기자본 IRR. 회수 배수 <b>${mult(r.b.multiple)}</b>, 최저 DSCR <b>${r.b.dscr_min == null ? '–' : r.b.dscr_min.toFixed(2) + '배'}</b>`},
   ].map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');

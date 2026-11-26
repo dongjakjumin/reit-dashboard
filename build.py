@@ -1218,7 +1218,7 @@ def render(template: str, out: str, data: dict | None, page: str, extra: dict[st
     if data is not None:
         if "/*__DATA__*/null" not in html:
             raise RuntimeError(f"{template}에서 자료를 넣을 자리를 찾지 못함")
-        payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+        payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
         html = html.replace("/*__DATA__*/null", payload)
     if html.count("</head>") != 1:
         raise RuntimeError(f"{template}에서 </head>를 하나만 찾지 못함")
