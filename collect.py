@@ -105,6 +105,10 @@ def collect() -> dict:
                for r in reits_api.filings_list()]
     listed = [_pick(r, LISTED_KEEP, ("price", "prev_price", "mktcap_eok", "volume"))
               for r in reits_api.listed_list()]
+    for f in filings:
+        f["applicant"] = mask_person(f.get("applicant"))
+    for r in reits:
+        r["amc"] = mask_person(r.get("amc"))
     _require("reits", reits)
     _require("filings", filings)
     _require("listed", listed)

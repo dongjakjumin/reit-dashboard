@@ -15,7 +15,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from dart import previous_year
-from textutil import CHANGE_REQUEST, PRIVATE_LABEL, filing_result, mask_officer_names, mask_person
+from textutil import CHANGE_REQUEST, PRIVATE_LABEL, filing_result, lender_label, mask_officer_names, mask_person
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
@@ -383,7 +383,6 @@ def build_data() -> dict:
         "project": project_comparison(proj, by_amc, today),
         "events": events, "reits": slim, "po_planned": po_planned, "children": child_filings(reits, frows),
         "kinds": KINDS, "sectors": SECTORS,
-        "highlight_amc": cfg.get("highlight_amc", ""),
         "author": cfg.get("author", ""), "contact": cfg.get("contact", ""),
     }
 
@@ -558,7 +557,7 @@ def loan_schedule(stocks, as_of):
             months = (day.year-end.year)*12 + day.month-end.month
             if day.day < min(end.day, monthrange(day.year, day.month)[1]):
                 months -= 1
-            issuer["loans"].append(dict(x, months=months))
+            issuer["loans"].append(dict(x, lender=lender_label(x["lender"]), months=months))
             label = f"{day.year}년 {'상' if day.month <= 6 else '하'}반기"
             bucket = buckets.setdefault(label, {"고정": 0, "변동": 0, "모름": 0})
             bucket[x["rate_type"]] += x["amount"]

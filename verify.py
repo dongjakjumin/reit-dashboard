@@ -29,7 +29,7 @@ import dart_fv
 import ecos
 import reits_api
 from dart import previous_year
-from textutil import CHANGE_REQUEST, PRIVATE_LABEL, mask_officer_names, mask_person, officer_names, phone_files
+from textutil import CHANGE_REQUEST, PRIVATE_LABEL, lender_label, mask_officer_names, mask_person, officer_names, phone_files
 
 DATA = Path(__file__).parent / "data"
 
@@ -154,6 +154,10 @@ def verify_loans(check, statements, page, listed, as_of):
     count = sum(1 for name in names if re.fullmatch("[가-힣]{2,4}", name) and not markers.search(name))
     if count:
         print(f"  주의  법인 표지가 없는 짧은 차입처 이름 {count}개")
+    shown_lenders = {x.get("lender") for r in visible.values() for x in r.get("loans", []) if x.get("lender")}
+    check(all(lender_label(n) == n for n in shown_lenders), f"화면 차입처 {len(shown_lenders)}곳에 개인 이름 모양 값 없음")
+    check([lender_label(n) for n in ("홍길동", "신협", "샘신협", "아이엠뱅크", "Standard Chartered Bank")]
+          == [PRIVATE_LABEL, "신협", "샘신협", "아이엠뱅크", "Standard Chartered Bank"], "차입처 가상 입력(개인 이름은 가리고 금융기관은 남김)")
     listed_codes = {s["code"] for s in listed}
     missing = []
     for code,r in notes.items():
@@ -199,7 +203,7 @@ def verify_loans(check, statements, page, listed, as_of):
         confirmed.add(code)
         shown = visible.get(code,{})
         detail = [{k:v for k,v in row.items() if k != "months"} for row in shown.get("loans",[])]
-        check(detail == sorted(rows,key=lambda x:x["maturity"]) and all(shown.get(k) == r[k] for k in
+        check(detail == [dict(x, lender=lender_label(x["lender"])) for x in sorted(rows,key=lambda x:x["maturity"])] and all(shown.get(k) == r[k] for k in
               ("end","nominal","adjustments","bs_total","diff","match","rcept_no","name")), f"{name} 화면 건별 원문과 합계")
         start = date.fromisoformat(cur["end"])
         months = []
@@ -270,6 +274,35 @@ def secrets_only():
                     print("실패  저장 자료에서 인증키를 발견했습니다.")
                     return 1
     print("통과  저장 자료 인증키 검사")
+    # [review13] 저장소에 올리기 전에 저장 자료의 개인정보도 본다(커밋 뒤의 점검은 공개 이력을 막지 못한다)
+    bad = []
+    if phone_files(DATA.rglob("*.json")):
+        bad.append("전화번호")
+    dis = json.loads((DATA / "disclosures.json").read_text(encoding="utf-8")) if (DATA / "disclosures.json").exists() else {}
+    named = [no for no, v in dis.items() if officer_names(v.get("text"))]
+    if named:
+        bad.append("공시 본문 이름 " + ", ".join(named[:5]))
+    fin = json.loads((DATA / "financials.json").read_text(encoding="utf-8")) if (DATA / "financials.json").exists() else {}
+    if any(mask_person(v.get("top_shareholder")) != v.get("top_shareholder") for v in fin.values()):
+        bad.append("최대주주 개인 이름")
+    allowed = {"id", "reit_id", "date", "req_type", "name", "applicant", "status", "project_name", "biz_type",
+               "founding_capital", "public_duty", "first_seen", "last_seen", "status_history", "gone_on", "result_kind", "result_date"}
+    for path in [DATA / "latest.json", *sorted((DATA / "snapshots").glob("*.json"))]:
+        snap = json.loads(path.read_text(encoding="utf-8"))
+        if any(set(f) - allowed for f in snap.get("filings", [])):
+            bad.append(f"접수 허용 외 항목 {path.name}")
+        if any(mask_person(f.get("applicant")) != f.get("applicant") for f in snap.get("filings", [])) or \
+                any(mask_person(r.get("amc")) != r.get("amc") for r in snap.get("reits", [])):
+            bad.append(f"신청인이나 관리회사 칸의 개인 이름 {path.name}")
+    flog = json.loads((DATA / "filings_log.json").read_text(encoding="utf-8")) if (DATA / "filings_log.json").exists() else {}
+    if any(set(v) - allowed for v in flog.values()):
+        bad.append("접수 기록 허용 외 항목")
+    if any(mask_person(v.get("applicant")) != v.get("applicant") for v in flog.values()):
+        bad.append("접수 기록 신청인 칸의 개인 이름")
+    if bad:
+        print("실패  저장 자료 개인정보: " + " / ".join(bad))
+        return 1
+    print("통과  저장 자료 개인정보 검사")
     return 0
 
 
@@ -431,7 +464,7 @@ def main() -> int:
     check(all(r.get("mktcap_eok") for r in snap["listed"]), "상장리츠 시가총액이 모두 있음")
     random.seed(snap["date"])
     sample = random.sample(pool, min(5, len(pool)))
-    hl = d.get("highlight_amc")
+    hl = json.loads((build.ROOT / "config.json").read_text(encoding="utf-8")).get("highlight_amc") if (build.ROOT / "config.json").exists() else ""
     sample += [r for r in reits if hl and hl in r["amc"]][:1]
     for r in sample:
         det = ask("/reits/prmpc/searchPrmpcOperTab01_01", {"reitsNo": r["id"], "no": r["id"]})
@@ -1084,6 +1117,9 @@ def main() -> int:
               "DART 자료와 배포 파일 전체 인증키 점검")
 
     print("[7] 개인정보")
+    # 강조 회사는 주소의 ?amc= 로만 켠다. 배포 파일에 설정값이나 특정 회사 강조 흔적이 남으면 안 된다
+    page_src = {p.name: p.read_text(encoding="utf-8") for p in build.SITE.glob("*.html")}
+    check(all('"highlight_amc"' not in t for t in page_src.values()), "배포 화면 자료에 강조 회사 설정값 없음")
     leaks = phone_files(DATA.rglob("*.json")) + phone_files(build.SITE.glob("*.html"))
     check(not leaks, "저장 파일과 화면 전화번호 점검" + " ".join(str(p) for p in leaks))
     check(all(not v.get("text") for v in dis.values() if "주주" in v["matter"]), "주주 공시 본문 없음")
@@ -1130,12 +1166,21 @@ def main() -> int:
                      ("변경 전 대표이사: 홍길동 / 변경 후 대표이사: 김철수", "변경 전 대표이사: (이름 생략) / 변경 후 대표이사: (이름 생략)"),
                      ("대표이사 홍길동 → 대표이사 김철수", "대표이사 (이름 생략) → 대표이사 (이름 생략)"),
                      ("홍길동 사내이사 및 김철수 감사 선임의 건", "(이름 생략) 사내이사 및 (이름 생략) 감사 선임의 건"),
-                     ("자산관리회사 변경 (변경전) 가나운용 (변경후) 다라운용", None)]
+                     ("자산관리회사 변경 (변경전) 가나운용 (변경후) 다라운용", None),
+                     # [review13] 당사자 낱말, '~로 변경', 전문인력, 지나친 가림
+                     ("최대주주 홍길동으로부터 운영자금 차입", "최대주주 (이름 생략)으로부터 운영자금 차입"),
+                     ("대주: 홍길동", "대주: (이름 생략)"), ("원고: 홍길동, 피고: 당사", "원고: (이름 생략), 피고: 당사"),
+                     ("대표이사를 김철수로 변경", "대표이사를 (이름 생략)로 변경"),
+                     ("전문인력 변경: 홍길동 → 김철수", "전문인력 변경: (이름 생략) → (이름 생략)"),
+                     ("자산운용전문인력 홍길동 퇴사", "자산운용전문인력 (이름 생략) 퇴사"),
+                     ("신규 대표이사 선임 및 가나동 오피스 매입", None), ("자산관리회사 가나 선임", None),
+                     ("회생절차 관리인 선임", None), ("서울회생법원은 채권자들과 채무자 사이의 원만한 구조조정", None)]
     for text, expected in officer_cases:
         expected = expected or text
         masked = mask_officer_names(text)
         check(masked == expected and not officer_names(masked), f"임원 이름 가상 입력 {expected}")
-    cases = [(name, PRIVATE_LABEL) for name in ("홍길동(개인)", "홍길동 (본인)", "남궁민수", "김솔", "박하늘 외 2인")]
+    cases = [(name, PRIVATE_LABEL) for name in ("홍길동(개인)", "홍길동 (본인)", "남궁민수", "김솔", "박하늘 외 2인",
+                                                "홍길동 외 특수관계인 2인", "홍길동 회장 외 3인", "홍길동 및 특수관계인")]
     cases += [(name, name) for name in ("㈜에스원", "주식회사 케이탑", "롯데쇼핑", "(주)한빛", "한솔 유한회사")]
     for name, expected in cases:
         check(mask_person(name) == expected, f"최대주주 가상 입력 {name}")

@@ -23,9 +23,13 @@ def mask_person(name: str | None) -> str | None:
         return name  # 회사 표기가 붙어 있으면 회사로 본다
     core = re.sub(r"\s", "", name)
     core = re.sub(r"(?:\([^()]*\))+", "", core)
+    core = re.sub(r"(?:외|및)?(?:특수관계인|특별관계자|관계인)?\d*(?:인|명)?$", "", core) if re.search(r"(?:외|및|특수관계인|특별관계자)", core) else core
     core = re.sub(r"외\d*(인|명)?$", "", core)
+    core = re.sub(r"^개인", "", core)
+    core = re.sub(r"(?:대표이사|대표|회장|사장|씨|님|등)$", "", core)
     is_person = bool(re.fullmatch(r"[가-힣]{2,3}", core)) or (
         bool(re.fullmatch(r"[가-힣]{4}", core)) and core.startswith(_TWO_SYLLABLE_SURNAMES))
+    is_person = is_person or bool(re.fullmatch(r"[\u4e00-\u9fff]{2,4}", core))
     return PRIVATE_LABEL if is_person else name
 
 
@@ -45,7 +49,7 @@ _TB = rf"{_TITLE_X}(?:으로|로|의|가|이|은|는|을|를|에|와|과)?(?![�
 _DAY = r"(?:\d{4}\s*[.\-/년]\s*)?\d{1,2}\s*[.\-/월]\s*\d{1,2}\s*(?:일|\.)?"
 _LEAD = (rf"(?:(?:중도|자진|금일|금번|신규|추가|정식|각|일신상의?\s*(?:사유|이유)로|(?:개인|건강상의?)\s*(?:사정|사유|이유)(?:으로|로)"
          rf"|{_DAY}\s*(?:자로|자|부로|부터|부|에|로)?)\s*){{0,3}}")
-_ACTION_WORDS = r"(?:재선임|선임|사임|해임|중임|연임|퇴임|취임|선출|임기\s?만료|임기\s?종료|임명|사퇴|사직|위촉|해촉)"
+_ACTION_WORDS = r"(?:재선임|선임|사임|해임|중임|연임|퇴임|취임|선출|임기\s?만료|임기\s?종료|임명|사퇴|사직|위촉|해촉|퇴사|입사|교체)"
 _PERSON_ACTIONS = rf"(?:{_LEAD}{_ACTION_WORDS})"
 _ACTIONS = rf"(?:{_PERSON_ACTIONS}|변경\s?전|변경\s?후)"
 _NOT_NAMES = {"보수", "선임", "사임", "해임", "중임", "연임", "퇴임", "취임", "재선임", "후보", "후보자", "전원", "변경",
@@ -58,7 +62,8 @@ _NOT_NAMES = {"보수", "선임", "사임", "해임", "중임", "연임", "퇴�
               "공석", "해당", "해당사항", "해당없음", "별도", "추후", "정관", "내정", "내정자", "직무", "대행", "직무대행",
               "본인", "사항", "주총", "임시주총", "정기주총", "주주총회", "안건", "공시", "관련", "회장", "사장", "부사장",
               "전무", "상무", "본부장", "겸직", "겸임", "겸무", "자산", "따른", "의한", "관한", "대한", "위한", "인한", "통한",
-              "따라", "의해", "대해", "위해", "인해", "통해"}
+              "따라", "의해", "대해", "위해", "인해", "통해",
+              "관리인", "관재인", "수탁자", "수탁인", "대리인", "조사위원", "감정인", "청산인"}
 _NOT_NAME_END = re.compile(r"(?:회사|(?:주관|수탁|운용|신탁|증권|보관|관리|대행|평가|시공|시행|자문|중개|용역|설계|감리|위탁|운영)사"
                            r"|신탁|증권|은행|법인|리츠|펀드|조합|위원회|이사회|총회|주총|대표|이사)$")
 _NAME = r"[가-힣]{2,4}"
@@ -82,7 +87,12 @@ _IN_PAREN = re.compile(rf"(?=(?<![가-힣])(?:{_TB}|{_ACTIONS})\s*(?:\d+\s*[인�
 # [review6] "대표이사 변경(종전 홍길동, 신규 김철수)"처럼 꼬리표 뒤에 오고 바로 쉼표, 괄호, 글 끝으로 닫히는 이름
 _LABELED = re.compile(rf"(?<![가-힣])(?:종전|전임|신규|신임|후임)\s*[:：]?\s*({_NAME})(?=\s*(?:[,，/)）\]]|$))")
 # "및 김철수 사임", "홍길동 일신상의 이유로 사임"처럼 직함 없이 동작 앞에 온 이름(숫자에 붙은 '20일자'는 빼려고 숫자 경계도 둔다)
-_BEFORE_ACTION = re.compile(rf"(?<![가-힣\d])({_NAME})(?=\s*[(（]?\s*{_PERSON_ACTIONS})")
+_BEFORE_ACTION = re.compile(rf"(?<![가-힣\d])(?<!회사\s)(?<!사\s)(?<!법인\s)(?<!기관\s)({_NAME})(?=\s*[(（]?\s*{_PERSON_ACTIONS})")
+# [review13] 개인이 거래 당사자로 나오는 글: "최대주주 홍길동으로부터 차입", "대주: 홍길동", "원고: 홍길동"
+_PARTY = re.compile(rf"(?<![가-힣])(?:최대주주|주요주주|대주|대여자|차주|매도인|매수인|원고|피고|채권자|채무자|담당자|전문인력|운용역|운용인력)"
+                    rf"(?:인|은|는|가|이)?\s*[:：]?\s*['\"]?([가-힣]{{2,4}}?)(?=\s*(?:으로부터|로부터|에게|외\s*\d|씨|님|[,，(（/'\"]|$)|\s+(?:과장|부장|차장|대리|팀장|실장|본부장|매니저|주임|사원)(?![가-힣]))")
+# [review13] "대표이사를 홍길동으로 변경", "전문인력 변경: 홍길동 → 김철수"
+_TO_CHANGE = re.compile(rf"(?<![가-힣]){_TB}\s*(?:을|를)?\s*({_NAME})(?:으로|로)\s*(?:변경|교체)")
 # [review6] "홍길동 대표이사 사임", "제1호 의안: 홍길동, 김철수 사내이사 선임의 건"처럼 이름이 직함 앞에 오는 어순.
 # 글머리, 문장부호, 이음말('~으로', '~하고', '및', '금번') 바로 뒤에서 시작할 때만 본다('이사회 결의로 감사 선임'의 '결의로'는 안 잡음)
 _CLAUSE_START = (r"(?:^|(?<=[-:：,，(（)\]·.;])|(?<=[-:：,，(（)\]·.;]\s)|(?<=및\s)|(?<=[로고며서에라여해후]\s)|(?<=금번\s)"
@@ -102,7 +112,7 @@ _GAP = r"(?:[^.\n]|(?<=\d)\.)"
 _TAG = r"(?:\((?:구|신|전|후|전임|후임|사임|선임|퇴임|취임|변경\s?전|변경\s?후)\)\s*)?"
 _PAREN = r"(?:\s*\([^()]{0,10}\))?"
 _ARROW_CHANGE = re.compile(
-    rf"(?<![가-힣])(?:{_TB}|임원){_GAP}{{0,30}}?(?<![가-힣]){_TAG}({_NAME})(?:\s*{_TITLE_X})?{_PAREN}\s*\(?\s*{_ARROW}"
+    rf"(?<![가-힣])(?:{_TB}|임원|(?:자산운용)?전문인력|운용역|운용인력){_GAP}{{0,30}}?(?<![가-힣]){_TAG}({_NAME})(?:\s*{_TITLE_X})?{_PAREN}\s*\(?\s*{_ARROW}"
     rf"\s*{_TAG}(?:{_TITLE_X}\s*[:：]?\s*)?({_NAME})(?![가-힣])")
 # [review6] "대표이사 홍길동에서 김철수로 변경", "대표이사가 홍길동 대표에서 김철수 대표로 바뀜"
 _FROM_TO = re.compile(
@@ -127,7 +137,7 @@ def _officer_spans(text: str | None) -> list[tuple[int, int]]:
     """임원 문구 안에서 이름으로 보이는 곳의 (시작, 끝). 직함(또는 '임원', '대표')과 함께 동작 낱말, '신임/후임',
     화살표, '~에서 ~로', '후보:' 같은 말이 있는 글만 본다."""
     # [review6] 직함이 없어도 '홍길동 선임, 김철수 사임'처럼 동작 낱말이 있으면 본다
-    if not text or not re.search(rf"{_TITLE_X}|임원|{_ACTION_WORDS}", text):
+    if not text or not re.search(rf"{_TITLE_X}|임원|{_ACTION_WORDS}|최대주주|주요주주|대주|대여자|차주|매도인|매수인|원고|피고|채권자|채무자|담당자|전문인력|운용역|운용인력", text):
         return []
     patterns = []
     if re.search(_ACTIONS, text):
@@ -149,6 +159,9 @@ def _officer_spans(text: str | None) -> list[tuple[int, int]]:
         patterns.append(_ARROW_CHANGE)
     if re.search(r"에서|로부터", text):
         patterns.append(_FROM_TO)
+    patterns += [_PARTY, _TO_CHANGE]
+    if re.search(r"전문인력|운용역|운용인력", text) and re.search(_ARROW, text):
+        patterns.append(_ARROW_CHANGE)
     spans = set()
     for pattern in patterns:
         for m in pattern.finditer(text):
@@ -158,6 +171,8 @@ def _officer_spans(text: str | None) -> list[tuple[int, int]]:
                 for t in re.finditer(r"[가-힣]+", m.group(g)):
                     if _is_name(t.group(0)):
                         spans.add((m.start(g) + t.start(), m.start(g) + t.end()))
+                    elif re.match(_ACTION_WORDS, t.group(0)):
+                        break
     # 겹치는 구간은 합친다(뒤에서부터 바꿀 때 글이 어긋나지 않게)
     merged = []
     for start, end in sorted(spans):
@@ -199,3 +214,14 @@ def filing_result(rec, reit):
     if rec["req_type"] == CHANGE_REQUEST or not reit or not reit.get("date") or reit["date"] < rec["date"]:
         return {"result_kind": None, "result_date": None}
     return {"result_kind": reit["kind"], "result_date": reit["date"]}
+
+
+LENDER_MARKERS = re.compile(r"은행|증권|보험|캐피탈|금고|공사|공단|기금|연금|조합|중앙회|회사|리츠|㈜|\(주\)|\(유\)|유한|펀드|신탁|운용|투자"
+                            r"|저축|카드|생명|화재|공제|신협|새마을|농협|수협|뱅크|[A-Za-z]")
+
+
+def lender_label(name):
+    """차입처가 개인 이름처럼 보이면 개인 표시로 바꾼다. '신협'처럼 짧은 금융기관 이름은 남긴다."""
+    if name and mask_person(name) == PRIVATE_LABEL and not LENDER_MARKERS.search(name):
+        return PRIVATE_LABEL
+    return name

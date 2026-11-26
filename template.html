@@ -269,9 +269,11 @@ $('#by').textContent = D.author ? `기획과 운영: ${D.author}${D.contact ? ' 
   $('#tiles').innerHTML = tiles.map(t => `<div class="card tile"><div class="lab">${t.lab}</div><div class="val">${t.val}<small>${t.unit}</small></div><div class="det">${t.det}</div></div>`).join('');
 })();
 
-const highlight = (new URLSearchParams(location.search).get('amc') || '').trim();
+const highlight = (new URLSearchParams(location.search).get('amc') || '').normalize('NFC').trim();
 // 목록에서 고른 회사는 정확한 이름이 주소에 남으므로 같은 이름을 먼저 찾고, 없을 때만 이름 일부로 찾는다
-const hlRow = highlight ? (D.amc.find(a => a.name === highlight) || D.amc.find(a => a.name.includes(highlight))) : null;
+// 13차 검토: 이름이 정확히 같은 회사를 먼저 찾고, 없으면 두 글자 이상이면서 한 회사에만 맞을 때만 강조한다('키', '자산' 같은 말로 다른 회사가 켜지지 않게)
+const hlPart = highlight.length >= 2 ? D.amc.filter(a => a.name.includes(highlight)) : [];
+const hlRow = highlight ? (D.amc.find(a => a.name === highlight) || (hlPart.length === 1 ? hlPart[0] : null)) : null;
 const hlCompany = hlRow?.name || highlight;
 const rowClass = name => hlCompany && name === hlCompany ? 'hl' : '';
 
