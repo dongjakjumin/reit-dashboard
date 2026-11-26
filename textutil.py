@@ -68,7 +68,7 @@ _SEP = r"(?:\s*(?:,|，|、|·|ㆍ|・|∙|/|및)\s*|(?<=[가-힣])(?:과|와)\s
 _LIST = rf"{_NAME}(?:{_SEP}(?:{_TITLES}\s+)?{_NAME}){{0,20}}"
 # 쌍점 뒤 목록은 띄어쓰기로만 이은 이름('사임: 홍길동 김철수')도 잇는다
 _LIST_WS = rf"{_NAME}(?:(?:{_SEP}|\s+)(?:{_TITLES}\s+)?{_NAME}){{0,20}}"
-_END = (rf"(?=\s*(?:[,，()]|외\s*\d|등\s*\d|{_ACTIONS}|$)|\s+{_TITLE_X}|\s+-|\s*;|\s*\.(?!\d)"
+_END = (rf"(?=\s*(?:[,，()/]|외\s*\d|등\s*\d|{_ACTIONS}|$)|\s+{_TITLE_X}|\s+-|\s*;|\s*\.(?!\d)"
         rf"|\s*(?:님|씨)(?![가-힣]))")
 # [review6] 아래 목록 패턴은 모두 앞보기(겹침 허용)로 찾는다. 앞 일치가 '선임', '변경후' 같은 다음 동작 낱말이나 직함을
 # 이름 목록으로 먹어 버려 뒤 이름('사임: 홍길동, 선임: 김철수'의 김철수)을 놓치지 않게 한다
@@ -87,7 +87,9 @@ _BEFORE_ACTION = re.compile(rf"(?<![가-힣\d])({_NAME})(?=\s*[(（]?\s*{_PERSON
 # 글머리, 문장부호, 이음말('~으로', '~하고', '및', '금번') 바로 뒤에서 시작할 때만 본다('이사회 결의로 감사 선임'의 '결의로'는 안 잡음)
 _CLAUSE_START = (r"(?:^|(?<=[-:：,，(（)\]·.;])|(?<=[-:：,，(（)\]·.;]\s)|(?<=및\s)|(?<=[로고며서에라여해후]\s)|(?<=금번\s)"
                  r"|(?<=이번\s))")
-_BEFORE_TITLE = re.compile(rf"(?={_CLAUSE_START}({_LIST})\s+{_TB}\s*\(?\s*{_ACTIONS})")
+_BEFORE_TITLE = re.compile(rf"(?={_CLAUSE_START}({_LIST})\s+{_TB}\s*(?:(?:및|,|，)\s*{_NAME}\s+{_TB}\s*)*\(?\s*{_ACTIONS})")
+# [review9] "(변경전) 홍길동 (변경후) 김철수"처럼 변경 꼬리표 괄호 바로 뒤의 이름
+_TAGGED = re.compile(rf"(?<![가-힣])(?:{_TB}|임원)\s*(?:의\s*)?변경\s*[:：\-]?\s*\((?:변경\s?전|구|전임)\)\s*({_NAME})\s*[,，/]?\s*\((?:변경\s?후|신|후임)\)\s*({_NAME})(?![가-힣])")
 # [review6] "대표이사로 선임된 홍길동"
 _AFTER_ACTION = re.compile(rf"(?=(?<![가-힣]){_TB}\s*{_ACTION_WORDS}(?:된|한|하신|되신|되는|하는)\s+({_LIST})(?![가-힣]))")
 # "신임 대표이사 김철수", "후임 감사: 김철수", "신규 대표이사 김철수 및 감사 이영희", "(전임 홍길동)"
@@ -101,7 +103,7 @@ _TAG = r"(?:\((?:구|신|전|후|전임|후임|사임|선임|퇴임|취임|변�
 _PAREN = r"(?:\s*\([^()]{0,10}\))?"
 _ARROW_CHANGE = re.compile(
     rf"(?<![가-힣])(?:{_TB}|임원){_GAP}{{0,30}}?(?<![가-힣]){_TAG}({_NAME})(?:\s*{_TITLE_X})?{_PAREN}\s*\(?\s*{_ARROW}"
-    rf"\s*{_TAG}({_NAME})(?![가-힣])")
+    rf"\s*{_TAG}(?:{_TITLE_X}\s*[:：]?\s*)?({_NAME})(?![가-힣])")
 # [review6] "대표이사 홍길동에서 김철수로 변경", "대표이사가 홍길동 대표에서 김철수 대표로 바뀜"
 _FROM_TO = re.compile(
     rf"(?<![가-힣])(?:{_TB}|임원){_GAP}{{0,30}}?(?<![가-힣]){_TAG}({_NAME})(?:\s*{_TITLE_X})?{_PAREN}\s*(?:에서|으로부터|로부터)"
@@ -141,6 +143,8 @@ def _officer_spans(text: str | None) -> list[tuple[int, int]]:
             patterns.append(_LABELED)
     if re.search(r"\(", text) and not re.search(_ACTIONS, text):
         patterns.append(_IN_PAREN)
+    if re.search(r"\((?:변경\s?전|변경\s?후|구|신|전임|후임)\)", text):
+        patterns.append(_TAGGED)
     if re.search(_ARROW, text):
         patterns.append(_ARROW_CHANGE)
     if re.search(r"에서|로부터", text):

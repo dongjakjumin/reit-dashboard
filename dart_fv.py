@@ -61,8 +61,11 @@ SENT_END = re.compile(r"다\.|(?:였|했|았|었|없)음(?=[\s.,]|$)")
 DATE_BODY = r"\d{4}\s*(?:년\s*\d{1,2}\s*월(?:\s*\d{1,2}\s*일)?|[.\-]\s*\d{1,2}\s*[.\-]\s*\d{1,2})"
 # [review8] 다른 자산을 이번 결산에 감정했다는 말('당기말(…)을 평가기준일로 감정평가를 실시하였', '결산월 날짜를 평가기준일로 ~ 실시하였').
 # '당기말'이나 날짜가 평가기준일 자리에 바로 붙을 때만 본다('당기말 현재 ~', '매 당기말을'은 아님)
-AT_END_APPRAISED = re.compile(r"(?<!매\s)(?<!매)(당기말|" + DATE_BODY + r")\s*(?:\([^)]*\))?\s*[을를]?\s*평가\s*기준일로?\s*"
-                              r"(?:하여\s*)?(?:감정\s*평가|공정가치\s*평가)를?\s*(?:실시|수행)(?:하였|했)")
+AT_END_APPRAISED = re.compile(r"(당기말|보고\s*기간\s*(?:말|종료일)|" + DATE_BODY + r")(?:말|\.)?\s*(?:\([^)]*\))?\s*\)?\s*"
+                              r"(?:(?:현재\s*)?[을를]?\s*(?:평가\s*)?기준(?:일자?)?\s*(?:으로|로)?\s*(?:하여|하는|한)?|자로|자|에"
+                              r"|현재(?=\s*(?:감정\s*평가|공정가치\s*평가)))"
+                              r"(?:(?!\d{4})[^,，.]){0,30}?(?:감정\s*평가|공정가치\s*평가|재평가)(?:를|을)?\s*(?:실시|수행|받|완료)?(?:하였|했|았)")
+APPRAISAL_EVERY = re.compile(r"매(?:년|\s*(?:결산기|회계연도|반기|분기|사업연도))?\s*$")
 LIST_GAP = r"\s*(?:및|와|과|,|，|、|그리고)\s*(?:[가-힣A-Za-z0-9()\s]{1,15}?(?:은|는)\s*)?"
 # 표 안에서도 남길 칸: 문장이거나 평가기준일, 재평가 생략을 말하는 칸('(*)' 옆의 각주 문장 등)
 PROSE_CELL = re.compile(r"다\.|평가\s*기준일|재수행|재실시|다시\s*(?:수행|실시)")
@@ -242,7 +245,7 @@ def cited_dates(text):
     그 문장이나 바로 앞 문장이 투자부동산을 말하며 유형자산 문장이 아닐 때만 센다."""
     found, attached, prev, sents = [], [], "", []
     for s in sentences(text):
-        if "평가기준일" in s and "유형자산" not in s and "투자부동산" in prev + s:
+        if re.search(r"평가\s*기준일", s) and "유형자산" not in s and "투자부동산" in prev + s:
             found += iso_dates(s)
             attached += attached_dates(s)
             sents.append(s.strip())
@@ -275,7 +278,11 @@ def reappraisal_skipped(text, end):
         # [review8] '당기말'이나 결산월 날짜가 평가기준일 자리에 바로 붙을 때만 본다. 앞 절 어디에든 '당기말'이 있으면 거르던
         # 4179cf0 규칙은 '당기말 현재 투자부동산의 공정가치는 2025년 12월 31일을 평가기준일로 ~' 같은 진짜 생략 문장까지 지웠다
         head = sentence[:cut]
-        if any(x[1] == "당기말" or any(d[:7] == end[:7] for d in iso_dates(x[1])) for x in AT_END_APPRAISED.finditer(head)):
+        def at_end(part):
+            return any(not APPRAISAL_EVERY.search(part[:x.start()]) and not re.match(r"\s*마다", part[x.end(1):])
+                       and (x[1] == "당기말" or x[1].startswith("보고") or any(d[:7] == end[:7] for d in iso_dates(x[1])))
+                       for x in AT_END_APPRAISED.finditer(part))
+        if at_end(head) or at_end(prev):
             continue
         # 앞에 전기 서술이 있고 바로 뒤 문장이 당기에 다시 평가했다고 적으면 생략 문장은 전기 이야기다
         nxt = sents[i + 1][:400] if i + 1 < len(sents) else ""
@@ -284,7 +291,7 @@ def reappraisal_skipped(text, end):
         if ("당기" not in sentence[cut:m.end()] and PRIOR_ANY.search(prev + sentence[:m.start()])
                 and CURRENT_REDONE.search(nxt) and not re.search(r"하지\s*(?:않|아니)|취득|신규|편입|전기", nxt)):
             continue
-        pick = sentence if DATE.search(sentence) else (prev if "평가기준일" in prev else "")
+        pick = sentence if DATE.search(sentence) else (prev if re.search(r"평가\s*기준일", prev) else "")
         # 근거 글은 자르지 않는다(verify.py가 날짜마다 근거 글에 있는지 본다)
         return before_end(iso_dates(pick), end), (prev + sentence).strip()
     return None

@@ -62,7 +62,7 @@ def stale_row_ok(fvr, row, same_report):
     # dart_fv는 전각 숫자('２０２５년 １２월') 같은 유니코드 10진 숫자 날짜도 읽으므로, 날짜 대조는 보통 숫자로 바꾼 글에서 한다
     proof_n = re.sub(r"\d", lambda x: str(unicodedata.decimal(x[0])), unicodedata.normalize("NFKC", proof))
     proof_ok = proof_ok and all(re.search(rf"{d[:4]}\s*(?:년\s*0?{int(d[5:7])}\s*월|[.\-]\s*0?{int(d[5:7])}\s*[.\-])", proof_n)
-                                for d in dates) and (not dates or stale == "skipped" or "평가기준일" in proof)
+                                for d in dates) and (not dates or stale == "skipped" or re.search(r"평가\s*기준일", proof))
     ok = (proof_ok and row.get("fv_stale") == stale and row.get("fv_appraisal_dates") == dates
           and all(d[:7] < fvr["end"][:7] for d in dates) and (not same_report or stale or not fvr.get("appraisal_dates"))
           and (fvr.get("fv_prior") is None or fvr.get("method") == "장부금액과 공정가치 표"))
@@ -656,7 +656,14 @@ def main() -> int:
                    ({"matter_code": "RT02100005", "matter": "투자설명서", "text": "담보부사채 투자설명서(예비)"}, "차입, 사채"),
                    ({"matter_code": "RT02100005", "matter": "투자설명서", "text": "영업인가에 따른 투자설명서 공시"}, "자본 변동"),
                    ({"matter_code": "RT02100005", "matter": "투자설명서", "text": "자회사의 환헷지 조기종료"}, "기타 공시"),
-                   ({"matter_code": "RT02100006", "matter": "실사보고서", "text": ""}, "자산 취득, 처분")]
+                   ({"matter_code": "RT02100006", "matter": "실사보고서", "text": ""}, "자산 취득, 처분"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "미상환 사채 잔액 500억원(연체가 발생하지 않음)"}, "차입, 사채"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "미상환 담보부사채 잔액 500억원"}, "차입, 사채"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "미상환된 사채 잔액 300억원"}, "차입, 사채"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "캐시트랩 미해소"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "캐시트랩 해소 불가"}, "위험 신호"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "캐시트랩(Cash Trap) 해소"}, "기타 공시"),
+                   ({"matter_code": "RT02100020", "matter": "기타", "text": "미상환 잔액 300억원 상환 불능"}, "위험 신호")]
     for case, expected in group_cases:
         check(build.dis_group(case) == expected, f"공시 묶음 가상 입력 {case['text'] or case['matter']} → {expected or '정기, 일반'}")
     # 감정평가 생략 문장 가상 사례: 과거형은 신호. 현재 진행형은 오탐 위험이 커서 미탐으로 남기고(7차 검토),
@@ -674,7 +681,13 @@ def main() -> int:
                    "당기에는 최근 평가기준일(2025년 12월 31일) 대비 변동이 중요하지 않아 공정가치평가를 재수행하지 아니하였습니다.", True),
                   ("감정 주기 정책", "투자부동산 공정가치평가를 재수행하지 않고 3년 주기로 감정평가를 실시하며, 그 사이에는 "
                    "최근 감정평가액을 공정가치로 사용하고 있습니다.", False),
-                  ("조건문", "변동이 중요하지 않은 경우 투자부동산 공정가치평가를 재수행하지 아니할 수 있습니다.", False)]
+                  ("조건문", "변동이 중요하지 않은 경우 투자부동산 공정가치평가를 재수행하지 아니할 수 있습니다.", False),
+                  ("일부 자산만 미평가, '당기말 현재를'", "투자부동산 중 A빌딩과 B빌딩은 당기말(2026년 6월 30일) 현재를 평가기준일로 "
+                   "감정평가를 실시하였으며, 당기 중 신규 취득한 C빌딩(취득 시 평가기준일: 2026년 4월 30일)은 공정가치평가를 재수행하지 아니하였습니다.", False),
+                  ("일부 자산만 미평가, 두 문장", "투자부동산 중 A빌딩과 B빌딩은 당기말을 평가기준일로 감정평가를 실시하였습니다. "
+                   "다만, 당기 중 신규 취득한 C빌딩은 공정가치평가를 재수행하지 아니하였습니다.", False),
+                  ("매년 감정 정책 뒤 당기 생략", "회사는 투자부동산에 대하여 매년 당기말을 평가기준일로 감정평가를 실시하였으나, "
+                   "당기에는 최근 평가기준일(2025년 12월 31일) 대비 변동이 중요하지 않아 공정가치평가를 재수행하지 아니하였습니다.", True)]
     for label, text, expected in skip_cases:
         check(bool(dart_fv.reappraisal_skipped(text, "2026-06-30")) == expected,
               f"감정평가 생략 문장 가상 입력({label}) → {'신호' if expected else '신호 아님'}")
@@ -1065,7 +1078,12 @@ def main() -> int:
                      ("대표이사 홍길동에서 김철수로 변경", "대표이사 (이름 생략)에서 (이름 생략)로 변경"),
                      ("대표이사 변경(2026.11.20.): 홍길동 → 김철수", "대표이사 변경(2026.11.20.): (이름 생략) → (이름 생략)"),
                      ("대표이사(홍길동) 사임", "대표이사((이름 생략)) 사임"),
-                     ("이사회에서 감사 선임", None), ("대표이사 변경(임기만료→재선임)", None)]
+                     ("이사회에서 감사 선임", None), ("대표이사 변경(임기만료→재선임)", None),
+                     ("대표이사 변경 (변경전) 홍길동 (변경후) 김철수", "대표이사 변경 (변경전) (이름 생략) (변경후) (이름 생략)"),
+                     ("변경 전 대표이사: 홍길동 / 변경 후 대표이사: 김철수", "변경 전 대표이사: (이름 생략) / 변경 후 대표이사: (이름 생략)"),
+                     ("대표이사 홍길동 → 대표이사 김철수", "대표이사 (이름 생략) → 대표이사 (이름 생략)"),
+                     ("홍길동 사내이사 및 김철수 감사 선임의 건", "(이름 생략) 사내이사 및 (이름 생략) 감사 선임의 건"),
+                     ("자산관리회사 변경 (변경전) 가나운용 (변경후) 다라운용", None)]
     for text, expected in officer_cases:
         expected = expected or text
         masked = mask_officer_names(text)
