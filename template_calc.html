@@ -347,7 +347,9 @@ function render(){
   ].sort((a, b) => a[0] - b[0]).map(x => `<tr><td class="nw">${ym(start, x[0])}</td><td>${x[1]}</td><td class="num">${x[0]}개월째</td></tr>`).join('') + '</tbody>';
 }
 function drawInverse(p, r, solve){
-  const short = [['A안', r.a.irr], ['B안', r.b.irr]].filter(([, v]) => v == null || v * 100 < p.target_irr - 1e-8)
+  // 18차 검토: IRR이 빈 값이어도 회수 배수가 1배를 넘으면(IRR 상한 초과) 목표에 못 미친 것으로 세지 않는다
+  const short = [['A안', r.a.irr, r.a.multiple], ['B안', r.b.irr, r.b.multiple]]
+    .filter(([, v, m]) => v == null ? !(m > 1) : v * 100 < p.target_irr - 1e-8)
     .map(([n, v]) => n + (v == null ? '' : ` ${(v * 100).toFixed(2)}%`));
   $('#inverse-target').textContent = `목표 자기자본 IRR은 연 ${p.target_irr}%입니다. 목표 수익률은 예시 값이며 시장 기준이 아닙니다.` +
     (short.length ? ` 현재 가정의 IRR(${short.join(', ')})은 목표에 못 미칩니다. 이때 여유는 음수로 나옵니다.` : '');

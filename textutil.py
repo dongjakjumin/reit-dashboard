@@ -34,6 +34,7 @@ def mask_person(name: str | None) -> str | None:
     core = re.sub(r"(?:외|및)?(?:특수관계인|특별관계자|관계인)?\d*(?:인|명)?$", "", core) if re.search(r"(?:외|및|특수관계인|특별관계자)", core) else core
     core = re.sub(r"외\d*(인|명)?$", "", core)
     core = re.sub(r"^개인", "", core)
+    core = re.sub(r"(?<=[가-힣]{2})(?:님|(?<!씨)씨)$", "", core)  # 붙여 쓴 홍길동님, 홍길동씨(케이씨씨는 그대로)
     core = re.sub(r"(?:대표이사|대표|회장|사장|등)$", "", core)
     is_person = bool(re.fullmatch(r"[가-힣]{2,3}", core)) or (
         bool(re.fullmatch(r"[가-힣]{4}", core)) and core.startswith(_TWO_SYLLABLE_SURNAMES))
@@ -98,12 +99,14 @@ _LABELED = re.compile(rf"(?<![가-힣])(?:종전|전임|신규|신임|후임)\s*
 # "및 김철수 사임", "홍길동 일신상의 이유로 사임"처럼 직함 없이 동작 앞에 온 이름(숫자에 붙은 '20일자'는 빼려고 숫자 경계도 둔다)
 _BEFORE_ACTION = re.compile(rf"(?<![가-힣\d])(?<!회사\s)(?<!법인\s)(?<!기관\s)(?<!관리사\s)(?<!운용사\s)(?<!신탁사\s)(?<!시공사\s)(?<!위탁사\s)(?<!수탁사\s)({_NAME})(?=\s*[(（]?\s*{_PERSON_ACTIONS})")
 _STAFF = re.compile(rf"(?<![가-힣])(?:(?:자산|투자)\s?)?(?:운용\s?)?(?:전문인력|운용역|운용인력|직원|임원)\s*[:：]?\s*({_NAME})(?:\s+(?:과장|부장|차장|대리|팀장|실장|본부장|매니저|주임|사원))?\s*[(（]?\s*(?:퇴사|입사|교체)")
-_STAFF2 = re.compile(rf"(?:(?<=및\s)|(?<=[,，]\s)|(?<![가-힣]))({_NAME})\s*(?:(?:과장|부장|차장|대리|팀장|실장|본부장|매니저|주임|사원)\s*)?[(（]?\s*(?:퇴사|입사)")
+_STAFF2 = re.compile(rf"(?:(?<=및\s)|(?<=[,，]\s)|(?<![가-힣]))({_NAME})(?:\s+|\s*[(（]|\s+(?:과장|부장|차장|대리|팀장|실장|본부장|매니저|주임|사원)\s*[(（]?)\s*(?:퇴사|입사)")
 # [review13] 개인이 거래 당사자로 나오는 글: "최대주주 홍길동으로부터 차입", "대주: 홍길동", "원고: 홍길동"
 _PARTY = re.compile(rf"(?<![가-힣])(?:최대주주|주요주주|대주|대여자|차주|매도인|매수인|원고|피고|채권자|채무자|담당자|전문인력|운용역|운용인력)"
                     rf"(?:인|은|는|가|이)?\s*[:：]?\s*['\"]?([가-힣]{{2,4}}?)(?=\s*(?:으로부터|로부터|에게|외\s*\d|씨|님|[,，/'\"]|[(（](?!\s*[주유]\s*[)）])|$|(?:은|는|이|가)\s)(?!\s*㈜)|\s+(?:과장|부장|차장|대리|팀장|실장|본부장|매니저|주임|사원)(?![가-힣]))")
 # [review13] "대표이사를 홍길동으로 변경", "전문인력 변경: 홍길동 → 김철수"
-_TO_CHANGE = re.compile(rf"(?<![가-힣]){_TITLE_X}(?:을|를|이|가)\s*([가-힣]{{2,4}}?)(?:\s*(?:씨|님))?(?:으로|로)\s*(?:변경|교체)")
+_FULL_TITLE = (r"(?:(?:공동|각자|단독)?대표이사|사내이사|사외이사|기타\s?비상무이사|비상무이사|감독이사|법인이사|(?:대표)?집행임원"
+               r"|(?:상근|비상근)?감사위원|상근감사|청산인)")
+_TO_CHANGE = re.compile(rf"(?<![가-힣])(?:{_TITLE_X}(?:을|를|이|가)|{_FULL_TITLE})\s*([가-힣]{{2,4}}?)(?:\s*(?:씨|님))?(?:으로|로)\s*(?:변경|교체)")
 # [review16] "대표이사 홍길동을 김철수로 교체"처럼 직함 뒤 두 이름
 _SWAP = re.compile(rf"(?<![가-힣]){_TITLE_X}\s+([가-힣]{{2,4}}?)(?:을|를)\s*([가-힣]{{2,4}}?)(?:\s*(?:씨|님))?(?:으로|로)\s*(?:변경|교체)")
 # [review6] "홍길동 대표이사 사임", "제1호 의안: 홍길동, 김철수 사내이사 선임의 건"처럼 이름이 직함 앞에 오는 어순.
@@ -112,6 +115,8 @@ _CLAUSE_START = (r"(?:^|(?<=[-:：,，(（)\]·.;])|(?<=[-:：,，(（)\]·.;]\s
                  r"|(?<=이번\s))")
 _BEFORE_TITLE = re.compile(rf"(?={_CLAUSE_START}({_LIST})\s+{_TB}\s*(?:(?:및|,|，)\s*{_NAME}\s+{_TB}\s*)*\(?\s*{_ACTIONS})")
 # [review9] "(변경전) 홍길동 (변경후) 김철수"처럼 변경 꼬리표 괄호 바로 뒤의 이름
+# 직함 없이 동작 앞에 쉼표나 및으로 이은 이름 목록("홍길동, 김철수 사임", "홍길동 및 김철수 퇴사")
+_LIST_BEFORE_ACTION = re.compile(rf"(?={_CLAUSE_START}({_NAME}(?:{_SEP}{_NAME}){{1,20}})\s*[(（]?\s*(?:{_PERSON_ACTIONS}|퇴사|입사))")
 _TAGGED = re.compile(rf"(?<![가-힣])(?:{_TB}|임원)\s*(?:의\s*)?변경\s*[:：\-]?\s*\((?:변경\s?전|구|전임)\)\s*({_NAME})\s*[,，/]?\s*\((?:변경\s?후|신|후임)\)\s*({_NAME})(?![가-힣])")
 # [review6] "대표이사로 선임된 홍길동"
 _AFTER_ACTION = re.compile(rf"(?=(?<![가-힣]){_TB}\s*{_ACTION_WORDS}(?:된|한|하신|되신|되는|하는)\s+({_LIST})(?![가-힣]))")
@@ -133,7 +138,7 @@ _FROM_TO = re.compile(
     rf"\s*{_TAG}({_NAME})(?:\s*{_TITLE_X})?{_PAREN}\s*(?:으로|로)(?![가-힣])")
 
 
-_PARTY_COMPANY = re.compile(r"(?:은행|증권|보험|생명|화재|손보|캐피탈|금고|신협|농협|수협|공사|공단|기금|공제|물산|쇼핑|건설|산업|홀딩스|리츠|펀드|신탁|운용)$")
+_PARTY_COMPANY = re.compile(r"(?:은행|증권|보험|생명|화재|손보|캐피탈|금고|신협|농협|수협|공사|공단|기금|공제|물산|쇼핑|건설|산업|홀딩스|리츠|펀드|신탁|운용|연금|투자|자산|개발|에셋|금융|지주|그룹|파트너스|코리아)$")
 
 
 def _is_name(token: str) -> bool:
@@ -175,7 +180,7 @@ def _officer_spans(text: str | None) -> list[tuple[int, int]]:
         patterns.append(_ARROW_CHANGE)
     if re.search(r"에서|로부터", text):
         patterns.append(_FROM_TO)
-    patterns += [_PARTY, _TO_CHANGE, _SWAP, _STAFF, _STAFF2]
+    patterns += [_PARTY, _TO_CHANGE, _SWAP, _STAFF, _STAFF2, _LIST_BEFORE_ACTION]
     if re.search(r"전문인력|운용역|운용인력", text) and re.search(_ARROW, text):
         patterns.append(_ARROW_CHANGE)
     spans = set()
@@ -191,7 +196,8 @@ def _officer_spans(text: str | None) -> list[tuple[int, int]]:
                         # [review16] 이름 뒤 조사는 남긴다('홍길동으로 변경' → '(이름 생략)으로 변경')
                         tok = t.group(0)
                         cut = re.search(r"(?:으로|로|은|는|이|가|의|과|와)$", tok)
-                        trim = len(cut.group(0)) if cut and len(tok) - len(cut.group(0)) >= 2 and _is_name(tok[:cut.start()]) else 0
+                        need = 2 if cut and cut.group(0) in ("으로", "로") else 3  # 한 글자 조사는 이름 끝 글자(하은, 지은)와 겹쳐 세 글자 이상 남을 때만 뗀다
+                        trim = len(cut.group(0)) if cut and len(tok) - len(cut.group(0)) >= need and _is_name(tok[:cut.start()]) else 0
                         spans.add((m.start(g) + t.start(), m.start(g) + t.end() - trim))
                     elif re.match(_ACTION_WORDS, t.group(0)) and pattern is not _AFTER_COLON:
                         break
@@ -241,7 +247,7 @@ def filing_result(rec, reit):
 LENDER_MARKERS = re.compile(r"은행|증권|보험|캐피탈|금고|공사|공단|기금|연금|조합|중앙회|회사|리츠|㈜|\(주\)|\(유\)|유한|펀드|신탁|운용|투자"
                             r"|저축|카드|생명|화재|공제|신협|새마을|농협|수협|뱅크|[A-Za-z]|證券|銀行|生命|保險|信託|金融")
 # [review16] 한글 3자 이하는 표지가 이름 글자와 겹치기 쉬워('홍운용', '홍기금') 알려진 짧은 기관 이름 꼴만 남긴다
-SHORT_LENDERS = re.compile(r"^(?:[가-힣]{0,2}신협|농협|수협|[가-힣]{0,2}금고)$")
+SHORT_LENDERS = re.compile(r"^(?:[가-힣]{0,2}신협|농협|수협|[가-힣]{0,2}금고|새마을|메리츠)$")
 
 
 def lender_label(name):

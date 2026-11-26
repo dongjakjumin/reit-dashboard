@@ -316,7 +316,7 @@ def build_data() -> dict:
     # 운용사별 진행 중인 신청: 접수 후 1년이 넘은 신청은 '1년 넘게 계류'로 따로 세어 순위를 왜곡하지 않게 한다
     applicants = {}
     for f in frows:
-        a = applicants.setdefault(f["applicant"], {"name": f["applicant"], "public": bool(PUBLIC_RE.search(f["applicant"])),
+        a = applicants.setdefault(f["applicant"], {"name": f["applicant"], "key": f["applicant_key"], "public": bool(PUBLIC_RE.search(f["applicant"])),
                                                   "recent": 0, "new": 0, "change": 0, "supplement": 0, "long": 0, "oldest": 0})
         if f["days"] > 365:
             a["long"] += 1

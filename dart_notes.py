@@ -124,7 +124,7 @@ FX = re.compile(r"외화|(?<![A-Za-z])(?:EUR|USD|JPY|GBP|AUD|CAD|CHF|HKD|SGD|CNY
 
 
 def number(s):
-    s = s.replace(",", "").replace("△", "-").replace("▲", "-").strip()
+    s = re.sub(r"\s", "", s.replace(",", "").replace("△", "-").replace("▲", "-"))  # '△ 1,000'처럼 띄어 쓴 세모도 음수로
     if not re.fullmatch(r"-?\d+(?:\.\d+)?|\(\d+(?:\.\d+)?\)", s):
         return 0
     return Decimal(s.replace("(", "-").replace(")", ""))
@@ -304,7 +304,7 @@ def parse_table(rows, context, tail, end=None):
     day_col = column("만기|상환일")
     rate_col = column("이자율|이율|연금리|^금리(?:[(%]|$)")
     lender_col = column("차입처|금융기관|인수기관|거래은행")
-    kind_col = column("^(?!금리)(?:구분|유형|종류)|차입금종류")
+    kind_col = column("^(?:차입금?|대출|사채)?(?:구분|유형|종류)")  # 금리구분, 이자율유형은 종류 열이 아니다
     flag_col = column("변동|고정|금리구분")
     kinds = re.findall("유동성장기차입금|단기차입금|장기차입금|전환사채|차입금|사채",context)
     default = kinds[-1] if kinds else "차입금"

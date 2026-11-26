@@ -325,7 +325,7 @@ const cases = v => n0(v) + '건';
   }
   comparisonTable('#applicants', D.applicants, [['name','신청회사',null,r => esc(r.name) + (r.public ? ' <span class="tag">공공기관</span>' : '')],
     ['recent','1년 안에 접수',cases], ['new','신규, 전환',cases], ['change','변경',cases], ['supplement','보완요청 중',cases],
-    ['long','1년 넘게 계류',cases], ['oldest','가장 오래된 접수',v => v.toLocaleString('ko-KR') + '일']], 'recent', 'name');
+    ['long','1년 넘게 계류',cases], ['oldest','가장 오래된 접수',v => v.toLocaleString('ko-KR') + '일']], 'recent', 'key');
   const rows = () => D.filings.filter(f => cur === '전체' || f.req_type === cur || f.group + '만' === cur);
   function draw(){
     const r = rows();
@@ -418,7 +418,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   const pending = D.filings.filter(f => f.req_type === '프로젝트리츠 설립신고');
   $('#pending-title').textContent = '신고 처리 중 ' + cases(pending.length);
   comparisonTable('#project-pending', pending, [['date','접수일'], ['project_name','사업 이름'], ['applicant','신청인'],
-    ['capital_eok','설립자본금',v => v == null ? '–' : v.toLocaleString('ko-KR', {maximumFractionDigits:1}) + '억원'], ['status','진행상태']], 'date', 'applicant');
+    ['capital_eok','설립자본금',v => v == null ? '–' : v.toLocaleString('ko-KR', {maximumFractionDigits:1}) + '억원'], ['status','진행상태']], 'date', 'applicant_key');
   $('#proj-table').innerHTML = `<thead><tr><th>신고일</th><th>리츠</th><th>투자대상</th><th>자산관리회사</th><th class="num">자산총계</th></tr></thead><tbody>` +
     rows.map(r => `<tr class="${rowClass(r.amc_s)}"><td class="nw">${r.date}</td><td>${esc(r.name_s)}${(D.children[r.id] || []).map(c => `<span class="s">이름이 이어지는 자리츠 ${esc(c.req_type.replace('프로젝트리츠 ', ''))} 처리 중(${c.date} 접수): ${esc(c.project_name || c.name_s)}</span>`).join('')}</td><td class="nw"><i class="dot" style="background:${SECTOR_COLOR[r.sector]}"></i>${esc(r.sector)}</td><td>${esc(r.amc_s)}</td><td class="num">${r.assets_eok ? eok(r.assets_eok) : '–'}${r.assets_eok && r.assets_eok <= 60 ? '<span class="s">초기</span>' : ''}</td></tr>`).join('') + '</tbody>';
   foldTable($('#proj-table'));
@@ -443,7 +443,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
     $('#amc-table').innerHTML = `<thead><tr><th class="num">순위</th><th>관리주체</th>${header('n', '리츠 수')}${header('assets', '자산총계')}<th>규모</th><th>투자대상 구성</th><th class="num">프로젝트리츠</th>${header('new12', '최근 12개월 신규')}<th>최근 인가, 등록, 신고일</th></tr></thead><tbody>` +
       rows.map(a => { const mix = D.sectors.filter(s => a.sectors[s]).map(s => `<i style="background:${SECTOR_COLOR[s]};flex:${a.sectors[s]}"></i>`).join('');
         const mixTip = D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ');
-        return `<tr class="${hlRow === a ? 'hl' : ''}"><td class="num">${rank(a)}</td><td><button type="button" class="linkish" data-amc="${esc(a.name)}">${esc(a.name)}</button></td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td><span class="bar" style="width:${Math.max(1, a.assets_eok / maxA * 110)}px"></span></td><td title="${esc(mixTip)}"><span class="mix">${mix}</span></td><td class="num">${a.proj_n || '–'}</td><td class="num">${a.new12 || '–'}</td><td class="nw">${a.latest}</td></tr>`; }).join('') + '</tbody>';
+        return `<tr class="${rowClass(a.name)}"><td class="num">${rank(a)}</td><td><button type="button" class="linkish" data-amc="${esc(a.name)}">${esc(a.name)}</button></td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td><span class="bar" style="width:${Math.max(1, a.assets_eok / maxA * 110)}px"></span></td><td title="${esc(mixTip)}"><span class="mix">${mix}</span></td><td class="num">${a.proj_n || '–'}</td><td class="num">${a.new12 || '–'}</td><td class="nw">${a.latest}</td></tr>`; }).join('') + '</tbody>';
     $('#amc-table').querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
       const key = th.dataset.sort;
       asc = sort === key && !asc;
@@ -470,7 +470,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
   $('#ent-sub').textContent = `현재 운영 목록에서 첫 리츠의 인가, 등록, 신고일이 2023년 이후인 관리주체 ${rows.length}곳입니다(자기관리리츠와 공공기관 제외). 첫 1년과 첫 2년은 첫 리츠 날짜부터 365일, 730일 안에 생긴 리츠 수로, 첫 리츠를 포함합니다. 해산한 리츠는 목록에 없어 첫 리츠 날짜가 실제보다 늦게 잡힐 수 있습니다.`
     + (hlRow && !rows.includes(hlRow) ? ` 비교하면 ${hlRow.name}은 첫 리츠가 ${hlRow.first}이고 첫 1년 ${hlRow.n_y1}개, 첫 2년 ${hlRow.n_y2}개, 지금 ${hlRow.n}개입니다.` : '');
   $('#ent-table').innerHTML = `<thead><tr><th>관리주체</th><th>첫 리츠</th><th class="num">첫 1년</th><th class="num">첫 2년</th><th class="num">지금 리츠 수</th><th class="num">자산총계</th><th>투자대상</th></tr></thead><tbody>` +
-    rows.map(a => `<tr class="${hlRow === a ? 'hl' : ''}"><td><button type="button" class="linkish" data-amc="${esc(a.name)}">${esc(a.name)}</button></td><td>${esc(a.first_name)}<span class="s">${a.first} ${esc(a.first_kind)}</span></td><td class="num">${span(a.n_y1, 365, a)}</td><td class="num">${span(a.n_y2, 730, a)}</td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td>${D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ')}</td></tr>`).join('') + '</tbody>';
+    rows.map(a => `<tr class="${rowClass(a.name)}"><td><button type="button" class="linkish" data-amc="${esc(a.name)}">${esc(a.name)}</button></td><td>${esc(a.first_name)}<span class="s">${a.first} ${esc(a.first_kind)}</span></td><td class="num">${span(a.n_y1, 365, a)}</td><td class="num">${span(a.n_y2, 730, a)}</td><td class="num">${a.n}</td><td class="num">${eok(a.assets_eok)}</td><td>${D.sectors.filter(s => a.sectors[s]).map(s => `${s} ${a.sectors[s]}`).join(', ')}</td></tr>`).join('') + '</tbody>';
 })();
 
 /* 공모 여부: 최근 12개월 신규 리츠의 구성과 '공모예정' 리츠 목록 */

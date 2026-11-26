@@ -402,6 +402,11 @@ def remask_stored():
             for v in log.values():
                 v[key] = mask_person(v.get(key))
             _save(DATA / name, log, pretty=True)
+    dis = _load(DATA / "disclosures.json", {})
+    if any(mask_officer_names(v.get("text")) != v.get("text") for v in dis.values()):
+        for v in dis.values():
+            v["text"] = mask_officer_names(v.get("text"))
+        _save(DATA / "disclosures.json", dis)  # update_disclosures와 같은 꼴(순서 유지)
     fin = _load(DATA / "financials.json", {})
     if any(mask_person(v.get("top_shareholder")) != v.get("top_shareholder") for v in fin.values()):
         for v in fin.values():
