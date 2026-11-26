@@ -413,6 +413,9 @@ def main() -> int:
 
     print("[3] 상세 화면 대조(자산총계가 있는 리츠 5건 + 강조 회사)")
     pool = [r for r in reits if r["assets_eok"]]
+    # 12차 검토: 자산총계가 있는 리츠가 거의 없으면 원문 항목 이름이 바뀐 것이다. 표본이 비어 대조를 건너뛴 채 통과시키지 않는다
+    check(len(pool) >= 0.5 * len(reits), f"자산총계가 있는 리츠 {len(pool)}건 / {len(reits)}건(절반 이상)")
+    check(all(r.get("mktcap_eok") for r in snap["listed"]), "상장리츠 시가총액이 모두 있음")
     random.seed(snap["date"])
     sample = random.sample(pool, min(5, len(pool)))
     hl = d.get("highlight_amc")
@@ -443,6 +446,12 @@ def main() -> int:
     if live_l:
         check(int(live_l["total"]) == len(listed), f"상장리츠 현황 전체 {int(live_l['total'])}건 = 저장 {len(listed)}건")
     check(sum(x["mktcap_eok"] for x in ld["sectors"]) == ls["mktcap_eok"], "투자대상별 시가총액 합 = 전체 시가총액")
+    # 12차 검토: 시세 이력과 금리가 수집일보다 14일 넘게 묵으면 배포하지 않는다(수집기는 부분 실패를 경고로만 남긴다. 긴 연휴를 감안해 14일)
+    stale_limit = (date.fromisoformat(snap["date"]) - timedelta(days=14)).isoformat()
+    last_price_day = max((r["price_date"] for r in ld["rows"] if r.get("price_date")), default="")
+    check(last_price_day >= stale_limit, f"시세 이력 마지막 날 {last_price_day or '없음'}이 수집일 {snap['date']} 14일 안")
+    rate_days = [max(v["values"]) for v in saved_json("rates.json").get("series", {}).values() if v.get("values")]
+    check(bool(rate_days) and min(rate_days) >= stale_limit, f"금리 계열 마지막 관측일 {min(rate_days) if rate_days else '없음'}이 14일 안")
     check(sum(x["n"] for x in ld["sectors"]) == ls["n"], "투자대상별 종목 수 합 = 전체 종목 수")
     check(all(r["pnav"] is None or abs(r["mktcap_eok"] / r["nav_eok"] - r["pnav"]) < 0.006 for r in ld["rows"]),
           "P/B = 시가총액 / NAV 재계산 일치")

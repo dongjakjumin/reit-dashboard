@@ -83,6 +83,20 @@ def _pick(row: dict, keep: dict, numeric: tuple[str, ...]) -> dict:
     return out
 
 
+REQUIRED = {
+    "reits": ("id", "name", "amc", "kind", "date", "type", "sector", "assets_eok"),
+    "filings": ("id", "date", "req_type", "name", "applicant", "status"),
+    "listed": ("code", "name", "price", "prev_price", "mktcap_eok"),
+}
+
+
+def _require(what: str, rows: list[dict], share: float = 0.95):
+    for field in REQUIRED[what]:
+        n = sum(r.get(field) is not None for r in rows)
+        if rows and n < share * len(rows):
+            raise RuntimeError(f"{what}.{field} 값이 {len(rows)}건 중 {n}건에만 있음. 원문 형식 변경으로 보고 저장하지 않음")
+
+
 def collect() -> dict:
     now = datetime.now(KST)
     reits = [_pick(r, REIT_KEEP, ("id", "reqst_no", "assets_eok", "dividend_pct"))
@@ -91,6 +105,9 @@ def collect() -> dict:
                for r in reits_api.filings_list()]
     listed = [_pick(r, LISTED_KEEP, ("price", "prev_price", "mktcap_eok", "volume"))
               for r in reits_api.listed_list()]
+    _require("reits", reits)
+    _require("filings", filings)
+    _require("listed", listed)
     # 성과지표와 WALE을 종목코드, 종목명으로 붙인다
     metrics = {str(m.get("stockCd")): m for m in reits_api.listed_metrics()}
     wale = {str(w.get("stockNm")).strip(): _num(w.get("waleThstrm")) for w in reits_api.listed_wale()}
@@ -98,7 +115,9 @@ def collect() -> dict:
     prev = {str(r.get("code")): r for r in _load(DATA / "latest.json", {}).get("listed", [])}
     matched = sum(str(r["code"]) in metrics for r in listed)
     keep_metrics = matched < 0.8 * len(listed)
-    keep_wale = all(v is None for v in wale.values())
+    wale_hit = sum(wale.get(r["name"]) is not None for r in listed)
+    prev_hit = sum(prev.get(str(r["code"]), {}).get("wale_years") is not None for r in listed)
+    keep_wale = all(v is None for v in wale.values()) or wale_hit < 0.8 * prev_hit
     if keep_metrics:
         print(f"[수집] 경고 성과지표가 상장 {len(listed)}종목 중 {matched}종목에만 있어 전날 값을 이어 씀")
     if keep_wale:
@@ -110,7 +129,7 @@ def collect() -> dict:
             extra = {v: old.get(v) for v in METRIC_KEEP.values()}
         else:
             extra = _pick(m, METRIC_KEEP, ("reit_id", "fiscal_price", "dvd_pct", "annual_dvd_pct",
-                                           "nav_mil", "ffo_mil")) if m else {v: None for v in METRIC_KEEP.values()}
+                                           "nav_mil", "ffo_mil")) if m else {v: old.get(v) for v in METRIC_KEEP.values()}
         row.update(extra)
         row["wale_years"] = old.get("wale_years") if keep_wale else wale.get(row["name"])
     if len(reits) < 300:

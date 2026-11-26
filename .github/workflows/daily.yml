@@ -94,7 +94,8 @@ jobs:
           # Someone may have pushed while this run was collecting: replay the data commit on top and retry.
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then exit 0; fi
-            git pull --rebase origin main
+            # 12차 검토: rebase가 충돌로 멈추면 HEAD가 원격 끝에 남아 다음 push가 'up-to-date'로 성공한 것처럼 보인다
+            git pull --rebase origin main || { git rebase --abort; echo "rebase conflict" >&2; exit 1; }
           done
           echo "push failed after 3 attempts" >&2
           exit 1
