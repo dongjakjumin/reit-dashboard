@@ -280,6 +280,7 @@ def reappraisal_skipped(text, end):
         head = sentence[:cut]
         def at_end(part):
             return any(not APPRAISAL_EVERY.search(part[:x.start()]) and not re.match(r"\s*마다", part[x.end(1):])
+                       and not re.search(r"(?:전기|직전|이전|지난|전년도?)\s*$|(?:주기|마다)[^,，.]{0,15}$", part[:x.start()])
                        and (x[1] == "당기말" or x[1].startswith("보고") or any(d[:7] == end[:7] for d in iso_dates(x[1])))
                        for x in AT_END_APPRAISED.finditer(part))
         if at_end(head) or at_end(prev):

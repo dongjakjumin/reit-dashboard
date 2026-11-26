@@ -492,6 +492,15 @@ def main() -> int:
     if live_l:
         check(int(live_l["total"]) == len(listed), f"상장리츠 현황 전체 {int(live_l['total'])}건 = 저장 {len(listed)}건")
     check(sum(x["mktcap_eok"] for x in ld["sectors"]) == ls["mktcap_eok"], "투자대상별 시가총액 합 = 전체 시가총액")
+    # 15차 검토: 화면 시가총액 = 목록 시가총액 ÷ 목록 현재가 × 화면 현재가(가격 이력 마지막 종가)를 목록 원값에서 다시 낸다
+    lsrc = {s["code"]: s for s in snap["listed"]}
+    def cap_want(r):
+        src = lsrc[r["code"]]
+        ratio = r["price"] / src["price"]
+        return src["mktcap_eok"] * (ratio if abs(ratio - 1) <= 0.31 else 1)
+    cap_bad = [r["name"] for r in ld["rows"] if lsrc[r["code"]].get("mktcap_eok") and lsrc[r["code"]].get("price") and r.get("price")
+               and abs(r["mktcap_eok"] - cap_want(r)) > 0.51]
+    check(not cap_bad, f"시가총액 = 목록 주식 수 × 화면 현재가 재계산{' 불일치: ' + ', '.join(cap_bad) if cap_bad else ''}")
     # 12차 검토: 시세 이력과 금리가 수집일보다 14일 넘게 묵으면 배포하지 않는다(수집기는 부분 실패를 경고로만 남긴다. 긴 연휴를 감안해 14일)
     stale_limit = (date.fromisoformat(snap["date"]) - timedelta(days=14)).isoformat()
     last_price_day = max((r["price_date"] for r in ld["rows"] if r.get("price_date")), default="")
@@ -1083,8 +1092,9 @@ def main() -> int:
         def group_want(name, members):
             med = lambda xs, k: round(median(xs), k) if xs else None
             bs = lambda s: (dart_data.get(s["code"]) or {}).get("current") or {}
-            pb = [s["mktcap_eok"] / (s["nav_mil"] / 100) for s in members
-                  if s.get("nav_mil") and s["nav_mil"] > 0 and s.get("mktcap_eok")]
+            nav_c = lambda s: s["nav_mil"] / 100 - ((pref_cfg.get(s["code"]) or {}).get("amount") or 0) / 1e8
+            pb = [s["mktcap_eok"] / nav_c(s) for s in members
+                  if s.get("nav_mil") and nav_c(s) > 0 and s.get("mktcap_eok")]
             fv = [fv_by_code[s["code"]] for s in members if fv_by_code.get(s["code"]) is not None]
             yl = [yield_by_code[s["code"]] for s in members if yield_by_code.get(s["code"]) is not None]
             yw = [(yield_by_code[s["code"]], s["mktcap_eok"]) for s in members

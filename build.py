@@ -727,8 +727,9 @@ def build_listed_data() -> dict:
             yield_blocked = any(cutoff < b <= price_day and abs(all_prices[b] / all_prices[a] - 1) > 0.31
                                 for a, b in zip(history, history[1:]))
         mktcap = r["mktcap_eok"] or 0
-        if mktcap and r.get("price") and last and last != r["price"]:
-            mktcap = round(mktcap * last / r["price"])  # 같은 줄의 주식 수 × 화면 현재가
+        # 같은 줄의 주식 수 × 화면 현재가. 두 가격이 31% 넘게 다르면(주식병합, 분할 반영일) 목록 시가총액을 그대로 쓴다
+        if mktcap and r.get("price") and last and last != r["price"] and abs(last / r["price"] - 1) <= 0.31:
+            mktcap = round(mktcap * last / r["price"])
         pref = (CFG_PREF.get(str(r["code"])) or {})
         pref_eok = (pref.get("amount") or 0) / 1e8
         nav_eok = round(r["nav_mil"] / 100 - pref_eok) if r.get("nav_mil") else None
@@ -947,7 +948,7 @@ GROUP_ORDER = ["위험 신호", "해산, 청산", "위반, 제재", "소송, 분
 RISK_WORDS = re.compile(r"회생절차|회생법원|사채권자\s?집회|기한의?\s?이익.{0,6}상실"
                         r"|미상환(?!된?\s?(?:[가-힣]{0,6}사채|기업어음(?:증권)?|원금|원리금|차입금|대출금?)?의?\s?"
                         r"(?:원금\s?|권면\s?)?(?:잔액|총액)(?!.{0,30}?(?:발생|연체|지연|유예|미지급|불이행|불능|만기\s?연장)"
-                        r"(?![^,.;()]{0,10}?(?:없|않|아니|(?<![가-힣])무(?![가-힣])))))"
+                        r"(?!(?:(?!해소|해결|해제|상환|지급|변제|회복)[^,.;()]){0,10}?(?:없|않|아니|(?<![가-힣])무(?![가-힣])))))"
                         r"|부도(?!심|덕|율|확률)|파산|채무\s?불이행|자율\s?(?:구조조정|협약)"
                         r"|캐시\s?트랩(?!(?:(?!발동(?!\s?사유)|발생|지속|유지)[^.;]){0,15}?(?<!미)(?:해제|해소|종료)(?!\s?(?:불가|되지|하지|안\s?되|못|지연|실패|여부|예정|전망|계획|노력|를?\s?위)))")
 WIND_UP_WORDS = re.compile(r"해산|청산")

@@ -92,8 +92,9 @@ REQUIRED = {
 
 def _require(what: str, rows: list[dict], share: float = 0.95):
     for field in REQUIRED[what]:
-        n = sum(r.get(field) is not None for r in rows)
-        if rows and n < share * len(rows):
+        n = sum(r.get(field) not in (None, "") for r in rows)
+        # 15차 검토: 행이 적은 목록은 비율로만 보면 2건만 비어도 멈춘다. 최소 2건까지는 빠져도 받는다
+        if rows and len(rows) - n > max(2, (1 - share) * len(rows)):
             raise RuntimeError(f"{what}.{field} 값이 {len(rows)}건 중 {n}건에만 있음. 원문 형식 변경으로 보고 저장하지 않음")
 
 
