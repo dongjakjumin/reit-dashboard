@@ -291,7 +291,9 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(dra
   // 지급이자로 거꾸로 구한 금리가 CD금리보다 낮거나 9%를 넘으면 기간 중 차입 변동이나 이자 지급 시점 차이로 본다
   const rateOdd = v => (rates.cd91 && v < rates.cd91.value) || v > 9;
   const loanRate = code => {
-    const xs = (D.loans.issuers[code]?.loans || []).filter(x => x.rate != null && !x.fx);
+    const all = D.loans.issuers[code]?.loans || [];
+    if (all.some(x => x.fx)) return null;  // 17차 검토: 외화 차입이 섞이면 원화 약정금리 평균을 내지 않는다(회사채 금리 차이와 같은 규칙)
+    const xs = all.filter(x => x.rate != null);
     const amount = xs.reduce((s, x) => s + x.amount, 0);
     return amount ? xs.reduce((s, x) => s + x.rate * x.amount, 0) / amount : null;
   };

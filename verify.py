@@ -283,8 +283,18 @@ def secrets_only():
     if named:
         bad.append("공시 본문 이름 " + ", ".join(named[:5]))
     fin = json.loads((DATA / "financials.json").read_text(encoding="utf-8")) if (DATA / "financials.json").exists() else {}
-    if any(mask_person(v.get("top_shareholder")) != v.get("top_shareholder") for v in fin.values()):
-        bad.append("최대주주 개인 이름")
+    n = sum(mask_person(v.get("top_shareholder")) != v.get("top_shareholder") for v in fin.values())
+    if n:
+        bad.append(f"financials.json 최대주주 칸 개인 이름 {n}건")
+    # 16차 검토: 차입처(원문 그대로 저장)와 목록에서 빠진 리츠의 관리회사 기록도 본다. 값은 출력하지 않고 칸과 건수만 적는다
+    loans = json.loads((DATA / "loans.json").read_text(encoding="utf-8")) if (DATA / "loans.json").exists() else {}
+    n = sum(lender_label(x.get("lender")) != x.get("lender") for v in loans.values() for x in v.get("loans") or [])
+    if n:
+        bad.append(f"loans.json 차입처 칸 개인 이름 {n}건")
+    rlog = json.loads((DATA / "reits_log.json").read_text(encoding="utf-8")) if (DATA / "reits_log.json").exists() else {}
+    n = sum(mask_person(v.get("amc")) != v.get("amc") for v in rlog.values())
+    if n:
+        bad.append(f"reits_log.json 관리회사 칸 개인 이름 {n}건")
     allowed = {"id", "reit_id", "date", "req_type", "name", "applicant", "status", "project_name", "biz_type",
                "founding_capital", "public_duty", "first_seen", "last_seen", "status_history", "gone_on", "result_kind", "result_date"}
     for path in [DATA / "latest.json", *sorted((DATA / "snapshots").glob("*.json"))]:
@@ -1184,14 +1194,30 @@ def main() -> int:
                      ("전문인력 변경: 홍길동 → 김철수", "전문인력 변경: (이름 생략) → (이름 생략)"),
                      ("자산운용전문인력 홍길동 퇴사", "자산운용전문인력 (이름 생략) 퇴사"),
                      ("신규 대표이사 선임 및 가나동 오피스 매입", None), ("자산관리회사 가나 선임", None),
-                     ("회생절차 관리인 선임", None), ("서울회생법원은 채권자들과 채무자 사이의 원만한 구조조정", None)]
+                     ("회생절차 관리인 선임", None), ("서울회생법원은 채권자들과 채무자 사이의 원만한 구조조정", None),
+                     # [review16] 사람 아닌 교체, 회사 당사자, 조사 보존, 13차에서 놓친 꼴
+                     ("임차인 교체", None), ("승강기 교체 공사", None), ("자산관리회사를 가나운용으로 교체", None),
+                     ("대주: 가나생명", None), ("대주: 신협", None), ("매도인: 가나쇼핑(주)", None),
+                     ("감사 결과로 변경", None), ("대표 주소로 변경", None), ("감사 보고서/정관 변경, 이사 선임", None),
+                     ("대표이사가 홍길동으로 변경", "대표이사가 (이름 생략)으로 변경"),
+                     ("대표이사 홍길동을 김철수로 교체", "대표이사 (이름 생략)을 (이름 생략)로 교체"),
+                     ("채무자 홍길동은 변제를 약속", "채무자 (이름 생략)은 변제를 약속"),
+                     ("당사 홍길동 사임", "당사 (이름 생략) 사임"), ("사임: 홍길동 선임 김철수", "사임: (이름 생략) 선임 (이름 생략)"),
+                     ("홍길동 대리 퇴사", "(이름 생략) 대리 퇴사")]
     for text, expected in officer_cases:
         expected = expected or text
         masked = mask_officer_names(text)
         check(masked == expected and not officer_names(masked), f"임원 이름 가상 입력 {expected}")
     cases = [(name, PRIVATE_LABEL) for name in ("홍길동(개인)", "홍길동 (본인)", "남궁민수", "김솔", "박하늘 외 2인",
-                                                "홍길동 외 특수관계인 2인", "홍길동 회장 외 3인", "홍길동 및 특수관계인")]
-    cases += [(name, name) for name in ("㈜에스원", "주식회사 케이탑", "롯데쇼핑", "(주)한빛", "한솔 유한회사")]
+                                                "홍길동 외 특수관계인 2인", "홍길동 회장 외 3인", "홍길동 및 특수관계인",
+                                                "홍길동 부회장", "홍길동 이사", "홍길동 등 3인", "김철수, 이영희", "김철수 및 이영희")]
+    cases += [(name, name) for name in ("㈜에스원", "주식회사 케이탑", "롯데쇼핑", "(주)한빛", "한솔 유한회사", "케이씨씨", "野村證券",
+                                        "가나생명, 다라생명")]
+    # [review16] 차입처: 짧은 금융기관 이름은 남기고, 표지가 이름 글자와 겹친 개인 이름은 가린다
+    cases_l = [("신협", "신협"), ("가나신협", "가나신협"), ("농협", "농협"), ("가나은행", "가나은행"),
+               ("홍운용", PRIVATE_LABEL), ("홍기금", PRIVATE_LABEL), ("홍길동", PRIVATE_LABEL)]
+    for name, expected in cases_l:
+        check(lender_label(name) == expected, f"차입처 가상 입력 {name}")
     for name, expected in cases:
         check(mask_person(name) == expected, f"최대주주 가상 입력 {name}")
     # 수집기를 불러오지 않고 저장을 허용한 항목을 점검한다.

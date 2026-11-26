@@ -114,8 +114,15 @@ def collect() -> dict:
     _require("filings", filings)
     _require("listed", listed)
     # 성과지표와 WALE을 종목코드, 종목명으로 붙인다
-    metrics = {str(m.get("stockCd")): m for m in reits_api.listed_metrics()}
-    wale = {str(w.get("stockNm")).strip(): _num(w.get("waleThstrm")) for w in reits_api.listed_wale()}
+    # 17차 검토: 보조 조회가 예외를 내도 기본 목록은 저장한다(빈 응답과 같게 보고 아래에서 전날 값을 이어 씀)
+    def optional(fetch, label):
+        try:
+            return fetch() or []
+        except Exception as exc:
+            print(f"[수집] 경고 {label} 조회 실패, 전날 값을 이어 씀: {type(exc).__name__}")
+            return []
+    metrics = {str(m.get("stockCd")): m for m in optional(reits_api.listed_metrics, "성과지표")}
+    wale = {str(w.get("stockNm")).strip(): _num(w.get("waleThstrm")) for w in optional(reits_api.listed_wale, "WALE")}
     # 원문이 빈 목록을 돌려준 날에는 전날 값을 이어 쓴다. 빈 값으로 덮으면 재무 화면과 WALE 칸이 통째로 빈다.
     prev = {str(r.get("code")): r for r in _load(DATA / "latest.json", {}).get("listed", [])}
     matched = sum(str(r["code"]) in metrics for r in listed)
@@ -137,6 +144,14 @@ def collect() -> dict:
                                            "nav_mil", "ffo_mil")) if m else {v: old.get(v) for v in METRIC_KEEP.values()}
         row.update(extra)
         row["wale_years"] = old.get("wale_years") if keep_wale else wale.get(row["name"])
+        # 17차 검토: 시가총액이 빈 종목은 전날 값을 이어 쓴다(빈 채로 두면 화면 합계가 크게 줄고 verify가 배포를 막는다)
+        if row.get("mktcap_eok") is None and old.get("mktcap_eok") is not None and old.get("price"):
+            print(f"[수집] 경고 {row['name']} 시가총액이 비어 전날 값을 이어 씀")
+            row["mktcap_eok"] = old["mktcap_eok"]
+            if row.get("price") is None:
+                row["price"] = old["price"]
+            elif row["price"] != old["price"]:
+                row["mktcap_eok"] = round(old["mktcap_eok"] * row["price"] / old["price"])
     if len(reits) < 300:
         raise RuntimeError(f"리츠 목록이 {len(reits)}건뿐임. 수집 이상으로 보고 저장하지 않음")
     if not filings or not listed:
@@ -368,6 +383,39 @@ def update_disclosures(snap: dict):
     return len(rows)
 
 
+def remask_stored():
+    """16차 검토: 가림 규칙을 넓힌 뒤에도 옛 저장 파일 때문에 개인정보 검사가 매일 막히지 않게, 커밋 전에 지금 규칙으로 다시 가린다."""
+    from textutil import lender_label
+    for path in [DATA / "latest.json", *sorted(SNAP.glob("*.json"))]:
+        s = _load(path, {})
+        hit = False
+        for rows, key in ((s.get("filings", []), "applicant"), (s.get("reits", []), "amc")):
+            for r in rows:
+                m = mask_person(r.get(key))
+                if m != r.get(key):
+                    r[key], hit = m, True
+        if hit:
+            _save(path, s)
+    for name, key in (("filings_log.json", "applicant"), ("reits_log.json", "amc")):
+        log = _load(DATA / name, {})
+        if any(mask_person(v.get(key)) != v.get(key) for v in log.values()):
+            for v in log.values():
+                v[key] = mask_person(v.get(key))
+            _save(DATA / name, log, pretty=True)
+    fin = _load(DATA / "financials.json", {})
+    if any(mask_person(v.get("top_shareholder")) != v.get("top_shareholder") for v in fin.values()):
+        for v in fin.values():
+            v["top_shareholder"] = mask_person(v.get("top_shareholder"))
+        _save(DATA / "financials.json", fin, pretty=True)
+    loans_path = DATA / "loans.json"
+    loans = _load(loans_path, {})
+    if any(lender_label(x.get("lender")) != x.get("lender") for v in loans.values() for x in v.get("loans") or []):
+        for v in loans.values():
+            for x in v.get("loans") or []:
+                x["lender"] = lender_label(x.get("lender"))
+        loans_path.write_bytes(json.dumps(loans, ensure_ascii=False, indent=2).encode("utf-8"))  # dart_notes.py와 같은 꼴
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -385,6 +433,7 @@ def main():
             update(snap)
         except Exception as exc:
             print(f"[수집] 경고 {group}: {type(exc).__name__} {exc}")
+    remask_stored()
     leaks = phone_files(DATA.rglob("*.json"))
     if leaks:
         raise SystemExit("전화번호 확인 필요: " + ", ".join(str(p.relative_to(DATA)) for p in leaks))

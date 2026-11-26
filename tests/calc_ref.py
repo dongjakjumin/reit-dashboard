@@ -58,7 +58,13 @@ def month_irr(flows: dict[int, float]) -> float | None:
 
 
 def yearly(r: float | None) -> float | None:
-    return None if r is None else (1.0 + r) ** 12 - 1.0
+    if r is None:
+        return None
+    try:
+        v = (1.0 + r) ** 12 - 1.0
+    except OverflowError:
+        return None
+    return v if math.isfinite(v) and v < 1e4 else None  # calc_engine.js IRR_MAX와 같은 상한
 
 
 def moic(paid_in: float, events: list[float]) -> float | None:

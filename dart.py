@@ -255,6 +255,11 @@ def summarize(fs, basis, reports, series):
         span = max(spans, key=len)
         end = span[-1] if span else dates.get(period)
         prior = dates.get(period-1) if period else None
+        if prior is None and end:
+            # 17차 검토: 분기 표시만 있는 계열(연 1회 결산)은 직전 결산기 표시가 없어 바로 앞 결산일을 쓴다
+            prior = max((e for e in all_ends if e < end), default=None)
+            if prior and (end - prior).days > 366:
+                prior = None
         start = span[0] if len(span) >= 2 else prior + timedelta(days=1) if prior else None
         result = statement(fs, term, notes)
         result.update(end=str(end) if end else None, start=str(start) if start else None,
@@ -292,6 +297,8 @@ def summarize(fs, basis, reports, series):
                 continue
             value = number(common[0].get(field))
             old = dividends.get(end)
+            if value is None and old and old["dps"] is not None:
+                continue  # 17차 검토: 뒤 보고서의 빈 칸이 앞 보고서가 준 배당을 지우지 않게
             if old and old["dps"] != value:
                 notes.append(f"{end} 배당 {old['report']} {old['dps']} → {no} {value}원")
             dividends[end] = dict(end=str(end), days=lengths.get(end), dps=value, report=no)
@@ -329,6 +336,8 @@ def update(snap=None, folder=None, force=False):
             corp = corps[code][0]
             reports = []
             chosen = None
+            # 17차 검토: 배당 공시는 한 해 더 받는다(연 1회 결산 리츠의 직전 결산일을 찾으려고)
+            reports.extend(source.rows(code, corp, today.year - 2))
             for year in (today.year, today.year - 1):
                 reports.extend(source.rows(code, corp, year))
                 for basis in ("CFS", "OFS"):

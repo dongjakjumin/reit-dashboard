@@ -124,7 +124,7 @@ FX = re.compile(r"외화|(?<![A-Za-z])(?:EUR|USD|JPY|GBP|AUD|CAD|CHF|HKD|SGD|CNY
 
 
 def number(s):
-    s = s.replace(",", "").strip()
+    s = s.replace(",", "").replace("△", "-").replace("▲", "-").strip()
     if not re.fullmatch(r"-?\d+(?:\.\d+)?|\(\d+(?:\.\d+)?\)", s):
         return 0
     return Decimal(s.replace("(", "-").replace(")", ""))
@@ -304,7 +304,7 @@ def parse_table(rows, context, tail, end=None):
     day_col = column("만기|상환일")
     rate_col = column("이자율|이율|연금리|^금리(?:[(%]|$)")
     lender_col = column("차입처|금융기관|인수기관|거래은행")
-    kind_col = column("구분|유형|종류")
+    kind_col = column("^(?!금리)(?:구분|유형|종류)|차입금종류")
     flag_col = column("변동|고정|금리구분")
     kinds = re.findall("유동성장기차입금|단기차입금|장기차입금|전환사채|차입금|사채",context)
     default = kinds[-1] if kinds else "차입금"
@@ -324,7 +324,7 @@ def parse_table(rows, context, tail, end=None):
             return row[i] if i is not None and i < len(row) else ""
         value = int(number(cell(cur))*unit)
         labels = " ".join(s.replace(" ","") for s in row)
-        if re.search("합계|소계|총계|차감계|대체후|장부금액|잔액", labels):
+        if re.search("합계|소계|총계|차감계|대체후|장부금액|잔액", labels) or (row and row[0].replace(" ", "") == "계"):
             prior = None
             continue
         if ADJUST.search(labels):
@@ -410,7 +410,7 @@ def extract(r, doc, xml):
                 match="불일치" if ambiguous else status(total,nominal,nominal+adj),
                 fixed_share=share, avg_rate=avg, skipped=skipped,
                 warn=[f"{x['kind']} {x['lender']} 만기일({x['maturity']})이 기준일보다 앞섭니다."
-                      for x in loans if x["maturity"] < end])
+                      for x in loans if end and x["maturity"] < end])
 
 
 def document(code, r, folder, key):

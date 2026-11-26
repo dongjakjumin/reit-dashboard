@@ -284,6 +284,8 @@ def build_data() -> dict:
             "project_name": short_reit(mask_person(f["project_name"] or "")),
             "biz_type": f["biz_type"] or "",
             "applicant": applicant_name(f["applicant"]),
+            # 16차 검토: 자기관리리츠는 신청인 표시가 줄어('…자기관리리츠') 관리주체 이름과 다르므로 비교용 키를 따로 싣는다
+            "applicant_key": clean_company(mask_person(f["applicant"])),
             "status": f["status"],
             "changed_on": safe_date(history[-1][0]) if len(history) > 1 else "",
             # 이미 운영 목록에 있는 리츠(등록, 설립신고)가 낸 영업인가, 등록 신청은 신규 설립이 아니라 전환으로 센다

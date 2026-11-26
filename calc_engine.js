@@ -42,7 +42,10 @@ function irrMonthly(cfs) {
   return (lo + hi) / 2;
 }
 
-function annualize(rm) { return rm == null ? null : Math.pow(1 + rm, 12) - 1; }
+// 17차 검토: 극단 입력에서 Infinity나 1e+131% 같은 값이 화면에 나가지 않게 연 1,000,000% 미만만 돌려준다
+// (tests/calc_ref.py yearly와 같은 규칙. 역산은 IRR이 아니라 현재가치 부호로 풀어 영향이 없다)
+const IRR_MAX = 1e4;
+function annualize(rm) { if (rm == null) return null; const v = Math.pow(1 + rm, 12) - 1; return Number.isFinite(v) && v < IRR_MAX ? v : null; }
 
 /* 회수 배수 = 받은 돈 합계 ÷ 넣은 돈 합계. flows는 [넣은 돈(음수) 또는 받은 돈(양수)]의 목록. */
 function multiple(flows) {

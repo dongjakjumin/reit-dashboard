@@ -274,8 +274,9 @@ const highlight = (new URLSearchParams(location.search).get('amc') || '').normal
 // 13차 검토: 이름이 정확히 같은 회사를 먼저 찾고, 없으면 두 글자 이상이면서 한 회사에만 맞을 때만 강조한다('키', '자산' 같은 말로 다른 회사가 켜지지 않게)
 const hlPart = highlight.length >= 2 ? D.amc.filter(a => a.name.includes(highlight)) : [];
 const hlRow = highlight ? (D.amc.find(a => a.name === highlight) || (hlPart.length === 1 ? hlPart[0] : null)) : null;
-const hlCompany = hlRow?.name || highlight;
-const rowClass = name => hlCompany && name === hlCompany ? 'hl' : '';
+let hlCompany = hlRow?.name || highlight;
+// 16차 검토: 행에 회사 이름을 달아 두고, 상세에서 다른 회사를 고르면 모든 표의 강조를 함께 옮긴다
+const rowClass = name => `${hlCompany && name === hlCompany ? 'hl' : ''}" data-co="${esc(name || '')}`;
 
 /* 비교표의 열은 값의 키, 머리글, 표시 함수 순서입니다. */
 function comparisonTable(id, rows, columns, initial, companyKey){
@@ -330,7 +331,7 @@ const cases = v => n0(v) + '건';
     const r = rows();
     $('#fil-count').textContent = `${r.length}건 / 전체 ${D.filings.length}건`;
     $('#fil-table').innerHTML = `<thead><tr><th>접수일</th><th class="num">경과일</th><th>신청유형</th><th>리츠</th><th>사업</th><th>신청회사</th><th>진행상태</th></tr></thead><tbody>` +
-      r.map(f => `<tr class="${rowClass(f.applicant)}"><td class="nw">${esc(f.date)}</td><td class="num">${f.days.toLocaleString('ko-KR')}일</td><td class="nw"><span class="tag">${esc(f.group)}</span> ${esc(f.req_type)}</td><td>${esc(f.name_s)}</td><td>${esc(f.project_name)}${f.biz_type ? `<span class="s">${esc(f.biz_type)}</span>` : ''}</td><td>${esc(f.applicant)}</td><td class="nw"><span class="tag">${esc(f.status)}</span>${f.changed_on ? `<span class="s">${esc(f.changed_on)}에 바뀜</span>` : ''}</td></tr>`).join('') + '</tbody>';
+      r.map(f => `<tr class="${rowClass(f.applicant_key)}"><td class="nw">${esc(f.date)}</td><td class="num">${f.days.toLocaleString('ko-KR')}일</td><td class="nw"><span class="tag">${esc(f.group)}</span> ${esc(f.req_type)}</td><td>${esc(f.name_s)}</td><td>${esc(f.project_name)}${f.biz_type ? `<span class="s">${esc(f.biz_type)}</span>` : ''}</td><td>${esc(f.applicant)}</td><td class="nw"><span class="tag">${esc(f.status)}</span>${f.changed_on ? `<span class="s">${esc(f.changed_on)}에 바뀜</span>` : ''}</td></tr>`).join('') + '</tbody>';
   }
   seg($('#fil-seg'), v => { cur = v; draw(); });
   $('#fil-csv').onclick = () => csv('리츠_접수현황', ['접수일','경과일','신청유형','리츠','사업','사업구분','신청회사','진행상태'], rows().map(f => [f.date, f.days, f.req_type, f.name_s, f.project_name, f.biz_type, f.applicant, f.status]));
@@ -495,7 +496,7 @@ const pickAmc = (function(){
     const a = D.amc.find(x => x.name === name) || byAssets[0];
     pick.value = a.name;
     const rs = D.reits.filter(r => r.amc_s === a.name);
-    const fs = D.filings.filter(f => f.applicant === a.name);
+    const fs = D.filings.filter(f => f.applicant_key === a.name);
     const ds = D.amc_dis[a.name] || [];
     const i = byAssets.indexOf(a), peers = byAssets.slice(Math.max(0, i - 3), i + 4);
     const sup = fs.filter(f => f.status === '보완요청').length;
@@ -533,6 +534,8 @@ const pickAmc = (function(){
   }
   function choose(name, scroll){
     render(name);
+    hlCompany = pick.value;
+    document.querySelectorAll('tr[data-co]').forEach(tr => tr.classList.toggle('hl', tr.dataset.co === hlCompany));
     history.replaceState(null, '', '?amc=' + encodeURIComponent(pick.value) + location.hash);
     if (scroll) $('#amc-detail-title').scrollIntoView({behavior: 'smooth', block: 'start'});
   }
